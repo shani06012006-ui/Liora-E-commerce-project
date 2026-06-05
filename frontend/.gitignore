@@ -1,0 +1,70 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+
+# Python
+backend/venv/
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+
+# Media uploads
+backend/media/
+
+# Environment variables
+.env
+
+# React/Vite
+frontend/node_modules/
+
+# VS Code
+.vscode/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+backend/venv/
+
+# Environment variables
+.env
+
+# Django media (optional)
+# backend/media/
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+frontend/node_modules/

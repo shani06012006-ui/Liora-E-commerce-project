@@ -1,0 +1,40 @@
+[
+  {
+    "model": "products.product",
+    "pk": 1,
+    "fields": {
+      "name": "Floral Summer Dress",
+      "description": "Beautiful floral print summer dress perfect for casual outings",
+      "price": 2499,
+      "original_price": 3499,
+      "discount": 28,
+      "category": "dress",
+      "style": "casual",
+      "collection": "summer",
+      "stock": 25,
+      "view_count": 150,
+      "order_count": 45,
+      "wishlist_count": 89,
+      "avg_rating": 4.5
+    }
+  },
+  {
+    "model": "products.product",
+    "pk": 2,
+    "fields": {
+      "name": "Party Wear Gown",
+      "description": "Elegant evening gown for special occasions",
+      "price": 5999,
+      "original_price": 8999,
+      "discount": 33,
+      "category": "dress",
+      "style": "party",
+      "collection": "party",
+      "stock": 10,
+      "view_count": 89,
+      "order_count": 23,
+      "wishlist_count": 67,
+      "avg_rating": 4.8
+    }
+  }
+]
