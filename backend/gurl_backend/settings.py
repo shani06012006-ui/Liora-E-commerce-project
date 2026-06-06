@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import os
+
 from pathlib import Path
 from datetime import timedelta
 
@@ -88,13 +88,14 @@ WSGI_APPLICATION = 'gurl_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+import os
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'liora_db',
         'USER': 'postgres',
-        'PASSWORD': 'sunilraj123',  
+        'PASSWORD': os.getenv('sunilraj123'),  
         'HOST': 'localhost',
         'PORT': '5432',
     }
