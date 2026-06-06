@@ -113,6 +113,9 @@ const AppContent = () => {
       <Route path="/profile" element={isAuthenticated ? <ProfileLayout><Profile /></ProfileLayout> : <Navigate to="/login" />} />
       <Route path="/settings" element={isAuthenticated ? <ProfileLayout><Settings /></ProfileLayout> : <Navigate to="/login" />} />
       <Route path="/orders" element={isAuthenticated ? <MainLayout><Orders /></MainLayout> : <Navigate to="/login" />} />
+
+
+
     </Routes>
   );
 };

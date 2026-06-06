@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { orderAPI } from '../services/api';
 import { clearCart } from '../redux/cartSlice';
+import { CreditCardIcon, BanknotesIcon, WalletIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
@@ -16,6 +17,7 @@ const Checkout = () => {
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
@@ -26,6 +28,12 @@ const Checkout = () => {
     state: '',
     pincode: '',
   });
+
+  const paymentMethods = [
+    { id: 'cod', name: 'Cash on Delivery', icon: BanknotesIcon, description: 'Pay when you receive the order' },
+    { id: 'card', name: 'Credit / Debit Card', icon: CreditCardIcon, description: 'Visa, Mastercard, RuPay' },
+    { id: 'upi', name: 'UPI / Wallet', icon: WalletIcon, description: 'Google Pay, PhonePe, Paytm' },
+  ];
 
   useEffect(() => {
     if (items.length === 0 && !orderPlaced) {
@@ -119,6 +127,11 @@ const Checkout = () => {
       return;
     }
 
+    if (!paymentMethod) {
+      toast.error('Please select a payment method');
+      return;
+    }
+
     setLoading(true);
     setOrderPlaced(true);
     toast.loading('Placing your order...', { id: 'order' });
@@ -128,6 +141,7 @@ const Checkout = () => {
     const orderData = {
       shipping_address: fullAddress,
       phone: formData.phone,
+      payment_method: paymentMethod,
     };
 
     try {
@@ -136,11 +150,9 @@ const Checkout = () => {
       
       toast.success('Order placed successfully!', { id: 'order' });
       
-      // Clear cart
       dispatch(clearCart());
       localStorage.removeItem('cart');
       
-      // Navigate to OrderSuccess page with order data (no confetti here)
       setTimeout(() => {
         navigate('/order-success', { state: { order: response.data } });
       }, 1500);
@@ -181,6 +193,7 @@ const Checkout = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Address Section */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Address Selection */}
           {addresses.length > 0 && !showAddressForm && (
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex justify-between items-center mb-4">
@@ -227,6 +240,7 @@ const Checkout = () => {
             </div>
           )}
 
+          {/* Add New Address Form */}
           {showAddressForm && (
             <div className="bg-white rounded-xl shadow-sm p-6">
               <div className="flex justify-between items-center mb-4">
@@ -335,6 +349,42 @@ const Checkout = () => {
               </div>
             </div>
           )}
+
+          {/* Payment Method Section - NEW */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Payment Method</h2>
+            <div className="space-y-3">
+              {paymentMethods.map((method) => {
+                const Icon = method.icon;
+                return (
+                  <label
+                    key={method.id}
+                    className={`flex items-start gap-4 p-4 border rounded-xl cursor-pointer transition-all ${
+                      paymentMethod === method.id
+                        ? 'border-gray-900 bg-gray-50'
+                        : 'border-gray-200 hover:border-gray-400'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value={method.id}
+                      checked={paymentMethod === method.id}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="mt-1"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-5 h-5 text-gray-600" />
+                        <p className="font-medium text-gray-900">{method.name}</p>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">{method.description}</p>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Right Column - Order Summary */}
