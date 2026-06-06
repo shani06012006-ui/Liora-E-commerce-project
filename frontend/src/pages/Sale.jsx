@@ -129,6 +129,7 @@ const Sale = () => {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
       const cartRes = await cartAPI.getCart();
       dispatch(setCart(cartRes.data));
+      window.dispatchEvent(new Event('cartUpdated'));
       toast.success('Added to cart!');
     } catch (error) {
       toast.error('Failed to add to cart');
@@ -163,12 +164,7 @@ const Sale = () => {
   };
 
   const categories = [
-    { value: 'all', label: 'ALL' },
     { value: 'dress', label: 'DRESSES' },
-    { value: 'ethnic', label: 'ETHNIC' },
-    { value: 'western', label: 'WESTERN' },
-    { value: 'casual', label: 'CASUAL' },
-    { value: 'party', label: 'PARTY' },
   ];
 
   const sortOptions = [
@@ -183,9 +179,8 @@ const Sale = () => {
     { id: 3, name: 'Velvet Blazer', price: 3999, original_price: 7999, discount: 50, image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&auto=format' },
     { id: 4, name: 'Cashmere Sweater', price: 4499, original_price: 8999, discount: 50, image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&auto=format' },
     { id: 5, name: 'Party Wear Gown', price: 5999, original_price: 11999, discount: 50, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&auto=format' },
-    { id: 6, name: 'Ethnic Saree', price: 6999, original_price: 13999, discount: 50, image: 'https://images.unsplash.com/photo-1583391733956-6c9dabf6d3b7?w=400&auto=format' },
-    { id: 7, name: 'Leather Jacket', price: 5499, original_price: 10999, discount: 50, image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&auto=format' },
-    { id: 8, name: 'Designer Handbag', price: 2999, original_price: 5999, discount: 50, image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format' },
+    { id: 6, name: 'Leather Jacket', price: 5499, original_price: 10999, discount: 50, image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&auto=format' },
+    { id: 7, name: 'Designer Handbag', price: 2999, original_price: 5999, discount: 50, image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format' },
   ];
 
   const displayProducts = products.length > 0 ? products : fallbackProducts;
@@ -200,41 +195,43 @@ const Sale = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gray-900">
-        <div className="absolute inset-0 opacity-5">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <pattern id="sale-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="10" cy="10" r="5" fill="black" />
-            </pattern>
-            <rect x="0" y="0" width="100" height="100" fill="url(#sale-pattern)" />
-          </svg>
+      {/* Hero Section with Full Background Image */}
+      <div className="relative min-h-[500px] overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <img 
+            src="SL.png" 
+            alt="Sale Banner" 
+            className="w-full h-full object-cover"
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 py-20 text-center text-white">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-1 rounded-full mb-4">
+        <div className="relative max-w-7xl mx-auto px-4 py-20 text-center text-white z-10">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full mb-4">
             <FireIcon className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider">Limited Time Offer</span>
           </div>
           <h1 className="text-6xl md:text-8xl font-light tracking-wide mb-4">SALE</h1>
           <p className="text-xl md:text-2xl font-light mb-2">UP TO <span className="font-bold text-4xl">50% OFF</span></p>
-          <p className="text-white/60 text-sm max-w-md mx-auto">
+          <p className="text-white/80 text-sm max-w-md mx-auto">
             Don't miss out on our biggest sale of the season. Shop now before they're gone!
           </p>
           <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
               <span className="block text-2xl font-bold">{String(timeLeft.days).padStart(2, '0')}</span>
               <span className="text-[10px] uppercase tracking-wide">Days</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
               <span className="block text-2xl font-bold">{String(timeLeft.hours).padStart(2, '0')}</span>
               <span className="text-[10px] uppercase tracking-wide">Hours</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
               <span className="block text-2xl font-bold">{String(timeLeft.minutes).padStart(2, '0')}</span>
               <span className="text-[10px] uppercase tracking-wide">Mins</span>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
+            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
               <span className="block text-2xl font-bold">{String(timeLeft.seconds).padStart(2, '0')}</span>
               <span className="text-[10px] uppercase tracking-wide">Secs</span>
             </div>

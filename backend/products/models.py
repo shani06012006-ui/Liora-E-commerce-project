@@ -14,12 +14,10 @@ class Category(models.Model):
 class Product(models.Model):
     CATEGORY_CHOICES = [
         ('dress', 'Dresses'),
-        ('ethnic', 'Ethnic Wear'),
-        ('western', 'Western Wear'),
-        ('traditional', 'Traditional'),
         ('casual', 'Casual Wear'),
         ('party', 'Party Wear'),
         ('office', 'Office Wear'),
+        ('aesthetic', 'Aesthetic'),
     ]
     
     STYLE_CHOICES = [

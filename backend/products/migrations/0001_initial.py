@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=200)),
                 ('description', models.TextField()),
-                ('category', models.CharField(choices=[('dress', 'Dresses'), ('ethnic', 'Ethnic Wear'), ('western', 'Western Wear'), ('traditional', 'Traditional'), ('casual', 'Casual Wear'), ('party', 'Party Wear'), ('office', 'Office Wear')], max_length=50)),
+                ('category', models.CharField(choices=[('dress', 'Dresses'), ('aesthetic', 'Aesthetic'), ('casual', 'Casual Wear'), ('party', 'Party Wear'), ('office', 'Office Wear')], max_length=50)),
                 ('price', models.DecimalField(decimal_places=2, max_digits=10)),
                 ('original_price', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
                 ('discount', models.IntegerField(default=0)),
