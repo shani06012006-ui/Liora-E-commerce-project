@@ -95,7 +95,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'liora_db',
         'USER': 'postgres',
-        'PASSWORD': os.getenv('sunilraj123'),  
+        'PASSWORD':'sunilraj123',  
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -189,8 +189,8 @@ REST_FRAMEWORK = {
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  # Increased from 1 day to 7 days
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  # Increased from 7 days to 30 days
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
@@ -208,8 +208,6 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.JSONSerializer'
 # CSRF settings
 CSRF_COOKIE_AGE = 1209600  # 2 weeks
 CSRF_COOKIE_HTTPONLY = False
-
-# Security settings for admin (but keep it convenient for development)
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 

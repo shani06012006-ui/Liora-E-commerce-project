@@ -11,14 +11,15 @@ class Cart(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ['user', 'product']
+        unique_together = ['user', 'product'] #same row
     
     def total_price(self):
         return self.product.price * self.quantity
     
     def __str__(self):
         return f"{self.user.username} - {self.product.name} x{self.quantity}"
-
+    
+#checkout mudincha aprm create agum
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),

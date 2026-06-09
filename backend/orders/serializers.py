@@ -4,7 +4,7 @@ from products.serializers import ProductSerializer
 
 class CartSerializer(serializers.ModelSerializer):
     product_details = ProductSerializer(source='product', read_only=True)
-    product_image = serializers.SerializerMethodField()
+    product_image = serializers.SerializerMethodField()   #custom filed
     total = serializers.SerializerMethodField()
     
     class Meta:

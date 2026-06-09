@@ -23,11 +23,9 @@ class ForgotPasswordView(APIView):
             user.reset_token_expires = timezone.now() + timedelta(hours=24)
             user.save()
             
-            # Send email (implement email sending)
-            # For now, just return the token
             return Response({
                 'message': 'Password reset link sent to your email',
-                'reset_token': reset_token  # Remove in production
+                'reset_token': reset_token  
             })
         except User.DoesNotExist:
             return Response({'error': 'No user found with this email'}, status=status.HTTP_404_NOT_FOUND)

@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView 
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny  #permision check
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from django.db.models import Sum, Count
@@ -11,7 +11,7 @@ from django.contrib.auth import get_user_model
 from .models import User
 from .serializers import UserSerializer, RegisterSerializer
 
-User = get_user_model()
+User = get_user_model()      #Settings la set panniruka User model
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]

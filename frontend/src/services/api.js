@@ -56,7 +56,7 @@ API.interceptors.response.use(
   }
 );
 
-// ==================== AUTH APIS ====================
+//AUTH APIS
 export const authAPI = {
   register: (data) => API.post('/register/', data),
   login: (data) => API.post('/login/', data),
@@ -67,7 +67,7 @@ export const authAPI = {
   }),
 };
 
-// ==================== PRODUCT APIS ====================
+//PRODUCT APIS
 export const productAPI = {
   getAll: (params) => API.get('/products/', { params }),
   getById: (id) => API.get(`/products/${id}/`),
@@ -75,7 +75,7 @@ export const productAPI = {
   search: (query) => API.get(`/products/?search=${query}`),
 };
 
-// ==================== CART APIS ====================
+//CART APIS
 export const cartAPI = {
   getCart: () => API.get('/cart/'),
   addToCart: (data) => API.post('/cart/', data),
@@ -83,28 +83,28 @@ export const cartAPI = {
   removeItem: (itemId) => API.delete(`/cart/${itemId}/`),
 };
 
-// ==================== ORDER APIS ====================
+// ORDER APIS 
 export const orderAPI = {
   checkout: (data) => API.post('/checkout/', data),
   getOrders: () => API.get('/orders/'),
   getOrderById: (id) => API.get(`/orders/${id}/`),
 };
 
-// ==================== WISHLIST APIS ====================
+//WISHLIST APIS
 export const wishlistAPI = {
   getWishlist: () => API.get('/wishlist/'),
   addToWishlist: (productId) => API.post('/wishlist/', { product_id: productId }),
   removeFromWishlist: (id) => API.delete(`/wishlist/${id}/`),
 };
 
-// ==================== REVIEW APIS ====================
+//REVIEW APIS
 export const reviewAPI = {
   getReviews: (productId) => API.get(`/reviews/${productId}/`),
   createReview: (productId, data) => API.post(`/reviews/${productId}/`, data),
   getUserReviews: () => API.get('/reviews/user_reviews/'),
 };
 
-// ==================== COUPON APIS ====================
+//COUPON APIS
 export const couponAPI = {
   applyCoupon: (code, total) => API.post('/coupons/apply/', { code, total }),
   getCoupons: () => API.get('/coupons/'),
