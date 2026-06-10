@@ -1,25 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ShoppingBagIcon, 
-  ArrowPathIcon, 
-  ChatBubbleLeftRightIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
-  EnvelopeIcon,
-  PhoneIcon,
-  ClockIcon,
-  MagnifyingGlassIcon,
-  TruckIcon,
-  CreditCardIcon,
-  ShieldCheckIcon,
-  ArrowLeftIcon,
-  UserIcon,
-  DocumentTextIcon,
-  GlobeAltIcon,
-  ScaleIcon,
-  CalculatorIcon
-} from '@heroicons/react/24/outline';
+import {ShoppingBagIcon, ArrowPathIcon, ChatBubbleLeftRightIcon,  ChevronDownIcon,  ChevronUpIcon,  EnvelopeIcon,  PhoneIcon,  ClockIcon,  MagnifyingGlassIcon,  TruckIcon,  CreditCardIcon,  ShieldCheckIcon,  ArrowLeftIcon,  UserIcon,  DocumentTextIcon,  GlobeAltIcon,  ScaleIcon,  CalculatorIcon} from '@heroicons/react/24/outline';
 
 const Help = () => {
   const [openFaq, setOpenFaq] = useState(null);

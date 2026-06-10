@@ -2,18 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { 
-  BellIcon, 
-  CheckCircleIcon, 
-  TruckIcon, 
-  ShoppingBagIcon,
-  HeartIcon,
-  TagIcon,
-  UserIcon,
-  CreditCardIcon,
-  XMarkIcon,
-  EyeIcon
-} from '@heroicons/react/24/outline';
+import { BellIcon,  CheckCircleIcon, TruckIcon, ShoppingBagIcon,  HeartIcon,  TagIcon,  UserIcon,  CreditCardIcon,  XMarkIcon,  EyeIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 const Notifications = () => {
@@ -222,7 +211,7 @@ const Notifications = () => {
         <div className="flex gap-6 flex-col md:flex-row">
           <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
           
-          {/* Notifications Content */}
+
           <div className="flex-1">
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               {/* Header */}
@@ -259,7 +248,7 @@ const Notifications = () => {
                 </div>
               </div>
 
-              {/* Filter Tabs */}
+    
               <div className="px-6 py-3 border-b border-gray-100 bg-gray-50">
                 <div className="flex flex-wrap gap-2">
                   {filters.map((filterItem) => (
@@ -302,12 +291,12 @@ const Notifications = () => {
                         className={`p-5 hover:bg-gray-50 transition group ${!notification.read ? 'bg-gray-50' : ''}`}
                       >
                         <div className="flex gap-4">
-                          {/* Icon */}
+                  
                           <div className={`${notification.bgColor} w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0`}>
                             <IconComponent className={`w-5 h-5 ${notification.iconColor}`} />
                           </div>
                           
-                          {/* Content */}
+             
                           <div className="flex-1 min-w-0">
                             <div className="flex justify-between items-start gap-2">
                               <div>
@@ -337,7 +326,7 @@ const Notifications = () => {
                               </div>
                             </div>
                             
-                            {/* Action Link */}
+                         
                             {notification.actionLink && (
                               <Link
                                 to={notification.actionLink}
@@ -349,7 +338,7 @@ const Notifications = () => {
                             )}
                           </div>
                           
-                          {/* Unread dot */}
+                       
                           {!notification.read && (
                             <div className="w-2 h-2 bg-gray-900 rounded-full mt-2 flex-shrink-0"></div>
                           )}
@@ -360,7 +349,7 @@ const Notifications = () => {
                 )}
               </div>
 
-              {/* Footer Stats */}
+          
               {notifications.length > 0 && (
                 <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 text-center">
                   <p className="text-xs text-gray-400">

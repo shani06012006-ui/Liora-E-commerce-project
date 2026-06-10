@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../services/api';
-
-
-import {
-  TruckIcon,
-  ArrowPathIcon,
-  ShieldCheckIcon,
-  CreditCardIcon,
-  ChevronRightIcon,
-  HeartIcon,
-} from '@heroicons/react/24/outline';
+import { TruckIcon,  ArrowPathIcon,  ShieldCheckIcon,  CreditCardIcon,  ChevronRightIcon,  HeartIcon } from '@heroicons/react/24/outline';
  
-/* ─────────────────────────────────────────
-   HERO
-───────────────────────────────────────── */
+
 const Hero = () => (
   <div className="relative h-screen w-full overflow-hidden bg-white">
     <div className="absolute inset-0 flex justify-center items-center">
@@ -25,7 +14,7 @@ const Hero = () => (
       />
     </div>
  
-    {/* Left Top Text */}
+  
     <div className="absolute left-16 top-32 z-20">
       <p className="text-xs uppercase tracking-[0.35em] text-black/70 leading-6">
         Fashion
@@ -36,7 +25,7 @@ const Hero = () => (
       </p>
     </div>
  
-    {/* Bottom Right Text */}
+  
     <div className="absolute right-16 bottom-24 z-20 text-right">
       <p className="text-xs uppercase tracking-[0.35em] text-black/70 leading-6">
         New
@@ -47,7 +36,6 @@ const Hero = () => (
       </p>
     </div>
  
-    {/* Scroll Indicator */}
     <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
       <svg className="w-5 h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -56,11 +44,7 @@ const Hero = () => (
   </div>
 );
  
-/* ─────────────────────────────────────────
-   CATEGORY STRIP  (GAZU-style)
-   Black bg · small square thumb left · text right
-   Three equal columns with dividers
-───────────────────────────────────────── */
+
 const CategorySection = () => {
   const categories = [
     {
@@ -96,7 +80,6 @@ const CategorySection = () => {
             className="flex-1 flex items-center gap-5 px-8 py-7 group transition-colors hover:bg-white/5"
             style={{ textDecoration: 'none' }}
           >
-            {/* Small square thumbnail */}
             <div className="flex-shrink-0 w-[90px] h-[110px] overflow-hidden">
               <img
                 src={cat.image}
@@ -105,7 +88,6 @@ const CategorySection = () => {
               />
             </div>
  
-            {/* Text block */}
             <div>
               <p
                 className="text-white font-semibold mb-1"
@@ -145,17 +127,12 @@ const CategorySection = () => {
   );
 };
  
-/* ─────────────────────────────────────────
-   NEW SEASON BANNER  (GAZU-style)
-   Light grey bg · big bold heading left ·
-   model photo filling right half
-───────────────────────────────────────── */
+
 const NewSeasonBanner = () => (
   <div
     className="relative w-full overflow-hidden"
     style={{ background: '#e8e5e0', minHeight: '520px' }}
   >
-    {/* Background model image fills right side */}
     <div className="absolute inset-0">
       <img
         src="1.jpg"
@@ -163,7 +140,6 @@ const NewSeasonBanner = () => (
         className="w-full h-full object-cover object-center"
         style={{ filter: 'grayscale(30%)' }}
       />
-      {/* Left fade so text is readable */}
       <div
         className="absolute inset-0"
         style={{
@@ -172,7 +148,6 @@ const NewSeasonBanner = () => (
       />
     </div>
  
-    {/* Text content — left aligned */}
     <div className="relative z-10 flex flex-col justify-center h-full px-16 py-20"
          style={{ minHeight: '520px' }}>
       <p
@@ -231,10 +206,7 @@ const NewSeasonBanner = () => (
     </div>
   </div>
 );
- 
-/* ─────────────────────────────────────────
-   FEATURES STRIP
-───────────────────────────────────────── */
+
 const FeaturesSection = () => {
   const features = [
     { icon: TruckIcon,       title: 'FAST DELIVERY',   description: 'Quick & safe delivery' },
@@ -281,14 +253,9 @@ const FeaturesSection = () => {
     </div>
   );
 };
- 
-/* ─────────────────────────────────────────
-   PRODUCT GRID
-───────────────────────────────────────── */
-// Product Section
+
 const ProductSection = ({ title, subtitle, link, products }) => {
   const getImageUrl = (product) => {
-    // First check if it's a fallback product with direct image URL
     if (product.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
       return product.image;
     }
@@ -357,9 +324,6 @@ const ProductSection = ({ title, subtitle, link, products }) => {
   );
 };
  
-/* ─────────────────────────────────────────
-   NEWSLETTER
-───────────────────────────────────────── */
 const NewsletterSection = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
@@ -432,9 +396,7 @@ const NewsletterSection = () => {
   );
 };
  
-/* ─────────────────────────────────────────
-   HOME PAGE
-───────────────────────────────────────── */
+
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
@@ -504,16 +466,12 @@ const Home = () => {
  
   return (
     <main>
-      {/* 1 ─ Hero */}
       <Hero />
  
-      {/* 2 ─ Category strip — black bg, small thumbs, GAZU style */}
       <CategorySection />
 
-       {/* 3 ─ New season banner */}
       <NewSeasonBanner />
  
-      {/* 4 ─ Best of Liora products */}
       <ProductSection
         title="Best of Liora"
         subtitle="Editor's Picks"
@@ -521,10 +479,8 @@ const Home = () => {
         products={displayProducts}
       />
  
-      {/* 6 ─ Features strip */}
       <FeaturesSection />
  
-      {/* 7 ─ Newsletter */}
       <NewsletterSection />
  
     </main>

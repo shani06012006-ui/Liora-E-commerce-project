@@ -3,18 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../redux/authSlice';
 import toast from 'react-hot-toast';
-import {
-  UserIcon,
-  HeartIcon,
-  ShoppingBagIcon,
-  MapPinIcon,
-  ShieldCheckIcon,
-  DocumentTextIcon,
-  QuestionMarkCircleIcon,
-  ArrowRightOnRectangleIcon,
-  BellIcon,
-  Cog6ToothIcon,
-} from '@heroicons/react/24/outline';
+import { UserIcon, HeartIcon, ShoppingBagIcon, MapPinIcon, ShieldCheckIcon, DocumentTextIcon, QuestionMarkCircleIcon, ArrowRightOnRectangleIcon, BellIcon, Cog6ToothIcon, } from '@heroicons/react/24/outline';
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const { user } = useSelector((state) => state.auth);
@@ -49,7 +38,6 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
   return (
     <div className="w-72 bg-white rounded-2xl shadow-sm p-4">
-      {/* User Info */}
       <div className="text-center mb-6 pb-4 border-b border-gray-100">
         <div className="w-20 h-20 rounded-full bg-gradient-to-r from-gray-700 to-gray-800 mx-auto mb-3 overflow-hidden flex items-center justify-center">
           {user?.profile_pic_url ? (

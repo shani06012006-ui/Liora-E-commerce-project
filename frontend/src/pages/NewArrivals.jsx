@@ -58,10 +58,8 @@ const NewArrivals = () => {
         </Link>
       </div>
 
-      {/* Zigzag Layout - Alternating Image and Text */}
       <div className="max-w-6xl mx-auto px-4 py-8">
-        
-        {/* Product 1 - Image Left, Text Right */}
+     
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 items-center">
           <div className="relative overflow-hidden bg-gray-100 aspect-[4/5]">
             <img 
@@ -95,7 +93,6 @@ const NewArrivals = () => {
           </div>
         </div>
 
-        {/* Product 2 - Text Left, Image Right */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 items-center">
           <div className="order-2 md:order-1 text-left">
             <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-3 tracking-wide">
@@ -129,7 +126,6 @@ const NewArrivals = () => {
           </div>
         </div>
 
-        {/* Product 3 - Image Left, Text Right */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 items-center">
           <div className="relative overflow-hidden bg-gray-100 aspect-[4/5]">
             <img 
@@ -163,7 +159,6 @@ const NewArrivals = () => {
           </div>
         </div>
 
-        {/* Product 4 - Text Left, Image Right */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 items-center">
           <div className="order-2 md:order-1 text-left">
             <h2 className="text-3xl md:text-4xl font-light text-gray-900 mb-3 tracking-wide">
@@ -197,7 +192,6 @@ const NewArrivals = () => {
           </div>
         </div>
 
-        {/* Discover More Link */}
         <div className="text-center mt-8 pt-8">
           <Link 
             to="/products" 

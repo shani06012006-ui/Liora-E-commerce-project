@@ -1,16 +1,7 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { orderAPI, productAPI } from '../services/api';
-import { 
-  ClockIcon, 
-  CheckCircleIcon, 
-  TruckIcon, 
-  ShoppingBagIcon,
-  XCircleIcon,
-  MapPinIcon,
-  PhoneIcon,
-  EyeIcon
-} from '@heroicons/react/24/outline';
+import { ClockIcon,  CheckCircleIcon, TruckIcon, ShoppingBagIcon,  XCircleIcon, MapPinIcon, PhoneIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -117,10 +108,8 @@ const Orders = () => {
             
             return (
               <div key={order.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
-                {/* Order Header with Product Image */}
                 <div className="bg-gray-50 px-6 py-4 border-b">
                   <div className="flex items-center gap-4">
-                    {/* Product Image */}
                     {firstImage && (
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
                         <img 
@@ -134,7 +123,7 @@ const Orders = () => {
                       </div>
                     )}
                     
-                    {/* Order Info */}
+                  
                     <div className="flex-1">
                       <div className="flex justify-between items-center flex-wrap gap-4">
                         <div>
@@ -156,7 +145,7 @@ const Orders = () => {
                   </div>
                 </div>
                 
-                {/* Status Bar */}
+              
                 <div className="px-6 py-3 border-b flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
@@ -179,7 +168,6 @@ const Orders = () => {
                   </button>
                 </div>
                 
-                {/* Order Items - Expandable */}
                 {selectedOrder?.id === order.id && (
                   <div className="p-6 border-b">
                     <h3 className="font-semibold text-primary mb-4">Order Items</h3>

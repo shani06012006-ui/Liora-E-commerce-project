@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
 from accounts.views import RegisterView, LoginView, UserProfileView
 from products.views import ProductViewSet
@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/checkout/', CheckoutView.as_view(), name='checkout'),
     path('api/orders/', OrderHistoryView.as_view(), name='orders'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/' , TokenObtainPairView.as_view()),
     path('api/reviews/<int:product_id>/', ReviewListView.as_view(), name='reviews'),
     path('api/', include(router.urls)),
 ]

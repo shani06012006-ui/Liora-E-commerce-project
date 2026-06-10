@@ -220,7 +220,7 @@ const ProductCard = ({ product, onAddToCart, onAddToWishlist, onRemoveFromWishli
               isInWishlist ? onRemoveFromWishlist(product.id) : onAddToWishlist(product.id);
             }}
             className="bs-pheart"
-          >
+          > 
             {isInWishlist ? '❤️' : '♡'}
           </button>
         </div>
