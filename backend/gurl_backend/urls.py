@@ -20,7 +20,7 @@ router.register('wishlist', WishlistViewSet, basename='wishlist')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/register/', RegisterView.as_view(), name='register'),
-    path('api/login/', LoginView.as_view(), name='login'),
+    path('api/Login/', LoginView.as_view(), name='Login'),
     path('api/profile/', UserProfileView.as_view(), name='profile'),
     path('api/cart/', CartView.as_view(), name='cart'), 
     path('api/cart/<int:item_id>/', CartView.as_view(), name='cart-item'),  

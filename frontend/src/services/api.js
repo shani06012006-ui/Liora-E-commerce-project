@@ -45,10 +45,10 @@ API.interceptors.response.use(
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           localStorage.removeItem('user');
-          window.location.href = '/login';
+          window.location.href = '/Login';
         }
       } else {
-        window.location.href = '/login';
+        window.location.href = '/Login';
       }
     }
     
@@ -59,7 +59,7 @@ API.interceptors.response.use(
 //AUTH APIS
 export const authAPI = {
   register: (data) => API.post('/register/', data),
-  login: (data) => API.post('/login/', data),
+  login: (data) => API.post('/Login/', data),
   getProfile: () => API.get('/profile/'),
   updateProfile: (data) => API.put('/profile/', data),
   updateProfilePicture: (formData) => API.put('/profile/', formData, {

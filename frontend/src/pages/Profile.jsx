@@ -117,7 +117,7 @@ const Profile = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <p className="text-gray-500">Please login to view profile</p>
-          <Link to="/login" className="inline-block mt-4 px-6 py-2 bg-gray-900 text-white text-sm uppercase tracking-wide hover:bg-gray-800 transition">
+          <Link to="/Login" className="inline-block mt-4 px-6 py-2 bg-gray-900 text-white text-sm uppercase tracking-wide hover:bg-gray-800 transition">
             Login
           </Link>
         </div>

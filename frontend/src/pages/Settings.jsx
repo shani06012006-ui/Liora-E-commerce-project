@@ -136,7 +136,7 @@ const Settings = () => {
       // API call for account deletion
       toast.success('Account deleted successfully');
       localStorage.clear();
-      window.location.href = '/login';
+      window.location.href = '/Login';
     } catch (error) {
       toast.error('Failed to delete account');
     } finally {

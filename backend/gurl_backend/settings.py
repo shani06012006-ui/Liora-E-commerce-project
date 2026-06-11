@@ -220,7 +220,7 @@ else:
     CSRF_COOKIE_SECURE = True
 
 # Keep user logged in
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/admin/Login/'
 LOGIN_REDIRECT_URL = '/admin/'
 
 AUTHENTICATION_BACKENDS = [

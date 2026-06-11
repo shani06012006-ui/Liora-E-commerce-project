@@ -221,7 +221,7 @@ const Navbar = () => {
                 )}
               </div>
             ) : (
-              <Link to="/login" className="text-sm uppercase tracking-wider text-gray-600 hover:text-gray-900 transition">
+              <Link to="/Login" className="text-sm uppercase tracking-wider text-gray-600 hover:text-gray-900 transition">
                 Login
               </Link>
             )}

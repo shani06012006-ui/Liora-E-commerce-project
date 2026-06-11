@@ -87,17 +87,17 @@ const AppContent = () => {
       <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
       <Route path="/help" element={<MainLayout><Help /></MainLayout>} />
       
-      <Route path="/login" element={!isAuthenticated ? <MainLayout><Login /></MainLayout> : <Navigate to="/" />} />
+      <Route path="/Login" element={!isAuthenticated ? <MainLayout><Login /></MainLayout> : <Navigate to="/" />} />
       <Route path="/register" element={!isAuthenticated ? <MainLayout><Register /></MainLayout> : <Navigate to="/" />} />
       
-      <Route path="/checkout" element={isAuthenticated ? <MainLayout><Checkout /></MainLayout> : <Navigate to="/login" />} />
-      <Route path="/address" element={isAuthenticated ? <MainLayout><Address /></MainLayout> : <Navigate to="/login" />} />
-      <Route path="/notifications" element={isAuthenticated ? <MainLayout><Notifications /></MainLayout> : <Navigate to="/login" />} />
-      <Route path="/wishlist" element={isAuthenticated ? <MainLayout><Wishlist /></MainLayout> : <Navigate to="/login" />} />
+      <Route path="/checkout" element={isAuthenticated ? <MainLayout><Checkout /></MainLayout> : <Navigate to="/Login" />} />
+      <Route path="/address" element={isAuthenticated ? <MainLayout><Address /></MainLayout> : <Navigate to="/Login" />} />
+      <Route path="/notifications" element={isAuthenticated ? <MainLayout><Notifications /></MainLayout> : <Navigate to="/Login" />} />
+      <Route path="/wishlist" element={isAuthenticated ? <MainLayout><Wishlist /></MainLayout> : <Navigate to="/Login" />} />
       
-      <Route path="/profile" element={isAuthenticated ? <ProfileLayout><Profile /></ProfileLayout> : <Navigate to="/login" />} />
-      <Route path="/settings" element={isAuthenticated ? <ProfileLayout><Settings /></ProfileLayout> : <Navigate to="/login" />} />
-      <Route path="/orders" element={isAuthenticated ? <MainLayout><Orders /></MainLayout> : <Navigate to="/login" />} />
+      <Route path="/profile" element={isAuthenticated ? <ProfileLayout><Profile /></ProfileLayout> : <Navigate to="/Login" />} />
+      <Route path="/settings" element={isAuthenticated ? <ProfileLayout><Settings /></ProfileLayout> : <Navigate to="/Login" />} />
+      <Route path="/orders" element={isAuthenticated ? <MainLayout><Orders /></MainLayout> : <Navigate to="/Login" />} />
 
     </Routes>
   );

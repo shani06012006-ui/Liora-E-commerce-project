@@ -23,10 +23,13 @@ class WishlistViewSet(viewsets.ModelViewSet):
         )
         
         if created:
-            return Response({'message': 'Added to wishlist'}, status=status.HTTP_201_CREATED)
+            return Response({ 
+                'id': wishlist_item.id, 
+                'message': 'Added to wishlist'}, 
+                status=status.HTTP_201_CREATED)
         return Response({'message': 'Already in wishlist'}, status=status.HTTP_200_OK)
     
     def destroy(self, request, pk=None):
         wishlist_item = get_object_or_404(Wishlist, id=pk, user=request.user)
-        wishlist_item.delete()
+        wishlist_item.delete()                                                                             #DB row removed
         return Response({'message': 'Removed from wishlist'}, status=status.HTTP_200_OK)

@@ -74,7 +74,7 @@ const ProductDetail = () => {
   const token = localStorage.getItem('access_token');
   if (!token) {
     toast.error('Please login to add items to cart');
-    navigate('/login');
+    navigate('/Login');
     return;
   }
 
@@ -96,7 +96,7 @@ const ProductDetail = () => {
   const token = localStorage.getItem('access_token');
   if (!token) {
     toast.error('Please login to buy');
-    navigate('/login');
+    navigate('/Login');
     return;
   }
 
@@ -114,7 +114,7 @@ const ProductDetail = () => {
   const token = localStorage.getItem('access_token');
   if (!token) {
     toast.error('Please login to add to wishlist');
-    navigate('/login');
+    navigate('/Login');
     return;
   }
 
@@ -124,8 +124,9 @@ const ProductDetail = () => {
       setIsInWishlist(false);
       toast.success('Removed from wishlist');
     } else {
-      await wishlistAPI.addToWishlist(product.id);
+      const response = await wishlistAPI.addToWishlist(product.id);
       setIsInWishlist(true);
+      setWishlistId(response.data.id);
       toast.success('Added to wishlist');
     }
   } catch (error) {
@@ -138,7 +139,7 @@ const submitReview = async (e) => {
   e.preventDefault();
   if (!user) {
     toast.error('Please login to submit a review');
-    navigate('/login');
+    navigate('/Login');
     return;
   }
   

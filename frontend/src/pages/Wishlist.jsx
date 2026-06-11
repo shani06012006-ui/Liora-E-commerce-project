@@ -60,7 +60,7 @@ const Wishlist = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       toast.error('Please login to buy');
-      navigate('/login');
+      navigate('/Login');
       return;
     }
     

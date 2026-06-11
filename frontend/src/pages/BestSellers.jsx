@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { productAPI, cartAPI, wishlistAPI } from '../services/api';
-import { useDispatch } from 'react-redux';
-import { setCart } from '../redux/cartSlice';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { productAPI, cartAPI, wishlistAPI } from "../services/api";
+import { useDispatch } from "react-redux";
+import { setCart } from "../redux/cartSlice";
+import toast from "react-hot-toast";
 
 /* ─── Font loader ─── */
 const FontLoader = () => (
@@ -189,56 +189,79 @@ const getImageUrl = (product) => {
   if (!product) return null;
   if (product.image_url) return product.image_url;
   if (product.image) {
-    if (product.image.startsWith('http') || product.image.startsWith('/') || product.image.startsWith('data:'))
+    if (
+      product.image.startsWith("http") ||
+      product.image.startsWith("/") ||
+      product.image.startsWith("data:")
+    )
       return product.image;
     return `http://localhost:8000${product.image}`;
   }
   return null;
 };
 
-const starStr = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+const starStr = (n) =>
+  "★".repeat(Math.round(n)) + "☆".repeat(5 - Math.round(n));
 
 /* ─── PRODUCT CARD ─── */
-const ProductCard = ({ product, onAddToCart, onAddToWishlist, onRemoveFromWishlist, isInWishlist, isAdding }) => {
+const ProductCard = ({
+  product,
+  onAddToCart,
+  onAddToWishlist,
+  onRemoveFromWishlist,
+    isInWishlist,
+  isAdding,
+}) => {
   const src = getImageUrl(product);
-  
+
   return (
     <div className="bs-pcard animate-scale">
-      <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
+      <Link to={`/product/${product.id}`} style={{ textDecoration: "none" }}>
         <div className="bs-pimg">
           <div className="bs-pimg-inner">
-            {src
-              ? <img src={src} alt={product.name} />
-              : <span style={{ fontSize: '8px', color: '#ccc' }}>Image</span>
-            }
+            {src ? (
+              <img src={src} alt={product.name} />
+            ) : (
+              <span style={{ fontSize: "8px", color: "#ccc" }}>Image</span>
+            )}
           </div>
-          {product.discount > 0 && <span className="bs-pbadge">{product.discount}% OFF</span>}
-          <button 
+          {product.discount > 0 && (
+            <span className="bs-pbadge">{product.discount}% OFF</span>
+          )}
+          <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              isInWishlist ? onRemoveFromWishlist(product.id) : onAddToWishlist(product.id);
+              isInWishlist
+                ? onRemoveFromWishlist(product.id)
+                : onAddToWishlist(product.id);
             }}
             className="bs-pheart"
-          > 
-            {isInWishlist ? '❤️' : '♡'}
+          >
+            {isInWishlist ? "❤️" : "♡"}
           </button>
         </div>
         <div className="bs-pinfo">
           <div className="bs-pstars">{starStr(product.rating || 5)}</div>
           <div className="bs-pname">{product.name}</div>
           <div>
-            <span className="bs-pprice">₹{product.price?.toLocaleString()}</span>
-            {product.original_price && <span className="bs-pold">₹{product.original_price?.toLocaleString()}</span>}
+            <span className="bs-pprice">
+              ₹{product.price?.toLocaleString()}
+            </span>
+            {product.original_price && (
+              <span className="bs-pold">
+                ₹{product.original_price?.toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
       </Link>
-      <button 
+      <button
         onClick={() => onAddToCart(product.id)}
         disabled={isAdding}
         className="bs-padd"
       >
-        {isAdding ? 'ADDING...' : 'ADD TO CART'}
+        {isAdding ? "ADDING..." : "ADD TO CART"}
       </button>
     </div>
   );
@@ -256,7 +279,10 @@ const RatedItem = ({ product, rank }) => {
       <div className="bs-r-info">
         <div className="bs-r-name">{product.name}</div>
         <div className="bs-r-stars">{starStr(product.rating || 5)}</div>
-        <div className="bs-r-rev">{product.review_count || Math.floor(Math.random() * 2000 + 500)} reviews</div>
+        <div className="bs-r-rev">
+          {product.review_count || Math.floor(Math.random() * 2000 + 500)}{" "}
+          reviews
+        </div>
       </div>
       <span className="bs-r-price">₹{product.price?.toLocaleString()}</span>
     </div>
@@ -269,14 +295,14 @@ const BestSellers = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
   const [wishlist, setWishlist] = useState(new Set());
   const [wishlistIds, setWishlistIds] = useState({});
   const [addingToCart, setAddingToCart] = useState(null);
 
-  useEffect(() => { 
-    fetchProducts(); 
+  useEffect(() => {
+    fetchProducts();
     fetchWishlist();
   }, []);
 
@@ -292,7 +318,7 @@ const BestSellers = () => {
   };
 
   const fetchWishlist = async () => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (!token) {
       setWishlist(new Set());
       setWishlistIds({});
@@ -300,12 +326,12 @@ const BestSellers = () => {
     }
     try {
       const res = await wishlistAPI.getWishlist();
-      console.log('Wishlist API response:', res.data);
-      
+      console.log("Wishlist API response:", res.data);
+
       const wishlistSet = new Set();
       const wishlistMap = {};
-      
-      res.data.forEach(item => {
+
+      res.data.forEach((item) => {
         const productId = item.product_details?.id || item.product;
         wishlistSet.add(productId);
         wishlistMap[productId] = item.id;
@@ -314,7 +340,7 @@ const BestSellers = () => {
       setWishlist(wishlistSet);
       setWishlistIds(wishlistMap);
     } catch (error) {
-      console.error('Error fetching wishlist:', error);
+      console.error("Error fetching wishlist:", error);
     }
   };
 
@@ -324,87 +350,150 @@ const BestSellers = () => {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
       const cartRes = await cartAPI.getCart();
       dispatch(setCart(cartRes.data));
-      window.dispatchEvent(new Event('cartUpdated'));
-      toast.success('Added to cart');
+      window.dispatchEvent(new Event("cartUpdated"));
+      toast.success("Added to cart");
     } catch (error) {
       console.log(error.response?.data);
-      toast.error('Failed to add to cart');
+      toast.error("Failed to add to cart");
     } finally {
       setAddingToCart(null);
     }
   };
 
   const addToWishlist = async (productId) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (!token) {
-      toast.error('Please login to add to wishlist');
-      navigate('/login');
+      toast.error("Please login to add to wishlist");
+      navigate("/Login");
       return;
     }
     try {
       await wishlistAPI.addToWishlist(productId);
       await fetchWishlist();
-      window.dispatchEvent(new Event('wishlistUpdated'));
-      toast.success('Added to wishlist');
+      window.dispatchEvent(new Event("wishlistUpdated"));
+      toast.success("Added to wishlist");
     } catch (error) {
-      console.error('Add to wishlist error:', error);
-      toast.error('Already in wishlist');
+      console.error("Add to wishlist error:", error);
+      toast.error("Already in wishlist");
     }
   };
 
   const removeFromWishlist = async (productId) => {
     const wishlistItemId = wishlistIds[productId];
-    console.log('Removing - Product ID:', productId, 'Wishlist ID:', wishlistItemId);
-    
+    console.log(
+      "Removing - Product ID:",
+      productId,
+      "Wishlist ID:",
+      wishlistItemId,
+    );
+
     if (!wishlistItemId) {
-      toast.error('Item not found in wishlist');
+      toast.error("Item not found in wishlist");
       return;
     }
-    
+
     try {
       await wishlistAPI.removeFromWishlist(wishlistItemId);
-      
-      setWishlist(prev => {
+
+      setWishlist((prev) => {
         const newSet = new Set(prev);
         newSet.delete(productId);
         return newSet;
       });
-      
-      setWishlistIds(prev => {
+
+      setWishlistIds((prev) => {
         const newMap = { ...prev };
         delete newMap[productId];
         return newMap;
       });
-      
-      window.dispatchEvent(new Event('wishlistUpdated'));
-      toast.success('Removed from wishlist');
+
+      window.dispatchEvent(new Event("wishlistUpdated"));
+      toast.success("Removed from wishlist");
     } catch (error) {
-      console.error('Remove error:', error);
-      toast.error('Failed to remove');
+      console.error("Remove error:", error);
+      toast.error("Failed to remove");
     }
   };
 
   const handleSubscribe = (e) => {
     e.preventDefault();
-    if (email) { setSubscribed(true); setEmail(''); setTimeout(() => setSubscribed(false), 3000); }
+    if (email) {
+      setSubscribed(true);
+      setEmail("");
+      setTimeout(() => setSubscribed(false), 3000);
+    }
   };
 
   const fallback = [
-    { id: 1, name: 'DENIM JACKET', price: 2499, original_price: 3499, discount: 28, rating: 5, image: 'https://i.pinimg.com/1200x/27/ea/c2/27eac2b4e982614e9dfc988f8d45cacd.jpg' },
-    { id: 2, name: 'TOM BOY', price: 5999, original_price: 8999, discount: 33, rating: 5, image: 'https://i.pinimg.com/736x/ea/84/f4/ea84f4b1bc02cdad15fb1b54c01a8cb2.jpg' },
-    { id: 3, name: 'CASUAL DRESS', price: 1299, original_price: 1999, discount: 35, rating: 5, image: 'https://i.pinimg.com/736x/30/ab/a4/30aba4e8ebd4e8fba0fa2d0f5ff121c3.jpg' },
-    { id: 4, name: 'PARTY GOWN', price: 3299, original_price: 4999, discount: 34, rating: 4, image: 'https://i.pinimg.com/736x/cb/f4/9c/cbf49c8a9181ccd495201a2eb28be1bd.jpg' },
+    {
+      id: 1,
+      name: "DENIM JACKET",
+      price: 2499,
+      original_price: 3499,
+      discount: 28,
+      rating: 5,
+      image:
+        "https://i.pinimg.com/1200x/27/ea/c2/27eac2b4e982614e9dfc988f8d45cacd.jpg",
+    },
+    {
+      id: 2,
+      name: "TOM BOY",
+      price: 5999,
+      original_price: 8999,
+      discount: 33,
+      rating: 5,
+      image:
+        "https://i.pinimg.com/736x/ea/84/f4/ea84f4b1bc02cdad15fb1b54c01a8cb2.jpg",
+    },
+    {
+      id: 3,
+      name: "CASUAL DRESS",
+      price: 1299,
+      original_price: 1999,
+      discount: 35,
+      rating: 5,
+      image:
+        "https://i.pinimg.com/736x/30/ab/a4/30aba4e8ebd4e8fba0fa2d0f5ff121c3.jpg",
+    },
+    {
+      id: 4,
+      name: "PARTY GOWN",
+      price: 3299,
+      original_price: 4999,
+      discount: 34,
+      rating: 4,
+      image:
+        "https://i.pinimg.com/736x/cb/f4/9c/cbf49c8a9181ccd495201a2eb28be1bd.jpg",
+    },
   ];
 
   const p = products.length >= 0 ? products : fallback;
   const mostLoved = p.slice(0, 4);
   const topRated = p.slice(0, 4);
 
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 32, height: 32, border: '2px solid #111', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-    </div>
-  );
+  if (loading)
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            border: "2px solid #111",
+            borderTopColor: "transparent",
+            borderRadius: "50%",
+            animation: "spin 0.8s linear infinite",
+          }}
+        />
+      </div>
+    );
 
   return (
     <>
@@ -414,24 +503,41 @@ const BestSellers = () => {
         <div className="bs-hero">
           <div className="bs-hero-left animate-slideLeft">
             <p className="bs-hero-tag">Our Best Sellers</p>
-            <h1 className="bs-hero-title">Loved<br />by Many</h1>
-            <p className="bs-hero-sub">Handpicked pieces our community keeps coming back to — timeless, effortless, endlessly wearable.</p>
-            <Link to="/dresses" className="bs-hero-btn">Shop Now</Link>
+            <h1 className="bs-hero-title">
+              Loved
+              <br />
+              by Many
+            </h1>
+            <p className="bs-hero-sub">
+              Handpicked pieces our community keeps coming back to — timeless,
+              effortless, endlessly wearable.
+            </p>
+            <Link to="/dresses" className="bs-hero-btn">
+              Shop Now
+            </Link>
           </div>
           <div className="bs-hero-right">
             <div className="bs-hcell">
               <span className="bs-hcell-badge">No. 1 Bestseller</span>
               <span className="bs-hcell-stars">★★★★★</span>
-              <img src="https://i.pinimg.com/736x/57/c3/9b/57c39b283206642be016d0420a8897aa.jpg" alt="Dress" />
+              <img
+                src="https://i.pinimg.com/736x/57/c3/9b/57c39b283206642be016d0420a8897aa.jpg"
+                alt="Dress"
+              />
               <span className="bs-hcell-label">Dress</span>
             </div>
             <div className="bs-hcell">
               <span className="bs-hcell-badge-ol">Top Rated</span>
-              <img src="https://i.pinimg.com/736x/cb/7d/16/cb7d165de29f4aa581f0a42c564acafb.jpg" alt="Jacket" />
+              <img
+                src="https://i.pinimg.com/736x/cb/7d/16/cb7d165de29f4aa581f0a42c564acafb.jpg"
+                alt="Jacket"
+              />
               <span className="bs-hcell-label">Jacket</span>
             </div>
             <div className="bs-hcell bs-hcell-wide">
-              <span className="bs-hcell-label">Most Loved — New Collection 2026</span>
+              <span className="bs-hcell-label">
+                Most Loved — New Collection 2026
+              </span>
             </div>
           </div>
         </div>
@@ -439,10 +545,10 @@ const BestSellers = () => {
         {/* Stats Section */}
         <div className="bs-stats">
           {[
-            { num: '4.9', label: 'Avg Rating', delay: 'delay-1' },
-            { num: '12k+', label: 'Happy Customers', delay: 'delay-2' },
-            { num: '280+', label: 'Bestselling Styles', delay: 'delay-3' },
-            { num: '98%', label: 'Would Recommend', delay: 'delay-4' }
+            { num: "4.9", label: "Avg Rating", delay: "delay-1" },
+            { num: "12k+", label: "Happy Customers", delay: "delay-2" },
+            { num: "280+", label: "Bestselling Styles", delay: "delay-3" },
+            { num: "98%", label: "Would Recommend", delay: "delay-4" },
           ].map((stat, i) => (
             <div key={i} className={`bs-stat animate-fadeUp ${stat.delay}`}>
               <div className="bs-stat-num">{stat.num}</div>
@@ -455,21 +561,54 @@ const BestSellers = () => {
         <div className="bs-about">
           <div className="bs-about-l animate-slideLeft">
             <p className="bs-sec-tag">About The Brand</p>
-            <h2 className="bs-sec-title">Fashion that<br />moves with you</h2>
-            <p className="bs-body-txt">Liora was born from a belief that elegance shouldn't come at the cost of comfort. Every piece is thoughtfully crafted — from fabric selection to final stitch — to feel as beautiful as it looks.</p>
+            <h2 className="bs-sec-title">
+              Fashion that
+              <br />
+              moves with you
+            </h2>
+            <p className="bs-body-txt">
+              Liora was born from a belief that elegance shouldn't come at the
+              cost of comfort. Every piece is thoughtfully crafted — from fabric
+              selection to final stitch — to feel as beautiful as it looks.
+            </p>
             <div className="bs-vals">
-              <div className="bs-val"><div className="bs-val-dot" /><span className="bs-val-txt">Ethically sourced fabrics</span></div>
-              <div className="bs-val"><div className="bs-val-dot" /><span className="bs-val-txt">Slow fashion — quality over quantity</span></div>
-              <div className="bs-val"><div className="bs-val-dot" /><span className="bs-val-txt">Designed for real women</span></div>
+              <div className="bs-val">
+                <div className="bs-val-dot" />
+                <span className="bs-val-txt">Ethically sourced fabrics</span>
+              </div>
+              <div className="bs-val">
+                <div className="bs-val-dot" />
+                <span className="bs-val-txt">
+                  Slow fashion — quality over quantity
+                </span>
+              </div>
+              <div className="bs-val">
+                <div className="bs-val-dot" />
+                <span className="bs-val-txt">Designed for real women</span>
+              </div>
             </div>
           </div>
           <div className="bs-about-r animate-slideRight">
             <p className="bs-sec-tag">Why We're Loved</p>
-            <h2 className="bs-sec-title">Timeless pieces,<br />enduring style</h2>
-            <p className="bs-body-txt">Our bestsellers earn their place through repeat purchases and genuine love — not just trends. Each item passes our community's high standards and sells season after season.</p>
+            <h2 className="bs-sec-title">
+              Timeless pieces,
+              <br />
+              enduring style
+            </h2>
+            <p className="bs-body-txt">
+              Our bestsellers earn their place through repeat purchases and
+              genuine love — not just trends. Each item passes our community's
+              high standards and sells season after season.
+            </p>
             <div className="bs-mini-grid">
-              <div className="bs-mini-card hover-lift"><div className="bs-mini-n">48h</div><div className="bs-mini-l">Fast Delivery</div></div>
-              <div className="bs-mini-card hover-lift"><div className="bs-mini-n">15d</div><div className="bs-mini-l">Easy Returns</div></div>
+              <div className="bs-mini-card hover-lift">
+                <div className="bs-mini-n">48h</div>
+                <div className="bs-mini-l">Fast Delivery</div>
+              </div>
+              <div className="bs-mini-card hover-lift">
+                <div className="bs-mini-n">15d</div>
+                <div className="bs-mini-l">Easy Returns</div>
+              </div>
             </div>
           </div>
         </div>
@@ -479,14 +618,21 @@ const BestSellers = () => {
           <div className="bs-section-hdr">
             <div>
               <p className="bs-sec-tag">Most Loved</p>
-              <h2 className="bs-sec-title" style={{ fontSize: 24, marginBottom: 0 }}>Community Favourites</h2>
+              <h2
+                className="bs-sec-title"
+                style={{ fontSize: 24, marginBottom: 0 }}
+              >
+                Community Favourites
+              </h2>
             </div>
-            <Link to="/dresses" className="bs-view-all">View All →</Link>
+            <Link to="/dresses" className="bs-view-all">
+              View All →
+            </Link>
           </div>
           <div className="bs-pgrid">
             {mostLoved.map((product) => (
-              <ProductCard 
-                key={product.id} 
+              <ProductCard
+                key={product.id}
                 product={product}
                 onAddToCart={addToCart}
                 onAddToWishlist={addToWishlist}
@@ -502,7 +648,12 @@ const BestSellers = () => {
         <div className="bs-rated">
           <div className="bs-rated-list">
             <p className="bs-sec-tag">Top Rated</p>
-            <h2 className="bs-sec-title" style={{ fontSize: 24, marginBottom: 24 }}>Rated by Our Community</h2>
+            <h2
+              className="bs-sec-title"
+              style={{ fontSize: 24, marginBottom: 24 }}
+            >
+              Rated by Our Community
+            </h2>
             {topRated.map((product, i) => (
               <RatedItem key={product.id} product={product} rank={i + 1} />
             ))}
@@ -510,15 +661,24 @@ const BestSellers = () => {
           <div className="bs-rated-side animate-fadeUp delay-2">
             <p className="bs-sec-tag">What They're Saying</p>
             <div className="bs-review hover-lift">
-              <p className="bs-review-txt">"Absolutely in love with this dress. The quality is unmatched and it fits perfectly. My most worn piece this season."</p>
+              <p className="bs-review-txt">
+                "Absolutely in love with this dress. The quality is unmatched
+                and it fits perfectly. My most worn piece this season."
+              </p>
               <span className="bs-review-auth">— Priya M., Verified Buyer</span>
             </div>
             <div className="bs-review hover-lift">
-              <p className="bs-review-txt">"Liora pieces never disappoint. This blouse has gotten more compliments than anything else I own."</p>
+              <p className="bs-review-txt">
+                "Liora pieces never disappoint. This blouse has gotten more
+                compliments than anything else I own."
+              </p>
               <span className="bs-review-auth">— Anika R., Verified Buyer</span>
             </div>
             <div className="bs-review hover-lift">
-              <p className="bs-review-txt">"The fabric quality is exceptional. Worth every rupee and I've already ordered two more pieces."</p>
+              <p className="bs-review-txt">
+                "The fabric quality is exceptional. Worth every rupee and I've
+                already ordered two more pieces."
+              </p>
               <span className="bs-review-auth">— Meera S., Verified Buyer</span>
             </div>
           </div>
@@ -527,10 +687,46 @@ const BestSellers = () => {
         {/* Features Section */}
         <div className="bs-feats">
           {[
-            { title: 'Fast Delivery', desc: 'Quick & safe, 48 hours', icon: <><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1"/><rect width="7" height="5" x="12" y="14" rx="1"/><path d="M18 18h2m-7 0H9m12.5-4.5L22 17"/></> },
-            { title: 'Easy Returns', desc: 'Hassle-free, 15 days', icon: <><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></> },
-            { title: 'Quality Assured', desc: 'Best fashion, best quality', icon: <><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></> },
-            { title: 'Secure Payment', desc: '100% secure checkout', icon: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></> },
+            {
+              title: "Fast Delivery",
+              desc: "Quick & safe, 48 hours",
+              icon: (
+                <>
+                  <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1" />
+                  <rect width="7" height="5" x="12" y="14" rx="1" />
+                  <path d="M18 18h2m-7 0H9m12.5-4.5L22 17" />
+                </>
+              ),
+            },
+            {
+              title: "Easy Returns",
+              desc: "Hassle-free, 15 days",
+              icon: (
+                <>
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </>
+              ),
+            },
+            {
+              title: "Quality Assured",
+              desc: "Best fashion, best quality",
+              icon: (
+                <>
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </>
+              ),
+            },
+            {
+              title: "Secure Payment",
+              desc: "100% secure checkout",
+              icon: (
+                <>
+                  <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </>
+              ),
+            },
           ].map((f, i) => (
             <div key={i} className="bs-feat animate-fadeUp delay-1">
               <div className="bs-feat-icon">
@@ -547,11 +743,28 @@ const BestSellers = () => {
           <div className="bs-nl-title">Subscribe to Liora</div>
           <div className="bs-nl-sub">Get 15% off your first order</div>
           {subscribed ? (
-            <div style={{ color: '#fff', fontSize: '11px', letterSpacing: '0.1em' }}>✓ Thanks for subscribing! Check your email.</div>
+            <div
+              style={{
+                color: "#fff",
+                fontSize: "11px",
+                letterSpacing: "0.1em",
+              }}
+            >
+              ✓ Thanks for subscribing! Check your email.
+            </div>
           ) : (
             <form className="bs-nl-form" onSubmit={handleSubscribe}>
-              <input type="email" className="bs-nl-input" placeholder="Your email address" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              <button type="submit" className="bs-nl-btn">Subscribe</button>
+              <input
+                type="email"
+                className="bs-nl-input"
+                placeholder="Your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <button type="submit" className="bs-nl-btn">
+                Subscribe
+              </button>
             </form>
           )}
         </div>
@@ -559,9 +772,10 @@ const BestSellers = () => {
         {/* Footer */}
         <div className="bs-footer">
           <div className="bs-footer-logo">LIORA</div>
-          <div className="bs-footer-copy">© 2026 Liora. All rights reserved.</div>
+          <div className="bs-footer-copy">
+            © 2026 Liora. All rights reserved.
+          </div>
         </div>
-
       </div>
     </>
   );

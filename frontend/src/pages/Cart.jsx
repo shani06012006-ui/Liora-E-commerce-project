@@ -67,7 +67,7 @@ const Cart = () => {
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <h2 className="text-2xl font-bold mb-4">Please Login to View Cart</h2>
         <p className="text-secondary mb-8">You need to be logged in to see your cart items</p>
-        <Link to="/login" className="bg-primary text-white px-6 py-3 rounded-lg">Login Now</Link>
+        <Link to="/Login" className="bg-primary text-white px-6 py-3 rounded-lg">Login Now</Link>
       </div>
     );
   }

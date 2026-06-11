@@ -91,7 +91,7 @@ const Sale = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       toast.error('Please login to add to wishlist');
-      navigate('/login');
+      navigate('/Login');
       return;
     }
     try {
@@ -121,7 +121,7 @@ const Sale = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       toast.error('Please login to add to cart');
-      navigate('/login');
+      navigate('/Login');
       return;
     }
     setAddingToCart(productId);
@@ -143,7 +143,7 @@ const Sale = () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       toast.error('Please login to buy');
-      navigate('/login');
+      navigate('/Login');
       return;
     }
     
