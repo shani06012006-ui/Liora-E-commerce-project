@@ -39,10 +39,10 @@ class LoginView(APIView):
             return Response({'error': 'Please provide both username and password'}, 
                           status=status.HTTP_400_BAD_REQUEST)
         
-        user = authenticate(username=username, password=password)
+        user = authenticate(username=username, password=password) #Indha username password correct ah?
         
         if user and user.is_active and not user.is_blocked:
-            refresh = RefreshToken.for_user(user)
+            refresh = RefreshToken.for_user(user)      #Indha user login aayitan , Token create pannu
             return Response({
                 'user': UserSerializer(user).data,
                 'refresh': str(refresh),

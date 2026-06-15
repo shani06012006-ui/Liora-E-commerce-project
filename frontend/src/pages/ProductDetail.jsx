@@ -126,15 +126,14 @@ const ProductDetail = () => {
     } else {
       const response = await wishlistAPI.addToWishlist(product.id);
       setIsInWishlist(true);
-      setWishlistId(response.data.id);
+      checkWishlistStatus();
       toast.success('Added to wishlist');
     }
   } catch (error) {
     toast.error('Failed to update wishlist');
   }
-  };
-
-  // Update the submitReview function
+  };                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
+  // Update the submitReview function 
 const submitReview = async (e) => {
   e.preventDefault();
   if (!user) {
@@ -333,11 +332,8 @@ const submitReview = async (e) => {
             </div>
           )}
 
-          {/* Action Buttons - Add to Cart & Buy Now side by side */}
           <div className="flex gap-3 mt-8">
-            <button
-              onClick={addToCart}
-              disabled={product.stock === 0 || addingToCart}
+            <button onClick={addToCart} disabled={product.stock === 0 || addingToCart}
               className={`flex-1 py-3 rounded-lg transition flex items-center justify-center gap-2 ${
                 product.stock === 0 || addingToCart
                   ? 'bg-gray-300 cursor-not-allowed'

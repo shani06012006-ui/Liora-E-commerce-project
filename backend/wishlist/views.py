@@ -24,7 +24,7 @@ class WishlistViewSet(viewsets.ModelViewSet):
         
         if created:
             return Response({ 
-                'id': wishlist_item.id, 
+                'id':wishlist_item.id, 
                 'message': 'Added to wishlist'}, 
                 status=status.HTTP_201_CREATED)
         return Response({'message': 'Already in wishlist'}, status=status.HTTP_200_OK)

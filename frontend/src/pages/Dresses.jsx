@@ -246,7 +246,7 @@ const Dresses = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
             {products.map((product) => {
               const isInWishlist = wishlist.has(product.id);
-              const isAdding = addingToCart === product.id;
+              const isAdding = addingToCart === product.id;   //Current product oda id um addingToCart value um same ah irukka nu check panrathu.
               
               return (
                 <div key={product.id} className="group">

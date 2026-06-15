@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404   #Product illa nah error
 from .models import Cart, Order, OrderItem
 from .serializers import CartSerializer, OrderSerializer
 from products.models import Product
-import uuid  #random unique vale generate panna
+import uuid  #random unique value generate panna
 
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
@@ -18,16 +18,16 @@ class CartView(APIView):
         return Response({'items': serializer.data, 'total': total})
     
     def post(self, request):
-        product_id = request.data.get('product_id')
-        quantity = request.data.get('quantity', 1)
+        product_id = request.data.get('product_id')   #Frontend anuppuna data-va edukkudhu
+        quantity = request.data.get('quantity', 1)    #Quantity measure pannuthu default ah 1 
         product = get_object_or_404(Product, id=product_id)
         
-        cart_item, created = Cart.objects.get_or_create(
+        cart_item, created = Cart.objects.get_or_create(     #Irundha eduthu va Illana create pannu
             user=request.user,
             product=product,
             defaults={'quantity': quantity}
         )
-        if not created:
+        if not created:                                   #alrady irrutha product marubadium increase agum
             cart_item.quantity += quantity
             cart_item.save()
         
@@ -35,7 +35,7 @@ class CartView(APIView):
     
     def put(self, request, item_id):
         cart_item = get_object_or_404(Cart, id=item_id, user=request.user)
-        cart_item.quantity = request.data.get('quantity', cart_item.quantity)
+        cart_item.quantity = request.data.get('quantity', cart_item.quantity)   #quantity undu nah update pannu , or existing quantity apdi aii irrukattum
         cart_item.save()
         return Response({'message': 'Cart updated'})
     

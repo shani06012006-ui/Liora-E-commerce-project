@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useNavigate, Link } from 'react-router-dom';  //link - Page refresh illama route change pannum
+import { useDispatch } from 'react-redux';             //Redux state update panna use pannuvom.
 import { authAPI } from '../services/api';
-import { setCredentials } from '../redux/authSlice';
+import { setCredentials } from '../redux/authSlice';   //User login aanadhuku apram Redux la save panna use pannuvom
 import toast from 'react-hot-toast';
 
-const Login = () => {
-  const [formData, setFormData] = useState({
+const Login = () => {     //Login component
+  const [formData, setFormData] = useState({     //form values save panna
     username: '',
     password: '',
   });
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);  //Login process nadakudha? - loading (false) nah setloading(true)
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleChange = (e) => {
+  const handleChange = (e) => {            //Form submit aana run aagum.
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -24,7 +24,7 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault();             //page refresh avoid panna
 
     console.log('LOGIN SUBMIT:', formData);
 
@@ -33,20 +33,20 @@ const Login = () => {
       return;
     }
 
-    setLoading(true);
+    setLoading(true);        //Login process start aachu (true) loading...
 
     try {
-      const response = await authAPI.login(formData);
+      const response = await authAPI.login(formData);    //Backend kitta login request anupu
 
       console.log('LOGIN RESPONSE:', response.data);
 
       const { access, refresh, user } = response.data;
 
-      if (access) localStorage.setItem('access_token', access);
+      if (access) localStorage.setItem('access_token', access);   //Browser la save pannuthu
       if (refresh) localStorage.setItem('refresh_token', refresh);
       if (user) localStorage.setItem('user', JSON.stringify(user));
 
-      dispatch(
+      dispatch(             //redux store la update pannuthu
         setCredentials({
           user: user || null,
           access,
@@ -95,8 +95,8 @@ const Login = () => {
         />
 
         <button
-          type="submit"
-          disabled={loading}
+          type="submit"                //form submit panna use aagura button
+          disabled={loading}          //loading=true na button-a click panna mudiyathu
           className="w-full bg-black text-white p-2"
         >
           {loading ? 'Logging in...' : 'Login'}

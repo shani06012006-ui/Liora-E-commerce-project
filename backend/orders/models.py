@@ -11,7 +11,7 @@ class Cart(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ['user', 'product'] #same row
+        unique_together = ['user', 'product'] #Ensures a user cannot have the same product in the cart more than once.
     
     def total_price(self):
         return self.product.price * self.quantity
