@@ -59,7 +59,7 @@ const CategorySection = () => {
       shopLabel: 'SHOP COLLECTIONS',
       desc: 'Curated for every you.',
       image: 'collections.jpg',
-      link: '/collections',
+      link: '/Collections',
     },
     {
       name: 'SIGNATURE STYLES',

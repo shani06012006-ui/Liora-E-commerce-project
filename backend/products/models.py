@@ -13,7 +13,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     CATEGORY_CHOICES = [
-        ('dress', 'Dresses'),
+        ('collections', 'Collections'),
         ('casual', 'Casual Wear'),
         ('party', 'Party Wear'),
         ('office', 'Office Wear'),
@@ -32,7 +32,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     discount = models.IntegerField(default=0)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='dress')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='collections')
     style = models.CharField(max_length=50, choices=STYLE_CHOICES, null=True, blank=True)
     stock = models.IntegerField(default=0)
     image = models.ImageField(upload_to='products/', blank=True, null=True)

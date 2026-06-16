@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='product',
             name='category',
-            field=models.CharField(choices=[('dress', 'Dresses'), ('casual', 'Casual Wear'), ('party', 'Party Wear'), ('office', 'Office Wear')], default='dress', max_length=50),
+            field=models.CharField(choices=[('collections', 'Collections'), ('casual', 'Casual Wear'), ('party', 'Party Wear'), ('office', 'Office Wear')], default='dress', max_length=50),
         ),
         migrations.AlterField(
             model_name='product',

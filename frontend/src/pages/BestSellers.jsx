@@ -512,7 +512,7 @@ const BestSellers = () => {
               Handpicked pieces our community keeps coming back to — timeless,
               effortless, endlessly wearable.
             </p>
-            <Link to="/dresses" className="bs-hero-btn">
+            <Link to="/Collections" className="bs-hero-btn">
               Shop Now
             </Link>
           </div>
@@ -625,7 +625,7 @@ const BestSellers = () => {
                 Community Favourites
               </h2>
             </div>
-            <Link to="/dresses" className="bs-view-all">
+            <Link to="/Collections" className="bs-view-all">
               View All →
             </Link>
           </div>

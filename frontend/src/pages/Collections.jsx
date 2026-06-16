@@ -7,13 +7,13 @@ import { HeartIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outlin
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
 
-const Dresses = () => {
+const collections = () => {
   const { style } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState('Dresses');
+  const [title, setTitle] = useState('Collections');
   const [wishlist, setWishlist] = useState(new Set());
   const [wishlistIds, setWishlistIds] = useState({});
   const [addingToCart, setAddingToCart] = useState(null);
@@ -23,44 +23,35 @@ const Dresses = () => {
     fetchWishlist();
   }, [style]);
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      let params = { category: 'dress' };
-      
-      switch(style) {
-        case 'party':
-          setTitle('Party Dresses');
-          params.style = 'party';
-          break;
-        case 'casual':
-          setTitle('Casual Dresses');
-          params.style = 'casual';
-          break;
-        case 'office-wear':
-          setTitle('Office Wear Dresses');
-          params.style = 'office';
-          break;
-        case 'aesthetic':
-          setTitle('Aesthetic Dresses');
-          params.style = 'aesthetic';
-          break;
-        default:
-          setTitle('Dresses');
-      }
-      
-      const res = await productAPI.getAll(params);
-      setProducts(res.data);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast.error('Failed to load products');
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const fetchWishlist = async () => {
-    const token = localStorage.getItem('access_token');
+const fetchProducts = async () => {
+  setLoading(true);
+
+  try {
+    const res = await productAPI.getAll();
+
+    let filteredProducts = res.data;
+
+    if (style) {
+      filteredProducts = res.data.filter(
+        product =>
+          product.style &&
+          product.style.toLowerCase() === style.toLowerCase()
+      );
+    }
+
+    setProducts(filteredProducts);
+
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    toast.error("Failed to load products");
+  } finally {
+    setLoading(false);
+  }
+};
+
+const fetchWishlist = async () => {
+  const token = localStorage.getItem('access_token');
     if (!token) {
       setWishlist(new Set());
       setWishlistIds({});
@@ -82,7 +73,7 @@ const Dresses = () => {
     }
   };
 
-  const addToWishlist = async (productId) => {
+const addToWishlist = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       toast.error('Please login to add to wishlist');
@@ -177,11 +168,11 @@ const Dresses = () => {
 
   // Categories for filter bar
   const categories = [
-    { name: 'ALL DRESSES', path: '/dresses', active: !style },
-    { name: 'PARTY', path: '/dresses/party', active: style === 'party' },
-    { name: 'CASUAL', path: '/dresses/casual', active: style === 'casual' },
-    { name: 'OFFICE WEAR', path: '/dresses/office-wear', active: style === 'office-wear' },
-    { name: 'AESTHETIC', path: '/dresses/aesthetic', active: style === 'aesthetic' },
+  { name: 'ALL Collections', path: '/Collections', active: !style },
+  { name: 'PARTY', path: '/Collections/party', active: style === 'party' },
+  { name: 'CASUAL', path: '/Collections/casual', active: style === 'casual' },
+  { name: 'OFFICE WEAR', path: '/Collections/office', active: style === 'office' },
+  { name: 'AESTHETIC', path: '/Collections/aesthetic', active: style === 'aesthetic' },
   ];
 
   if (loading) {
@@ -236,7 +227,7 @@ const Dresses = () => {
         {products.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">👗</div>
-            <h3 className="text-xl font-light text-gray-700 mb-2">No dresses found</h3>
+            <h3 className="text-xl font-light text-gray-700 mb-2">No Products found</h3>
             <p className="text-gray-500 mb-6">Check back later for new arrivals!</p>
             <Link to="/new-arrivals" className="inline-block bg-gray-900 text-white px-6 py-2 text-sm uppercase tracking-wide hover:bg-gray-800 transition">
               SHOP NEW ARRIVALS
@@ -342,4 +333,4 @@ const Dresses = () => {
   );
 };
 
-export default Dresses;
+export default collections;

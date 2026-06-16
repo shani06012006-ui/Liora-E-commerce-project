@@ -22,7 +22,7 @@ import Orders from './pages/Orders';
 import OrderSuccess from './pages/OrderSuccess';
 import Wishlist from './pages/Wishlist';
 import NewArrivals from './pages/NewArrivals';
-import Dresses from './pages/Dresses';
+import Collections from './pages/Collections';
 import BestSellers from './pages/BestSellers';
 import Sale from './pages/Sale';
 
@@ -70,8 +70,8 @@ const AppContent = () => {
       <Route path="/new-arrivals" element={<MainLayout><NewArrivals /></MainLayout>} />
       <Route path="/new-arrivals/:subcategory" element={<MainLayout><NewArrivals /></MainLayout>} />
       
-      <Route path="/dresses" element={<MainLayout><Dresses /></MainLayout>} />
-      <Route path="/dresses/:style" element={<MainLayout><Dresses /></MainLayout>} />
+      <Route path="/collections" element={<MainLayout><Collections /></MainLayout>} />
+      <Route path="/collections/:style" element={<MainLayout><Collections /></MainLayout>} />
       
       <Route path="/best-sellers" element={<MainLayout><BestSellers /></MainLayout>} />
       <Route path="/best-sellers/:category" element={<MainLayout><BestSellers /></MainLayout>} />

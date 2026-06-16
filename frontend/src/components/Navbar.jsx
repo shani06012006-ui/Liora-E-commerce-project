@@ -123,7 +123,7 @@ const Navbar = () => {
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && searchTerm.trim()) {
-      navigate(`/dresses?search=${encodeURIComponent(searchTerm)}`);
+      navigate(`/Collections?search=${encodeURIComponent(searchTerm)}`);
       setSearchTerm('');
       setIsSearchOpen(false);
     }
@@ -143,8 +143,8 @@ const Navbar = () => {
             <Link to="/new-arrivals" className="text-gray-600 hover:text-gray-900 transition text-sm uppercase tracking-wider">
               New Arrivals
             </Link>
-            <Link to="/dresses" className="text-gray-600 hover:text-gray-900 transition text-sm uppercase tracking-wider">
-              Dresses
+            <Link to="/Collections" className="text-gray-600 hover:text-gray-900 transition text-sm uppercase tracking-wider">
+              Collections
             </Link>
             <Link to="/best-sellers" className="text-gray-600 hover:text-gray-900 transition text-sm uppercase tracking-wider">
               Best Sellers

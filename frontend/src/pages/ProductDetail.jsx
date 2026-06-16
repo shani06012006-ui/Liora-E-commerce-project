@@ -193,7 +193,7 @@ const submitReview = async (e) => {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <p className="text-gray-500">Product not found.</p>
-        <Link to="/dresses" className="inline-block mt-4 text-gray-900 hover:text-gray-600">Back to Shop</Link>
+        <Link to="/Collections" className="inline-block mt-4 text-gray-900 hover:text-gray-600">Back to Shop</Link>
       </div>
     );
   }
@@ -204,7 +204,7 @@ const submitReview = async (e) => {
       <div className="mb-6 text-sm text-gray-500">
         <Link to="/" className="hover:text-gray-900">Home</Link>
         <span className="mx-2">/</span>
-        <Link to="/dresses" className="hover:text-gray-900">Dresses</Link>
+        <Link to="/Collections" className="hover:text-gray-900">Collections</Link>
         <span className="mx-2">/</span>
         <span className="text-gray-900">{product.name}</span>
       </div>

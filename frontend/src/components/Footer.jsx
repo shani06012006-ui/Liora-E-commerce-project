@@ -19,7 +19,7 @@ const Footer = () => {
   const footerLinks = {
     Shop: [
       { name: 'New Arrivals', link: '/new-arrivals' },
-      { name: 'Dresses', link: '/dresses' },
+      { name: 'Collections', link: '/Collections' },
       { name: 'Best Sellers', link: '/best-sellers' },
       { name: 'Sale', link: '/sale' },
     ],

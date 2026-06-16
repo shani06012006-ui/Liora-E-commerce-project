@@ -103,7 +103,7 @@ const Wishlist = () => {
         <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
           <HeartIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 mb-4">Your wishlist is empty</p>
-          <Link to="/dresses" className="inline-block bg-gray-900 text-white px-6 py-2 text-sm uppercase tracking-wide hover:bg-gray-800 transition">
+          <Link to="/Collections" className="inline-block bg-gray-900 text-white px-6 py-2 text-sm uppercase tracking-wide hover:bg-gray-800 transition">
             Start Shopping
           </Link>
         </div>

@@ -185,7 +185,7 @@ const OrderSuccess = () => {
         {/* Action Buttons - Black & White */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link 
-            to="/dresses" 
+            to="/Collections" 
             className="bg-gray-900 text-white px-8 py-3 text-center text-xs uppercase tracking-wider font-medium hover:bg-gray-800 transition inline-flex items-center justify-center gap-2"
           >
             Continue Shopping

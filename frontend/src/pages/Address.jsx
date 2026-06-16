@@ -204,7 +204,7 @@ const Address = () => {
     
     if (addressToDelete.is_default) {
       const confirmDelete = window.confirm(
-        '⚠️ This is your default address. Deleting it will remove it from your profile. Are you sure?'
+        'This is your default address. Deleting it will remove it from your profile. Are you sure?'
       );
       
       if (!confirmDelete) return;

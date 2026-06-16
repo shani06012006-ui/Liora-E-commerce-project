@@ -164,7 +164,7 @@ const Sale = () => {
   };
 
   const categories = [
-    { value: 'dress', label: 'DRESSES' },
+    { value: 'dress', label: 'COLLECTIONS' },
   ];
 
   const sortOptions = [

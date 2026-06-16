@@ -78,7 +78,7 @@ const Cart = () => {
       <div className="text-6xl mb-4">🛒</div>
       <h2 className="text-2xl font-serif text-primary mb-4">Your Cart is Empty</h2>
       <p className="text-secondary mb-8">Looks like you haven't added any items yet</p>
-      <Link to="/dresses" className="bg-primary text-white px-6 py-3 rounded-lg">Continue Shopping</Link>
+      <Link to="/Collections" className="bg-primary text-white px-6 py-3 rounded-lg">Continue Shopping</Link>
     </div>
   );
 }
