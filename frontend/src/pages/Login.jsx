@@ -1,70 +1,67 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';  //link - Page refresh illama route change pannum
-import { useDispatch } from 'react-redux';             //Redux state update panna use pannuvom.
+import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
-import { setCredentials } from '../redux/authSlice';   //User login aanadhuku apram Redux la save panna use pannuvom
+import { setCredentials } from '../redux/authSlice';
 import toast from 'react-hot-toast';
 
-const Login = () => {     //Login component
-  const [formData, setFormData] = useState({     //form values save panna
+const Login = () => {
+  const [formData, setFormData] = useState({
     username: '',
     password: '',
   });
 
-  const [loading, setLoading] = useState(false);  //Login process nadakudha? - loading (false) nah setloading(true)
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleChange = (e) => {            //Form submit aana run aagum.
-    setFormData((prev) => ({
-      ...prev,
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
       [e.target.name]: e.target.value,
-    }));
+    });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();             //page refresh avoid panna
+    e.preventDefault();
 
-    console.log('LOGIN SUBMIT:', formData);
+    const { username, password } = formData;
 
-    if (!formData.username || !formData.password) {
-      toast.error('Enter username and password');
-      return;
+    if (!username || !password) {
+      return toast.error('Enter username and password');
     }
 
-    setLoading(true);        //Login process start aachu (true) loading...
+    setLoading(true);
 
     try {
-      const response = await authAPI.login(formData);    //Backend kitta login request anupu
+      const { data } = await authAPI.login(formData);
 
-      console.log('LOGIN RESPONSE:', response.data);
+      const { access, refresh, user } = data;
 
-      const { access, refresh, user } = response.data;
+      dispatch(setCredentials({ user, access }));
 
-      if (access) localStorage.setItem('access_token', access);   //Browser la save pannuthu
-      if (refresh) localStorage.setItem('refresh_token', refresh);
-      if (user) localStorage.setItem('user', JSON.stringify(user));
+      if (refresh) {
+        localStorage.setItem('refresh_token', refresh);
+      }
 
-      dispatch(             //redux store la update pannuthu
-        setCredentials({
-          user: user || null,
-          access,
-        })
+      toast.success(
+        user?.username
+          ? `Welcome ${user.username}`
+          : 'Login successful'
       );
-
-      toast.success(user?.username ? `Welcome ${user.username}` : 'Login successful');
 
       navigate('/');
     } catch (error) {
-      console.error('LOGIN ERROR:', error);
+      let message = 'Login failed';
 
-      const msg =
-        error?.response?.data?.detail ||
-        error?.response?.data?.error ||
-        'Login failed';
+      if (error.response?.data?.detail) {
+        message = error.response.data.detail;
+      } else if (error.response?.data?.error) {
+        message = error.response.data.error;
+      }
 
-      toast.error(msg);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -72,8 +69,10 @@ const Login = () => {     //Login component
 
   return (
     <div className="min-h-screen flex items-center justify-center">
-      <form onSubmit={handleSubmit} className="p-6 border rounded-md w-96">
-
+      <form
+        onSubmit={handleSubmit}
+        className="w-96 p-6 border rounded-md"
+      >
         <h2 className="text-xl mb-4">Login</h2>
 
         <input
@@ -95,8 +94,8 @@ const Login = () => {     //Login component
         />
 
         <button
-          type="submit"                //form submit panna use aagura button
-          disabled={loading}          //loading=true na button-a click panna mudiyathu
+          type="submit"
+          disabled={loading}
           className="w-full bg-black text-white p-2"
         >
           {loading ? 'Logging in...' : 'Login'}
