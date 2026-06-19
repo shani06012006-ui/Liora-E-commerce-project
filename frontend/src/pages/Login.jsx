@@ -73,7 +73,7 @@ const Login = () => {
         onSubmit={handleSubmit}
         className="w-96 p-6 border rounded-md"
       >
-        <h2 className="text-xl mb-4">Login</h2>
+        <button type= "submit">Login</button>
 
         <input
           type="text"
