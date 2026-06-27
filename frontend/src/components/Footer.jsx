@@ -1,38 +1,23 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { Link } from "react-router-dom";
 
 const Footer = () => {
-  const [email, setEmail] = useState('');
-  const [ setIsSubscribed] = useState(false);
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (email) {
-      setIsSubscribed(true);
-      toast.success('Thanks for subscribing!');
-      setEmail('');
-      setTimeout(() => setIsSubscribed(false), 3000);
-    }
-  };
-
   const footerLinks = {
     Shop: [
-      { name: 'New Arrivals', link: '/new-arrivals' },
-      { name: 'Collections', link: '/Collections' },
-      { name: 'Best Sellers', link: '/best-sellers' },
-      { name: 'Sale', link: '/sale' },
+      { name: "New Arrivals", link: "/new-arrivals" },
+      { name: "Collections", link: "/Collections" },
+      { name: "Best Sellers", link: "/best-sellers" },
+      { name: "Sale", link: "/sale" },
     ],
     Support: [
-      { name: 'Help & Support', link: '/help' },
-      { name: 'Privacy Policy', link: '/privacy' },
-      { name: 'Terms & Conditions', link: '/Terms' },
-      { name: 'Returns & Exchanges', link: '/returns' },
+      { name: "Help & Support", link: "/help" },
+      { name: "Privacy Policy", link: "/privacy" },
+      { name: "Terms & Conditions", link: "/Terms" },
+      { name: "Returns & Exchanges", link: "/returns" },
     ],
     Contact: [
-      { name: 'support@liora.com', link: 'mailto:support@liora.com' },
-      { name: '+91 98765 43210', link: 'tel:+919876543210' },
-      { name: 'Mon–Sat, 9AM–6PM', link: '#' },
+      { name: "support@liora.com", link: "mailto:support@liora.com" },
+      { name: "+91 98765 43210", link: "tel:+919876543210" },
+      { name: "Mon–Sat, 9AM–6PM", link: "#" },
     ],
   };
 
@@ -47,33 +32,26 @@ const Footer = () => {
               Liora
             </h3>
             <p className="text-gray-600 text-sm mb-6 leading-relaxed">
-              Fashion that moves with you. Discover timeless pieces that define your style.
+              Fashion that moves with you. Discover timeless pieces that define
+              your style.
             </p>
-            <form onSubmit={handleSubscribe} className="mb-6">
-              <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:border-gray-900"
-              required
-            />
 
-              <button type="submit"
-                className="mt-3 w-full bg-gray-900 text-white py-2 text-sm rounded-md hover:bg-gray-800 transition">
-                  Subscribe
-              </button>
-            </form>
-            <div className="flex gap-5">
-              <a href="#" className="text-gray-500 hover:text-gray-900 transition font-medium text-sm">
-                Instagram
-              </a>
-              <a href="#" className="text-gray-500 hover:text-gray-900 transition font-medium text-sm">
-                Facebook
-              </a>
-              <a href="#" className="text-gray-500 hover:text-gray-900 transition font-medium text-sm">
-                Pinterest
-              </a>
+            <div className="flex gap-5 items-center">
+                <img
+                  src="/instagram.jpg"
+                  alt="Instagram"
+                  className="w-12 h-9 hover:opacity-70 transition"
+                />
+                <img
+                  src="/facebook.jpg"
+                  alt="Facebook"
+                  className="w-12 h-12 hover:opacity-70 transition"
+                />
+                <img
+                  src="/pinterest.jpg"
+                  alt="Pinterest"
+                  className="w-9 h-9 hover:opacity-70 transition"
+                />
             </div>
           </div>
 
@@ -123,7 +101,8 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.Contact.map((link, idx) => (
                 <li key={idx}>
-                  {link.link.startsWith('mailto:') || link.link.startsWith('tel:') ? (
+                  {link.link.startsWith("mailto:") ||
+                  link.link.startsWith("tel:") ? (
                     <a
                       href={link.link}
                       className="text-gray-500 hover:text-gray-900 transition font-medium text-sm"
@@ -143,16 +122,28 @@ const Footer = () => {
         <div className="border-t-2 border-gray-200 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="flex gap-6 text-sm">
-              <Link to="/terms" className="text-gray-500 hover:text-gray-900 transition font-medium">
+              <Link
+                to="/terms"
+                className="text-gray-500 hover:text-gray-900 transition font-medium"
+              >
                 Terms & Conditions
               </Link>
-              <Link to="/privacy" className="text-gray-500 hover:text-gray-900 transition font-medium">
+              <Link
+                to="/privacy"
+                className="text-gray-500 hover:text-gray-900 transition font-medium"
+              >
                 Privacy Policy
               </Link>
-              <Link to="/shipping" className="text-gray-500 hover:text-gray-900 transition font-medium">
+              <Link
+                to="/shipping"
+                className="text-gray-500 hover:text-gray-900 transition font-medium"
+              >
                 Shipping Policy
               </Link>
-              <Link to="/returns" className="text-gray-500 hover:text-gray-900 transition font-medium">
+              <Link
+                to="/returns"
+                className="text-gray-500 hover:text-gray-900 transition font-medium"
+              >
                 Return Policy
               </Link>
             </div>
