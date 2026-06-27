@@ -125,7 +125,7 @@ const Navbar = () => {
  
           {/* Logo */}
           <Link to="/" className="text-2xl font-serif font-light tracking-wide text-gray-900">
-            𝐿𝒾𝑜𝓇𝒶
+            L I O R A
           </Link>
  
           {/* Navigation Links */}
@@ -215,13 +215,7 @@ const Navbar = () => {
                     >
                       My Orders
                     </Link>
-                    <Link
-                      to="/wishlist"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      onClick={() => uiDispatch({ type: 'SET_DROPDOWN', payload: false })}
-                    >
-                      My Wishlist
-                    </Link>
+
                     <hr className="my-1" />
                     <button
                       onClick={handleLogout}

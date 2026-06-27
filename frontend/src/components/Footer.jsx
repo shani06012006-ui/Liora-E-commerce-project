@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
 const Footer = () => {
   const [email, setEmail] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [ setIsSubscribed] = useState(false);
 
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -49,6 +49,21 @@ const Footer = () => {
             <p className="text-gray-600 text-sm mb-6 leading-relaxed">
               Fashion that moves with you. Discover timeless pieces that define your style.
             </p>
+            <form onSubmit={handleSubscribe} className="mb-6">
+              <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full border border-gray-300 px-3 py-2 text-sm rounded-md focus:outline-none focus:border-gray-900"
+              required
+            />
+
+              <button type="submit"
+                className="mt-3 w-full bg-gray-900 text-white py-2 text-sm rounded-md hover:bg-gray-800 transition">
+                  Subscribe
+              </button>
+            </form>
             <div className="flex gap-5">
               <a href="#" className="text-gray-500 hover:text-gray-900 transition font-medium text-sm">
                 Instagram

@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider, useSelector } from 'react-redux';  //Provider- Entire app ku redux store iku data share panna.  useSelector → Redux la irundhu data edukka.
 import { Toaster } from 'react-hot-toast';

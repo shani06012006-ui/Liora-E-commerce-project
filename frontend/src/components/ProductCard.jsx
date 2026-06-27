@@ -1,6 +1,4 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import { HeartIcon } from '@heroicons/react/24/outline';
 
 const ProductCard = ({ product }) => {
   const getImageUrl = (product) => {
