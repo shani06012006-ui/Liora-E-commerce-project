@@ -9,12 +9,18 @@ import toast from 'react-hot-toast';
  
 const uiReducer = (state, action) => {
   switch (action.type) {
-    case 'SET_WISHLIST_COUNT': return { ...state, wishlistCount: action.payload };
-    case 'SET_DROPDOWN':       return { ...state, isDropdownOpen: action.payload };
-    case 'SET_SEARCH_OPEN':    return { ...state, isSearchOpen: action.payload };
-    case 'SET_SEARCH_TERM':    return { ...state, searchTerm: action.payload };
-    case 'LOGOUT':             return { ...state, wishlistCount: 0, isDropdownOpen: false };
-    default:                   return state;
+    case 'SET_WISHLIST_COUNT': 
+     return { ...state, wishlistCount: action.payload };
+    case 'SET_DROPDOWN':       
+     return { ...state, isDropdownOpen: action.payload };
+    case 'SET_SEARCH_OPEN':    
+     return { ...state, isSearchOpen: action.payload };
+    case 'SET_SEARCH_TERM':    
+     return { ...state, searchTerm: action.payload };
+    case 'LOGOUT':             
+     return { ...state, wishlistCount: 0, isDropdownOpen: false };
+    default:                   
+     return state;
   }
 };
  

@@ -4,109 +4,92 @@ import { useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
 import toast from 'react-hot-toast';
-
+ 
 const Login = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
-
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
+ 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const { username, password } = formData;
-
+ 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+ 
     if (!username || !password) {
-      return toast.error('Enter username and password');
-    }
-
+      toast.error('Enter username and password');
+      return; //Function-ah immediately stop pannum
+    } 
+ 
     setLoading(true);
-
     try {
-      const { data } = await authAPI.login(formData);
-
-      const { access, refresh, user } = data;
-
-      dispatch(setCredentials({ user, access }));
-
-      if (refresh) {
-        localStorage.setItem('refresh_token', refresh);
+      const response = await authAPI.login({ username, password });
+ 
+      dispatch(setCredentials({
+        user: response.data.user,
+        access: response.data.access,
+      }));
+ 
+      if (response.data.refresh) {
+        localStorage.setItem('refresh_token', response.data.refresh);
       }
-
-      toast.success(
-        user?.username
-          ? `Welcome ${user.username}`
-          : 'Login successful'
-      );
-
+ 
+      toast.success(`Welcome ${response.data.user?.username || ''}`);
       navigate('/');
+ 
     } catch (error) {
-      let message = 'Login failed';
-
-      if (error.response?.data?.detail) {
-        message = error.response.data.detail;
-      } else if (error.response?.data?.error) {
-        message = error.response.data.error;
-      }
-
+      const message =
+        error.response?.data?.detail ||
+        error.response?.data?.error ||
+        'Login failed';
       toast.error(message);
+ 
     } finally {
       setLoading(false);
     }
   };
-
+ 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="w-96 p-6 border rounded-md"
-      >
-        <button type= "submit">Login</button>
-
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <form onSubmit={handleSubmit} className="w-80 bg-white p-6 rounded-lg shadow border">
+ 
+        {/* This is just a title - NOT a button */}
+        <h2 className="text-xl font-bold mb-4 text-center">Login</h2>
+ 
+        {/* Username input */}
         <input
           type="text"
-          name="username"
           placeholder="Username"
-          value={formData.username}
-          onChange={handleChange}
-          className="w-full border p-2 mb-3"
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          className="w-full border p-2 rounded mb-3"
         />
-
+ 
+        {/* Password input */}
         <input
           type="password"
-          name="password"
           placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          className="w-full border p-2 mb-3"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          className="w-full border p-2 rounded mb-4"
         />
-
+ 
+        {/* THIS is the actual Login button - type="submit" triggers handleSubmit */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-white p-2"
+          className="w-full bg-black text-white p-2 rounded"
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
-
-        <p className="mt-3 text-sm">
-          No account? <Link to="/register">Register</Link>
+ 
+        <p className="mt-3 text-sm text-center">
+          No account? <Link to="/register" className="underline">Register</Link>
         </p>
+ 
       </form>
     </div>
   );
 };
-
+ 
 export default Login;

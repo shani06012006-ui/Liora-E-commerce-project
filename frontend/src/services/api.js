@@ -54,7 +54,7 @@ API.interceptors.response.use(
           `Bearer ${data.access}`;
 
         return API(originalRequest);
-      } catch (err) {
+      } catch {
         ["access_token", "refresh_token", "user"].forEach((key) =>
           localStorage.removeItem(key)
         );
