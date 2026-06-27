@@ -53,7 +53,6 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <form onSubmit={handleSubmit} className="w-80 bg-white p-6 rounded-lg shadow border">
  
-        {/* This is just a title - NOT a button */}
         <h2 className="text-xl font-bold mb-4 text-center">Login</h2>
  
         {/* Username input */}

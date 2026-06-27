@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState , useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircleIcon, TruckIcon, ClockIcon, MapPinIcon, PhoneIcon, CalendarIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import confetti from 'canvas-confetti';
@@ -7,43 +7,61 @@ const OrderSuccess = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
+  
 
-  useEffect(() => {
-  const orderData = location.state?.order;
-  if (orderData) {
-    setOrder(orderData);
-    triggerConfetti();  
-  } else {
-    navigate('/');
-  }
-  }, [location, navigate]);
+const [estimatedDelivery, setEstimatedDelivery] = useState("");
 
-  const triggerConfetti = () => {
+const triggerConfetti = useCallback(() => {
+  confetti({
+    particleCount: 200,
+    spread: 100,
+    origin: { y: 0.6 },
+    colors: ['#1a1a1a', '#333333', '#666666', '#999999', '#ffffff'],
+  });
+
+  setTimeout(() => {
     confetti({
-      particleCount: 200,
-      spread: 100,
-      origin: { y: 0.6 },
-      colors: ['#1a1a1a', '#333333', '#666666', '#999999', '#ffffff']
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.7, x: 0.3 },
+      colors: ['#1a1a1a', '#333333'],
     });
-    
-    setTimeout(() => {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.7, x: 0.3 },
-        colors: ['#1a1a1a', '#333333']
-      });
-    }, 200);
-    
-    setTimeout(() => {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.7, x: 0.7 },
-        colors: ['#666666', '#999999']
-      });
-    }, 400);
-  };
+  }, 200);
+
+  setTimeout(() => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.7, x: 0.7 },
+      colors: ['#666666', '#999999'],
+    });
+  }, 400);
+}, []);
+
+useEffect(() => {
+  const orderData = location.state?.order;
+
+  if (!orderData) {
+    navigate("/", { replace: true });
+    return;
+  }
+
+  setOrder(orderData);
+
+  const deliveryDate = new Date(orderData.created_at);
+  deliveryDate.setDate(deliveryDate.getDate() + 7);
+
+  const formattedDelivery = deliveryDate.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  setEstimatedDelivery(formattedDelivery);
+
+  triggerConfetti();
+}, [location.state, navigate, triggerConfetti]);
+
 
   if (!order) {
     return (
@@ -79,11 +97,11 @@ const OrderSuccess = () => {
             <div>
               <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Order Date</p>
               <p className="text-base font-medium text-gray-900">
-                {new Date(order.created_at).toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'long',
-                  year: 'numeric'
-                })}
+              {new Date(order.created_at).toLocaleDateString("en-IN", {
+               day: "numeric",
+               month: "long",
+               year: "numeric",
+              })}
               </p>
             </div>
             <div>
@@ -149,11 +167,7 @@ const OrderSuccess = () => {
                 <div>
                   <p className="text-[10px] text-gray-400 uppercase tracking-wide mb-1">Estimated Delivery</p>
                   <p className="text-sm text-gray-700">
-                    {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
+                    {estimatedDelivery}
                   </p>
                 </div>
               </div>

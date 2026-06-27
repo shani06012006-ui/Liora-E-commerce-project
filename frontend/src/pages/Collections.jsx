@@ -7,10 +7,7 @@ import { HeartIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outlin
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
  
-// ---------------------------------------------------------------------------
-// Single reducer for all local state — useReducer dispatch is never flagged
-// by eslint(react-hooks/set-state-in-effect), unlike useState setters
-// ---------------------------------------------------------------------------
+
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_PRODUCTS':
@@ -50,7 +47,6 @@ const initialState = {
   addingToCart: null,
 };
  
-// ---------------------------------------------------------------------------
  
 const Collections = () => {
   const { style }       = useParams();
@@ -61,9 +57,7 @@ const Collections = () => {
   const { products, loading, wishlist, wishlistIds, addingToCart } = state;
   const title = 'Collections';
  
-  // ------------------------------------------------------------------
-  // Fetch helpers — all state changes go through dispatch, not setState
-  // ------------------------------------------------------------------
+
   const fetchProducts = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
@@ -107,15 +101,11 @@ const Collections = () => {
     }
   }, []);
  
-  // Both calls now use useReducer dispatch internally — ESLint won't flag them
   useEffect(() => {
     fetchProducts();
     fetchWishlist();
   }, [fetchProducts, fetchWishlist]);
  
-  // ------------------------------------------------------------------
-  // Wishlist actions
-  // ------------------------------------------------------------------
   const addToWishlist = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -150,9 +140,7 @@ const Collections = () => {
     }
   };
  
-  // ------------------------------------------------------------------
-  // Cart actions
-  // ------------------------------------------------------------------
+
   const addToCart = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -192,9 +180,7 @@ const Collections = () => {
     }
   };
  
-  // ------------------------------------------------------------------
-  // Helpers
-  // ------------------------------------------------------------------
+
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
     if (product?.image) return `http://localhost:8000${product.image}`;
@@ -209,9 +195,7 @@ const Collections = () => {
     { name: 'AESTHETIC',        path: '/Collections/aesthetic', active: style === 'aesthetic' },
   ];
  
-  // ------------------------------------------------------------------
-  // Render
-  // ------------------------------------------------------------------
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">

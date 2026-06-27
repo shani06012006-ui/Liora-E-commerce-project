@@ -1,31 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import {ShoppingBagIcon, ArrowPathIcon, ChatBubbleLeftRightIcon,  ChevronDownIcon,  ChevronUpIcon,  EnvelopeIcon,  PhoneIcon,  ClockIcon,  MagnifyingGlassIcon,  TruckIcon,  CreditCardIcon,  ShieldCheckIcon,  ArrowLeftIcon,  UserIcon,  DocumentTextIcon,  GlobeAltIcon,  ScaleIcon,  CalculatorIcon} from '@heroicons/react/24/outline';
+import { ChatBubbleLeftRightIcon, ChevronDownIcon, ChevronUpIcon, EnvelopeIcon, PhoneIcon, ClockIcon, MagnifyingGlassIcon, CreditCardIcon, ArrowLeftIcon, UserIcon, DocumentTextIcon, GlobeAltIcon, ScaleIcon, CalculatorIcon } from '@heroicons/react/24/outline';
 
 const Help = () => {
   const [openFaq, setOpenFaq] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [formData, setFormData] = useState({
-    subject: '',
-    issueType: 'order',
-    message: ''
-  });
-  const [submitted, setSubmitted] = useState(false);
+
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
-    setFormData({ subject: '', issueType: 'order', message: '' });
-  };
 
   const helpCategories = [
     { 

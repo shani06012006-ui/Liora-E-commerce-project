@@ -1,22 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch} from 'react-redux';
 import { HeartIcon, TrashIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { wishlistAPI, cartAPI } from '../services/api';
 import { setCart } from '../redux/cartSlice';
 import toast from 'react-hot-toast';
 
 const Wishlist = () => {
-  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(null);
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
 
   const fetchWishlist = async () => {
     try {
@@ -28,12 +23,16 @@ const Wishlist = () => {
     setLoading(false);
   };
 
+    useEffect(() => {
+    fetchWishlist();
+  }, []);
+
   const removeFromWishlist = async (id) => {
     try {
       await wishlistAPI.removeFromWishlist(id);
       setWishlistItems(wishlistItems.filter(item => item.id !== id));
       toast.success('Removed from wishlist');
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove');
     }
   };
@@ -48,7 +47,7 @@ const Wishlist = () => {
       await wishlistAPI.removeFromWishlist(wishlistId);
       setWishlistItems(wishlistItems.filter(item => item.id !== wishlistId));
       toast.success('Moved to cart!');
-    } catch (error) {
+    } catch {
       toast.error('Failed to add to cart');
     } finally {
       setAddingToCart(null);
@@ -71,7 +70,7 @@ const Wishlist = () => {
       // Remove from wishlist
       await wishlistAPI.removeFromWishlist(wishlistId);
       navigate('/checkout');
-    } catch (error) {
+    } catch {
       toast.error('Failed to proceed');
     }
   };

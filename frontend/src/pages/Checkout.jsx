@@ -1,5 +1,5 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+﻿import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { orderAPI } from '../services/api';
 import { clearCart } from '../redux/cartSlice';
@@ -35,52 +35,59 @@ const Checkout = () => {
     { id: 'upi', name: 'UPI / Wallet', icon: WalletIcon, description: 'Google Pay, PhonePe, Paytm' },
   ];
 
-  useEffect(() => {
-    if (items.length === 0 && !orderPlaced) {
-      navigate('/cart');
-    }
-    loadAddresses();
-  }, [items, navigate, orderPlaced]);
 
-  const loadAddresses = () => {
-    const savedAddresses = localStorage.getItem('user_addresses');
-    let allAddresses = [];
-    
-    if (savedAddresses) {
-      allAddresses = JSON.parse(savedAddresses);
-    }
-    
-    if (user?.address && user.address.trim() !== '') {
-      const parts = user.address.split(',');
-      const profileAddress = {
-        id: 'profile',
-        full_name: user.full_name || user.username,
-        phone: user.phone,
-        address_line1: parts[0] || '',
-        city: parts[1]?.trim() || '',
-        state: parts[2]?.split('-')[0]?.trim() || '',
-        pincode: parts[2]?.split('-')[1]?.trim() || '',
-        is_default: true,
-      };
-      allAddresses = [profileAddress, ...allAddresses.filter(a => a.id !== 'profile')];
-    }
-    
-    setAddresses(allAddresses);
-    
-    const defaultAddr = allAddresses.find(addr => addr.is_default) || allAddresses[0];
-    if (defaultAddr) {
-      setSelectedAddress(defaultAddr);
-      setFormData({
-        full_name: defaultAddr.full_name || user?.full_name || '',
-        phone: defaultAddr.phone || user?.phone || '',
-        address_line1: defaultAddr.address_line1 || '',
-        address_line2: defaultAddr.address_line2 || '',
-        city: defaultAddr.city || '',
-        state: defaultAddr.state || '',
-        pincode: defaultAddr.pincode || '',
-      });
-    }
-  };
+
+useEffect(() => {
+  if (items.length === 0 && !orderPlaced) {
+    navigate('/cart');
+  }
+
+  const savedAddresses = localStorage.getItem('user_addresses');
+  let allAddresses = [];
+
+  if (savedAddresses) {
+    allAddresses = JSON.parse(savedAddresses);
+  }
+
+  if (user?.address && user.address.trim() !== '') {
+    const parts = user.address.split(',');
+
+    const profileAddress = {
+      id: 'profile',
+      full_name: user.full_name || user.username,
+      phone: user.phone,
+      address_line1: parts[0] || '',
+      city: parts[1]?.trim() || '',
+      state: parts[2]?.split('-')[0]?.trim() || '',
+      pincode: parts[2]?.split('-')[1]?.trim() || '',
+      is_default: true,
+    };
+
+    allAddresses = [
+      profileAddress,
+      ...allAddresses.filter(a => a.id !== 'profile'),
+    ];
+  }
+
+  setAddresses(allAddresses);
+
+  const defaultAddr =
+    allAddresses.find(addr => addr.is_default) || allAddresses[0];
+
+  if (defaultAddr) {
+    setSelectedAddress(defaultAddr);
+
+    setFormData({
+      full_name: defaultAddr.full_name || user?.full_name || '',
+      phone: defaultAddr.phone || user?.phone || '',
+      address_line1: defaultAddr.address_line1 || '',
+      address_line2: defaultAddr.address_line2 || '',
+      city: defaultAddr.city || '',
+      state: defaultAddr.state || '',
+      pincode: defaultAddr.pincode || '',
+    });
+  }
+}, [items, navigate, orderPlaced, user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

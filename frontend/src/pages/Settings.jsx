@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
@@ -96,7 +96,7 @@ const Settings = () => {
       
       toast.success('Profile updated successfully!');
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to update profile');
     } finally {
       setLoading(false);
@@ -123,7 +123,7 @@ const Settings = () => {
       toast.success('Password changed successfully!');
       setPasswordData({ current_password: '', new_password: '', confirm_password: '' });
       setShowPasswordForm(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to change password');
     } finally {
       setLoading(false);
@@ -137,7 +137,7 @@ const Settings = () => {
       toast.success('Account deleted successfully');
       localStorage.clear();
       window.location.href = '/Login';
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete account');
     } finally {
       setLoading(false);

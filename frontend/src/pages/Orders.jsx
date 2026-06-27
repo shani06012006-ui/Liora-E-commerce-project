@@ -1,10 +1,7 @@
 ﻿import { useReducer, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { orderAPI, productAPI } from '../services/api';
-import {
-  ClockIcon, CheckCircleIcon, TruckIcon, ShoppingBagIcon,
-  XCircleIcon, MapPinIcon, PhoneIcon, EyeIcon,
-} from '@heroicons/react/24/outline';
+import { ClockIcon, CheckCircleIcon, TruckIcon, ShoppingBagIcon, XCircleIcon, MapPinIcon, PhoneIcon, EyeIcon } from '@heroicons/react/24/outline';
  
 const reducer = (state, action) => {
   switch (action.type) {

@@ -1,92 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import { useReducer, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { productAPI, cartAPI, wishlistAPI } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { setCart } from '../redux/cartSlice';
-import { 
-  HeartIcon, 
-  ShoppingBagIcon, 
-  BoltIcon, 
-  FireIcon,
-  TruckIcon,
-  ArrowPathIcon,
-  ShieldCheckIcon
-} from '@heroicons/react/24/outline';
+import { HeartIcon, ShoppingBagIcon, BoltIcon,  FireIcon, TruckIcon, ArrowPathIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
-
+ 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_PRODUCTS':          return { ...state, products: action.payload };
+    case 'SET_LOADING':           return { ...state, loading: action.payload };
+    case 'SET_WISHLIST':          return { ...state, wishlist: action.payload };
+    case 'ADD_WISHLIST':          return { ...state, wishlist: new Set([...state.wishlist, action.payload]) };
+    case 'REMOVE_WISHLIST': {
+      const s = new Set(state.wishlist);
+      s.delete(action.payload);
+      return { ...state, wishlist: s };
+    }
+    case 'SET_ADDING_TO_CART':    return { ...state, addingToCart: action.payload };
+    case 'SET_SELECTED_CATEGORY': return { ...state, selectedCategory: action.payload };
+    case 'SET_SORT_BY':           return { ...state, sortBy: action.payload };
+    case 'TICK_TIMER': {
+      let { days, hours, minutes, seconds } = state.timeLeft;
+      if (seconds > 0)       return { ...state, timeLeft: { days, hours, minutes, seconds: seconds - 1 } };
+      if (minutes > 0)       return { ...state, timeLeft: { days, hours, minutes: minutes - 1, seconds: 59 } };
+      if (hours > 0)         return { ...state, timeLeft: { days, hours: hours - 1, minutes: 59, seconds: 59 } };
+      if (days > 0)          return { ...state, timeLeft: { days: days - 1, hours: 23, minutes: 59, seconds: 59 } };
+      return state;
+    }
+    default: return state;
+  }
+};
+ 
+const initialState = {
+  products:         [],
+  loading:          true,
+  wishlist:         new Set(),
+  addingToCart:     null,
+  selectedCategory: 'all',
+  sortBy:           'discount',
+  timeLeft:         { days: 7, hours: 23, minutes: 59, seconds: 59 },
+};
+  
 const Sale = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [wishlist, setWishlist] = useState(new Set());
-  const [addingToCart, setAddingToCart] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [sortBy, setSortBy] = useState('discount');
-  const [timeLeft, setTimeLeft] = useState({
-    days: 7,
-    hours: 23,
-    minutes: 59,
-    seconds: 59
-  });
-
+  const reduxDispatch = useDispatch();
+  const navigate      = useNavigate();
+  const [state, dispatch] = useReducer(reducer, initialState);
+ 
+  const {
+    products, loading, wishlist, addingToCart,
+    selectedCategory, sortBy, timeLeft,
+  } = state;
+ 
   useEffect(() => {
-    fetchSaleProducts();
-    fetchWishlist();
-    
     const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        let { days, hours, minutes, seconds } = prev;
-        if (seconds > 0) {
-          return { ...prev, seconds: seconds - 1 };
-        } else if (minutes > 0) {
-          return { ...prev, minutes: minutes - 1, seconds: 59 };
-        } else if (hours > 0) {
-          return { ...prev, hours: hours - 1, minutes: 59, seconds: 59 };
-        } else if (days > 0) {
-          return { ...prev, days: days - 1, hours: 23, minutes: 59, seconds: 59 };
-        }
-        return prev;
-      });
+      dispatch({ type: 'TICK_TIMER' });
     }, 1000);
     return () => clearInterval(timer);
-  }, [selectedCategory, sortBy]);
-
-  const fetchSaleProducts = async () => {
-    setLoading(true);
+  }, []);
+ 
+  const fetchSaleProducts = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      let params = { sale: true };
-      if (selectedCategory !== 'all') {
-        params.category = selectedCategory;
-      }
-      if (sortBy === 'discount') {
-        params.sort = 'discount_desc';
-      } else if (sortBy === 'price_low') {
-        params.sort = 'price_asc';
-      } else if (sortBy === 'price_high') {
-        params.sort = 'price_desc';
-      }
+      const params = { sale: true };
+      if (selectedCategory !== 'all') params.category = selectedCategory;
+      if (sortBy === 'discount')   params.sort = 'discount_desc';
+      if (sortBy === 'price_low')  params.sort = 'price_asc';
+      if (sortBy === 'price_high') params.sort = 'price_desc';
+ 
       const res = await productAPI.getAll(params);
-      setProducts(res.data);
+      dispatch({ type: 'SET_PRODUCTS', payload: res.data });
     } catch (error) {
       console.error('Error fetching sale products:', error);
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
     }
-    setLoading(false);
-  };
-
-  const fetchWishlist = async () => {
+  }, [selectedCategory, sortBy]);
+ 
+  const fetchWishlist = useCallback(async () => {
     const token = localStorage.getItem('access_token');
     if (!token) return;
     try {
       const res = await wishlistAPI.getWishlist();
-      const wishlistIds = new Set(res.data.map(item => item.product_details?.id || item.product));
-      setWishlist(wishlistIds);
+      const ids = new Set(res.data.map(item => item.product_details?.id || item.product));
+      dispatch({ type: 'SET_WISHLIST', payload: ids });
     } catch (error) {
       console.error('Error fetching wishlist:', error);
     }
-  };
-
+  }, []);
+ 
+  useEffect(() => {
+    fetchSaleProducts();
+    fetchWishlist();
+  }, [fetchSaleProducts, fetchWishlist]);
+ 
   const addToWishlist = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -96,27 +104,23 @@ const Sale = () => {
     }
     try {
       await wishlistAPI.addToWishlist(productId);
-      setWishlist(prev => new Set([...prev, productId]));
+      dispatch({ type: 'ADD_WISHLIST', payload: productId });
       toast.success('Added to wishlist');
-    } catch (error) {
+    } catch {
       toast.error('Already in wishlist');
     }
   };
-
+ 
   const removeFromWishlist = async (productId, wishlistId) => {
     try {
       await wishlistAPI.removeFromWishlist(wishlistId);
-      setWishlist(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(productId);
-        return newSet;
-      });
+      dispatch({ type: 'REMOVE_WISHLIST', payload: productId });
       toast.success('Removed from wishlist');
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove');
     }
   };
-
+ 
   const addToCart = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -124,21 +128,20 @@ const Sale = () => {
       navigate('/Login');
       return;
     }
-    setAddingToCart(productId);
+    dispatch({ type: 'SET_ADDING_TO_CART', payload: productId });
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
       const cartRes = await cartAPI.getCart();
-      dispatch(setCart(cartRes.data));
+      reduxDispatch(setCart(cartRes.data));
       window.dispatchEvent(new Event('cartUpdated'));
       toast.success('Added to cart!');
-    } catch (error) {
+    } catch {
       toast.error('Failed to add to cart');
     } finally {
-      setAddingToCart(null);
+      dispatch({ type: 'SET_ADDING_TO_CART', payload: null });
     }
   };
-
-  // Buy Now function
+ 
   const buyNow = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -146,45 +149,45 @@ const Sale = () => {
       navigate('/Login');
       return;
     }
-    
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
       const cartRes = await cartAPI.getCart();
-      dispatch(setCart(cartRes.data));
+      reduxDispatch(setCart(cartRes.data));
       navigate('/checkout');
-    } catch (error) {
+    } catch {
       toast.error('Failed to proceed');
     }
   };
-
+ 
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
-    if (product?.image) return `http://localhost:8000${product.image}`;
+    if (product?.image)     return `http://localhost:8000${product.image}`;
     return 'https://placehold.co/400x500/f5f5f5/999999?text=Image';
   };
-
+ 
   const categories = [
+    { value: 'all',   label: 'ALL SALE' },
     { value: 'dress', label: 'COLLECTIONS' },
   ];
-
+ 
   const sortOptions = [
-    { value: 'discount', label: 'BIGGEST DISCOUNT' },
-    { value: 'price_low', label: 'PRICE: LOW TO HIGH' },
+    { value: 'discount',   label: 'BIGGEST DISCOUNT' },
+    { value: 'price_low',  label: 'PRICE: LOW TO HIGH' },
     { value: 'price_high', label: 'PRICE: HIGH TO LOW' },
   ];
-
+ 
   const fallbackProducts = [
-    { id: 1, name: 'Designer Silk Gown', price: 8999, original_price: 17999, discount: 50, image: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&auto=format' },
-    { id: 2, name: 'Linen Summer Dress', price: 2499, original_price: 4999, discount: 50, image: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&auto=format' },
-    { id: 3, name: 'Velvet Blazer', price: 3999, original_price: 7999, discount: 50, image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&auto=format' },
-    { id: 4, name: 'Cashmere Sweater', price: 4499, original_price: 8999, discount: 50, image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&auto=format' },
-    { id: 5, name: 'Party Wear Gown', price: 5999, original_price: 11999, discount: 50, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&auto=format' },
-    { id: 6, name: 'Leather Jacket', price: 5499, original_price: 10999, discount: 50, image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&auto=format' },
-    { id: 7, name: 'Designer Handbag', price: 2999, original_price: 5999, discount: 50, image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format' },
+    { id: 1, name: 'Designer Silk Gown',  price: 8999, original_price: 17999, discount: 50, image: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=400&auto=format' },
+    { id: 2, name: 'Linen Summer Dress',  price: 2499, original_price: 4999,  discount: 50, image: 'https://images.unsplash.com/photo-1539008835657-9e8e9680c956?w=400&auto=format' },
+    { id: 3, name: 'Velvet Blazer',       price: 3999, original_price: 7999,  discount: 50, image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&auto=format' },
+    { id: 4, name: 'Cashmere Sweater',    price: 4499, original_price: 8999,  discount: 50, image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=400&auto=format' },
+    { id: 5, name: 'Party Wear Gown',     price: 5999, original_price: 11999, discount: 50, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&auto=format' },
+    { id: 6, name: 'Leather Jacket',      price: 5499, original_price: 10999, discount: 50, image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&auto=format' },
+    { id: 7, name: 'Designer Handbag',    price: 2999, original_price: 5999,  discount: 50, image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&auto=format' },
   ];
-
+ 
   const displayProducts = products.length > 0 ? products : fallbackProducts;
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
@@ -192,62 +195,55 @@ const Sale = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section with Full Background Image */}
+ 
+      {/* Hero */}
       <div className="relative min-h-[500px] overflow-hidden">
-        {/* Background Image */}
         <div className="absolute inset-0">
-          <img 
-            src="SL.png" 
-            alt="Sale Banner" 
-            className="w-full h-full object-cover"
-          />
-          {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+          <img src="SL.png" alt="Sale Banner" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black bg-opacity-50" />
         </div>
-        
+ 
         <div className="relative max-w-7xl mx-auto px-4 py-20 text-center text-white z-10">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full mb-4">
             <FireIcon className="w-4 h-4" />
             <span className="text-xs uppercase tracking-wider">Limited Time Offer</span>
           </div>
           <h1 className="text-6xl md:text-8xl font-light tracking-wide mb-4">SALE</h1>
-          <p className="text-xl md:text-2xl font-light mb-2">UP TO <span className="font-bold text-4xl">50% OFF</span></p>
+          <p className="text-xl md:text-2xl font-light mb-2">
+            UP TO <span className="font-bold text-4xl">50% OFF</span>
+          </p>
           <p className="text-white/80 text-sm max-w-md mx-auto">
             Don't miss out on our biggest sale of the season. Shop now before they're gone!
           </p>
+ 
+          {/* Countdown Timer */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
-              <span className="block text-2xl font-bold">{String(timeLeft.days).padStart(2, '0')}</span>
-              <span className="text-[10px] uppercase tracking-wide">Days</span>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
-              <span className="block text-2xl font-bold">{String(timeLeft.hours).padStart(2, '0')}</span>
-              <span className="text-[10px] uppercase tracking-wide">Hours</span>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
-              <span className="block text-2xl font-bold">{String(timeLeft.minutes).padStart(2, '0')}</span>
-              <span className="text-[10px] uppercase tracking-wide">Mins</span>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
-              <span className="block text-2xl font-bold">{String(timeLeft.seconds).padStart(2, '0')}</span>
-              <span className="text-[10px] uppercase tracking-wide">Secs</span>
-            </div>
+            {[
+              { value: timeLeft.days,    label: 'Days' },
+              { value: timeLeft.hours,   label: 'Hours' },
+              { value: timeLeft.minutes, label: 'Mins' },
+              { value: timeLeft.seconds, label: 'Secs' },
+            ].map(({ value, label }) => (
+              <div key={label} className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
+                <span className="block text-2xl font-bold">{String(value).padStart(2, '0')}</span>
+                <span className="text-[10px] uppercase tracking-wide">{label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-
+ 
       {/* Filter Bar */}
       <div className="sticky top-16 z-40 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex flex-wrap justify-between items-center gap-4">
             <div className="flex flex-wrap gap-6">
               {categories.map((cat) => (
-                <button
-                  key={cat.value}
-                  onClick={() => setSelectedCategory(cat.value)}
+                <button key={cat.value}
+                  onClick={() => dispatch({ type: 'SET_SELECTED_CATEGORY', payload: cat.value })}
                   className={`text-xs uppercase tracking-[0.2em] font-medium transition pb-1 ${
                     selectedCategory === cat.value
                       ? 'text-gray-900 border-b-2 border-gray-900'
@@ -258,10 +254,8 @@ const Sale = () => {
                 </button>
               ))}
             </div>
-            
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+            <select value={sortBy}
+              onChange={(e) => dispatch({ type: 'SET_SORT_BY', payload: e.target.value })}
               className="text-xs uppercase tracking-[0.2em] border border-gray-300 rounded-md px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-gray-900"
             >
               {sortOptions.map((opt) => (
@@ -271,31 +265,29 @@ const Sale = () => {
           </div>
         </div>
       </div>
-
+ 
       {/* Products Count */}
       <div className="max-w-7xl mx-auto px-4 pt-6">
         <p className="text-sm text-gray-400">{displayProducts.length} products on sale</p>
       </div>
-
+ 
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
           {displayProducts.map((product) => {
-            const wishlistItem = wishlist.has(product.id);
-            const isAdding = addingToCart === product.id;
-            const discountPercent = product.discount || Math.round(((product.original_price - product.price) / product.original_price) * 100);
-            
+            const isInWishlist   = wishlist.has(product.id);
+            const isAdding       = addingToCart === product.id;
+            const discountPercent = product.discount ||
+              Math.round(((product.original_price - product.price) / product.original_price) * 100);
+ 
             return (
               <div key={product.id} className="group">
                 <div className="relative overflow-hidden bg-gray-100 mb-4">
                   <Link to={`/product/${product.id}`}>
-                    <img 
-                      src={getImageUrl(product)} 
-                      alt={product.name}
-                      className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105"
-                    />
+                    <img src={getImageUrl(product)} alt={product.name}
+                      className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105" />
                   </Link>
-                  
+ 
                   <div className="absolute top-3 left-3 flex flex-col gap-1">
                     <span className="bg-gray-900 text-white text-[10px] px-2 py-1 font-bold tracking-wide">
                       -{discountPercent}%
@@ -306,19 +298,19 @@ const Sale = () => {
                       </span>
                     )}
                   </div>
-                  
+ 
                   <button
-                    onClick={() => wishlistItem ? removeFromWishlist(product.id, product.wishlist_id) : addToWishlist(product.id)}
+                    onClick={() => isInWishlist
+                      ? removeFromWishlist(product.id, product.wishlist_id)
+                      : addToWishlist(product.id)}
                     className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition z-10"
                   >
-                    {wishlistItem ? (
-                      <HeartSolidIcon className="w-4 h-4 text-gray-900" />
-                    ) : (
-                      <HeartIcon className="w-4 h-4 text-gray-600" />
-                    )}
+                    {isInWishlist
+                      ? <HeartSolidIcon className="w-4 h-4 text-gray-900" />
+                      : <HeartIcon className="w-4 h-4 text-gray-600" />}
                   </button>
                 </div>
-                
+ 
                 <div className="text-center">
                   <Link to={`/product/${product.id}`}>
                     <h3 className="text-gray-800 text-sm font-medium tracking-wide mb-1 hover:text-gray-500 transition">
@@ -329,18 +321,14 @@ const Sale = () => {
                     <span className="text-gray-900 font-bold">₹{product.price}</span>
                     <span className="text-gray-400 line-through text-sm">₹{product.original_price || product.price * 2}</span>
                   </div>
-                  
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => addToCart(product.id)}
-                      disabled={isAdding}
+                    <button onClick={() => addToCart(product.id)} disabled={isAdding}
                       className="flex-1 bg-gray-900 text-white py-2 text-[11px] font-medium tracking-wide uppercase hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-1"
                     >
                       <ShoppingBagIcon className="w-3 h-3" />
                       {isAdding ? 'ADDING...' : 'ADD TO CART'}
                     </button>
-                    <button
-                      onClick={() => buyNow(product.id)}
+                    <button onClick={() => buyNow(product.id)}
                       className="flex-1 border border-gray-900 text-gray-900 py-2 text-[11px] font-medium tracking-wide uppercase hover:bg-gray-900 hover:text-white transition flex items-center justify-center gap-1"
                     >
                       <BoltIcon className="w-3 h-3" />
@@ -353,7 +341,7 @@ const Sale = () => {
           })}
         </div>
       </div>
-
+ 
       {/* Empty State */}
       {displayProducts.length === 0 && !loading && (
         <div className="text-center py-20">
@@ -365,8 +353,8 @@ const Sale = () => {
           </Link>
         </div>
       )}
-
-      {/* Shipping Info Section */}
+ 
+      {/* Shipping Info */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="bg-gray-50 rounded-xl p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -385,27 +373,25 @@ const Sale = () => {
           </div>
         </div>
       </div>
-
-      {/* Newsletter Section */}
+ 
+      {/* Newsletter */}
       <div className="border-t border-gray-200 py-16 bg-gray-50">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-gray-500 mb-3">SALE ALERTS</p>
           <h3 className="text-2xl font-light text-gray-900 mb-3">Get exclusive sale updates</h3>
           <p className="text-gray-400 text-sm mb-6">Subscribe to get early access to sales and special offers</p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input 
-              type="email" 
-              placeholder="Your email address"
-              className="flex-1 px-4 py-2 border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:border-gray-900"
-            />
+            <input type="email" placeholder="Your email address"
+              className="flex-1 px-4 py-2 border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:border-gray-900" />
             <button className="px-6 py-2 bg-gray-900 text-white text-xs uppercase tracking-[0.2em] hover:bg-gray-800 transition">
               NOTIFY ME
             </button>
           </form>
         </div>
       </div>
+ 
     </div>
   );
 };
-
+ 
 export default Sale;

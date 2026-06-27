@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+﻿import { useEffect , useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { cartAPI } from '../services/api';
@@ -10,22 +10,23 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+
+const fetchCart = useCallback(async () => {
+  const token = localStorage.getItem('access_token');
+  if (!token) return;
+
+  try {
+    const res = await cartAPI.getCart();
+    console.log('Cart data:', res.data);
+    dispatch(setCart(res.data));
+  } catch (error) {
+    console.error('Error fetching cart:', error);
+  }
+}, [dispatch]);
+
   useEffect(() => {
     fetchCart();
-  }, []);
-
-  const fetchCart = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
-    
-    try {
-      const res = await cartAPI.getCart();
-      console.log('Cart data:', res.data);
-      dispatch(setCart(res.data));
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-    }
-  };
+  }, [ fetchCart]);
 
   const updateQuantity = async (itemId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -33,7 +34,7 @@ const Cart = () => {
       await cartAPI.updateQuantity(itemId, newQuantity);
       fetchCart();
       toast.success('Cart updated');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update');
     }
   };
@@ -43,7 +44,7 @@ const Cart = () => {
       await cartAPI.removeItem(itemId);
       fetchCart();
       toast.success('Item removed');
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove');
     }
   };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { productAPI, cartAPI, wishlistAPI } from "../services/api";
 import { useDispatch } from "react-redux";
@@ -280,7 +280,7 @@ const RatedItem = ({ product, rank }) => {
         <div className="bs-r-name">{product.name}</div>
         <div className="bs-r-stars">{starStr(product.rating || 5)}</div>
         <div className="bs-r-rev">
-          {product.review_count || Math.floor(Math.random() * 2000 + 500)}{" "}
+          {product.review_count || 500}
           reviews
         </div>
       </div>
@@ -301,10 +301,6 @@ const BestSellers = () => {
   const [wishlistIds, setWishlistIds] = useState({});
   const [addingToCart, setAddingToCart] = useState(null);
 
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -343,6 +339,12 @@ const BestSellers = () => {
       console.error("Error fetching wishlist:", error);
     }
   };
+
+  useEffect(() => {
+    fetchProducts();
+    fetchWishlist();
+  }, []);
+
 
   const addToCart = async (productId) => {
     try {

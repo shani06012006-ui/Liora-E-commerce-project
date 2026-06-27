@@ -1,32 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useState , useCallback , useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { BellIcon,  CheckCircleIcon, TruckIcon, ShoppingBagIcon,  HeartIcon,  TagIcon,  UserIcon,  CreditCardIcon,  XMarkIcon,  EyeIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
 const Notifications = () => {
-  const { user } = useSelector((state) => state.auth);
   const [activeTab, setActiveTab] = useState('notifications');
   const [filter, setFilter] = useState('all');
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadNotifications();
-  }, []);
-
-  const loadNotifications = () => {
-    const savedNotifications = localStorage.getItem('user_notifications');
-    if (savedNotifications) {
-      setNotifications(JSON.parse(savedNotifications));
-    } else {
-      generateDemoNotifications();
-    }
-    setLoading(false);
-  };
-
-  const generateDemoNotifications = () => {
+  const generateDemoNotifications = useCallback( () => {
     const demoNotifications = [
       {
         id: 1,
@@ -116,7 +100,23 @@ const Notifications = () => {
     
     setNotifications(demoNotifications);
     localStorage.setItem('user_notifications', JSON.stringify(demoNotifications));
-  };
+  } , []);
+
+const loadNotifications = useCallback(() => {
+   const savedNotifications = localStorage.getItem('user_notifications');
+
+   if (savedNotifications) {
+      setNotifications(JSON.parse(savedNotifications));
+   } else {
+      generateDemoNotifications();
+   }
+
+   setLoading(false);
+}, [generateDemoNotifications]);
+
+useEffect( () => {
+  loadNotifications();
+}, [loadNotifications]);
 
   const getIconComponent = (iconName) => {
     switch(iconName) {

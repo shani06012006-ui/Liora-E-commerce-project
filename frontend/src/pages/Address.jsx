@@ -1,17 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect , useCallback} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
 import toast from 'react-hot-toast';
-import { 
-  MapPinIcon, 
-  PlusIcon, 
-  PencilIcon, 
-  TrashIcon,
-  HomeIcon,
-  BuildingOfficeIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+import { MapPinIcon, PlusIcon, PencilIcon, TrashIcon, HomeIcon, BuildingOfficeIcon, XMarkIcon} from '@heroicons/react/24/outline';
 import Sidebar from '../components/Sidebar';
 
 const Address = () => {
@@ -37,42 +29,41 @@ const Address = () => {
     is_default: false,
   });
 
+const loadAddresses = useCallback(() => {
+  if (!user) return;
+
+  const savedAddresses = [];
+
+  if (user.address && user.address.trim() !== "") {
+    const parts = user.address.split(",");
+
+    savedAddresses.push({
+      id: 1,
+      full_name: user.full_name || user.username,
+      phone: user.phone,
+      address_line1: parts[0] || "",
+      city: parts[1]?.trim() || "",
+      state: parts[2]?.split("-")[0]?.trim() || "",
+      pincode: parts[2]?.split("-")[1]?.trim() || "",
+      landmark: "",
+      address_type: "home",
+      is_default: true,
+    });
+  }
+
+  const savedAddressesList = localStorage.getItem("user_addresses");
+
+  if (savedAddressesList) {
+    const parsed = JSON.parse(savedAddressesList);
+    savedAddresses.push(...parsed);
+  }
+
+  setAddresses(savedAddresses);
+}, [user]);
+
   useEffect(() => {
     loadAddresses();
-  }, [user]);
-
-  const loadAddresses = () => {
-    if (user) {
-      const savedAddresses = [];
-      
-      // Load main address from user profile
-      if (user.address && user.address.trim() !== '') {
-        const parts = user.address.split(',');
-        const mainAddress = {
-          id: 1,
-          full_name: user.full_name || user.username,
-          phone: user.phone,
-          address_line1: parts[0] || '',
-          city: parts[1]?.trim() || '',
-          state: parts[2]?.split('-')[0]?.trim() || '',
-          pincode: parts[2]?.split('-')[1]?.trim() || '',
-          landmark: '',
-          address_type: 'home',
-          is_default: true,
-        };
-        savedAddresses.push(mainAddress);
-      }
-      
-      // Load additional addresses from localStorage
-      const savedAddressesList = localStorage.getItem('user_addresses');
-      if (savedAddressesList) {
-        const parsed = JSON.parse(savedAddressesList);
-        savedAddresses.push(...parsed);
-      }
-      
-      setAddresses(savedAddresses);
-    }
-  };
+  }, [loadAddresses]);
 
   const saveAddressesToStorage = (updatedAddresses) => {
     const nonDefaultAddresses = updatedAddresses.filter(addr => !addr.is_default);
@@ -131,7 +122,7 @@ const Address = () => {
       setShowAddForm(false);
       setEditingAddress(null);
       resetForm();
-    } catch (error) {
+    } catch {
       toast.error('Failed to update address');
     } finally {
       setLoading(false);
@@ -143,7 +134,7 @@ const Address = () => {
     setLoading(true);
     
     const newAddress = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       ...formData,
     };
     
@@ -173,7 +164,7 @@ const Address = () => {
       toast.success('Address added successfully!');
       setShowAddForm(false);
       resetForm();
-    } catch (error) {
+    } catch{
       toast.error('Failed to add address');
     } finally {
       setLoading(false);
@@ -222,7 +213,7 @@ const Address = () => {
         }));
         
         toast.success('Default address removed successfully!');
-      } catch (error) {
+      } catch {
         toast.error('Failed to remove default address');
         return;
       }
@@ -259,7 +250,7 @@ const Address = () => {
       setAddresses(updatedAddresses);
       saveAddressesToStorage(updatedAddresses.filter(addr => !addr.is_default));
       toast.success('Default address updated');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update default address');
     }
   };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
@@ -7,9 +7,7 @@ const NewArrivals = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+
 
   const fetchProducts = async () => {
     try {
@@ -20,6 +18,10 @@ const NewArrivals = () => {
     }
     setLoading(false);
   };
+
+    useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
@@ -50,7 +52,7 @@ const NewArrivals = () => {
       <div className="flex flex-col justify-center items-center text-center py-20 px-4">
         <h1 className="text-5xl md:text-6xl font-light text-gray-900 tracking-wide mb-4">NEW ARRIVALS</h1>
         <Link 
-          to="/products" 
+          to="/Collections" 
           className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-gray-600 hover:text-gray-900 transition"
         >
           SHOP NOW

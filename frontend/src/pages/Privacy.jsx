@@ -1,4 +1,4 @@
-import React from 'react';
+import {} from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheckIcon, DocumentTextIcon, LockClosedIcon, EnvelopeIcon, GlobeAltIcon, ServerIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 

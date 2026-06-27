@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import { TruckIcon,  ArrowPathIcon,  ShieldCheckIcon,  CreditCardIcon,  ChevronRightIcon,  HeartIcon } from '@heroicons/react/24/outline';
@@ -402,9 +402,7 @@ const Home = () => {
   const [newArrivals, setNewArrivals] = useState([]);
   const [loading, setLoading] = useState(true);
  
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+
  
   const fetchProducts = async () => {
     try {
@@ -417,6 +415,10 @@ const Home = () => {
     }
     setLoading(false);
   };
+
+    useEffect(() => {
+    fetchProducts();
+  }, []);
  
   const fallbackProducts = [
   {
@@ -477,6 +479,12 @@ const Home = () => {
         subtitle="Editor's Picks"
         link="/best-sellers"
         products={displayProducts}
+      />
+      <ProductSection
+      title="New Arrivals"
+      subtitle="Just Dropped"
+      link="/new-arrivals"
+      products={displayNewArrivals}
       />
  
       <FeaturesSection />
