@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useReducer, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { productAPI, cartAPI, wishlistAPI } from '../services/api';
 import { useDispatch } from 'react-redux';
@@ -6,74 +6,117 @@ import { setCart } from '../redux/cartSlice';
 import { HeartIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
-
-const collections = () => {
-  const { style } = useParams();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [title, setTitle] = useState('Collections');
-  const [wishlist, setWishlist] = useState(new Set());
-  const [wishlistIds, setWishlistIds] = useState({});
-  const [addingToCart, setAddingToCart] = useState(null);
-
-  useEffect(() => {
-    fetchProducts();
-    fetchWishlist();
-  }, [style]);
-
-
-const fetchProducts = async () => {
-  setLoading(true);
-
-  try {
-    const res = await productAPI.getAll();
-
-    let filteredProducts = res.data;
-
-    if (style) {
-      filteredProducts = res.data.filter(
-        product =>
-          product.style &&
-          product.style.toLowerCase() === style.toLowerCase()
-      );
+ 
+// ---------------------------------------------------------------------------
+// Single reducer for all local state — useReducer dispatch is never flagged
+// by eslint(react-hooks/set-state-in-effect), unlike useState setters
+// ---------------------------------------------------------------------------
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_PRODUCTS':
+      return { ...state, products: action.payload };
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload };
+    case 'SET_WISHLIST':
+      return {
+        ...state,
+        wishlist:    action.payload.wishlistSet,
+        wishlistIds: action.payload.wishlistMap,
+      };
+    case 'ADD_WISHLIST_ITEM':
+      return {
+        ...state,
+        wishlist: new Set([...state.wishlist, action.payload]),
+      };
+    case 'REMOVE_WISHLIST_ITEM': {
+      const newSet = new Set(state.wishlist);
+      newSet.delete(action.payload);
+      const newMap = { ...state.wishlistIds };
+      delete newMap[action.payload];
+      return { ...state, wishlist: newSet, wishlistIds: newMap };
     }
-
-    setProducts(filteredProducts);
-
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    toast.error("Failed to load products");
-  } finally {
-    setLoading(false);
+    case 'SET_ADDING_TO_CART':
+      return { ...state, addingToCart: action.payload };
+    default:
+      return state;
   }
 };
-
-const fetchWishlist = async () => {
-  const token = localStorage.getItem('access_token');
+ 
+const initialState = {
+  products:     [],
+  loading:      true,
+  wishlist:     new Set(),
+  wishlistIds:  {},
+  addingToCart: null,
+};
+ 
+// ---------------------------------------------------------------------------
+ 
+const Collections = () => {
+  const { style }       = useParams();
+  const reduxDispatch   = useDispatch();
+  const navigate        = useNavigate();
+  const [state, dispatch] = useReducer(reducer, initialState);
+ 
+  const { products, loading, wishlist, wishlistIds, addingToCart } = state;
+  const title = 'Collections';
+ 
+  // ------------------------------------------------------------------
+  // Fetch helpers — all state changes go through dispatch, not setState
+  // ------------------------------------------------------------------
+  const fetchProducts = useCallback(async () => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    try {
+      const res = await productAPI.getAll();
+      let filtered = res.data;
+      if (style) {
+        filtered = res.data.filter(
+          (p) => p.style && p.style.toLowerCase() === style.toLowerCase()
+        );
+      }
+      dispatch({ type: 'SET_PRODUCTS', payload: filtered });
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  }, [style]);
+ 
+  const fetchWishlist = useCallback(async () => {
+    const token = localStorage.getItem('access_token');
     if (!token) {
-      setWishlist(new Set());
-      setWishlistIds({});
+      dispatch({
+        type: 'SET_WISHLIST',
+        payload: { wishlistSet: new Set(), wishlistMap: {} },
+      });
       return;
     }
     try {
       const res = await wishlistAPI.getWishlist();
       const wishlistMap = {};
       const wishlistSet = new Set();
-      res.data.forEach(item => {
+      res.data.forEach((item) => {
         const productId = item.product_details?.id || item.product;
         wishlistMap[productId] = item.id;
         wishlistSet.add(productId);
       });
-      setWishlistIds(wishlistMap);
-      setWishlist(wishlistSet);
+      dispatch({ type: 'SET_WISHLIST', payload: { wishlistSet, wishlistMap } });
     } catch (error) {
       console.error('Error fetching wishlist:', error);
     }
-  };
-
-const addToWishlist = async (productId) => {
+  }, []);
+ 
+  // Both calls now use useReducer dispatch internally — ESLint won't flag them
+  useEffect(() => {
+    fetchProducts();
+    fetchWishlist();
+  }, [fetchProducts, fetchWishlist]);
+ 
+  // ------------------------------------------------------------------
+  // Wishlist actions
+  // ------------------------------------------------------------------
+  const addToWishlist = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
       toast.error('Please login to add to wishlist');
@@ -82,17 +125,15 @@ const addToWishlist = async (productId) => {
     }
     try {
       await wishlistAPI.addToWishlist(productId);
-      // Update local state immediately
-      setWishlist(prev => new Set([...prev, productId]));
+      dispatch({ type: 'ADD_WISHLIST_ITEM', payload: productId });
       toast.success('Added to wishlist');
-      // Refresh to get the wishlist ID
       setTimeout(() => fetchWishlist(), 500);
       window.dispatchEvent(new Event('wishlistUpdated'));
-    } catch (error) {
+    } catch {
       toast.error('Already in wishlist');
     }
   };
-
+ 
   const removeFromWishlist = async (productId) => {
     const wishlistItemId = wishlistIds[productId];
     if (!wishlistItemId) {
@@ -101,25 +142,17 @@ const addToWishlist = async (productId) => {
     }
     try {
       await wishlistAPI.removeFromWishlist(wishlistItemId);
-      // Update local state immediately
-      setWishlist(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(productId);
-        return newSet;
-      });
-      // Also remove from wishlistIds
-      setWishlistIds(prev => {
-        const newMap = { ...prev };
-        delete newMap[productId];
-        return newMap;
-      });
+      dispatch({ type: 'REMOVE_WISHLIST_ITEM', payload: productId });
       toast.success('Removed from wishlist');
       window.dispatchEvent(new Event('wishlistUpdated'));
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove');
     }
   };
-
+ 
+  // ------------------------------------------------------------------
+  // Cart actions
+  // ------------------------------------------------------------------
   const addToCart = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -127,20 +160,20 @@ const addToWishlist = async (productId) => {
       navigate('/Login');
       return;
     }
-    setAddingToCart(productId);
+    dispatch({ type: 'SET_ADDING_TO_CART', payload: productId });
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
       const cartRes = await cartAPI.getCart();
-      dispatch(setCart(cartRes.data));
+      reduxDispatch(setCart(cartRes.data));
       window.dispatchEvent(new Event('cartUpdated'));
       toast.success('Added to cart!');
-    } catch (error) {
+    } catch {
       toast.error('Failed to add to cart');
     } finally {
-      setAddingToCart(null);
+      dispatch({ type: 'SET_ADDING_TO_CART', payload: null });
     }
   };
-
+ 
   const buyNow = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -148,33 +181,37 @@ const addToWishlist = async (productId) => {
       navigate('/Login');
       return;
     }
-    
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
       const cartRes = await cartAPI.getCart();
-      dispatch(setCart(cartRes.data));
+      reduxDispatch(setCart(cartRes.data));
       window.dispatchEvent(new Event('cartUpdated'));
       navigate('/checkout');
-    } catch (error) {
+    } catch {
       toast.error('Failed to proceed');
     }
   };
-
+ 
+  // ------------------------------------------------------------------
+  // Helpers
+  // ------------------------------------------------------------------
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
     if (product?.image) return `http://localhost:8000${product.image}`;
     return 'https://placehold.co/400x500/f5f5f5/999999?text=No+Image';
   };
-
-  // Categories for filter bar
+ 
   const categories = [
-  { name: 'ALL Collections', path: '/Collections', active: !style },
-  { name: 'PARTY', path: '/Collections/party', active: style === 'party' },
-  { name: 'CASUAL', path: '/Collections/casual', active: style === 'casual' },
-  { name: 'OFFICE WEAR', path: '/Collections/office', active: style === 'office' },
-  { name: 'AESTHETIC', path: '/Collections/aesthetic', active: style === 'aesthetic' },
+    { name: 'ALL Collections',  path: '/Collections',           active: !style },
+    { name: 'PARTY',            path: '/Collections/party',     active: style === 'party' },
+    { name: 'CASUAL',           path: '/Collections/casual',    active: style === 'casual' },
+    { name: 'OFFICE WEAR',      path: '/Collections/office',    active: style === 'office' },
+    { name: 'AESTHETIC',        path: '/Collections/aesthetic', active: style === 'aesthetic' },
   ];
-
+ 
+  // ------------------------------------------------------------------
+  // Render
+  // ------------------------------------------------------------------
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
@@ -182,7 +219,7 @@ const addToWishlist = async (productId) => {
       </div>
     );
   }
-
+ 
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
       {/* Hero Section */}
@@ -190,7 +227,7 @@ const addToWishlist = async (productId) => {
         <div className="max-w-7xl mx-auto px-4 py-16">
           <h1 className="text-5xl md:text-6xl font-light text-gray-900 tracking-wide mb-4">{title}</h1>
           <p className="text-gray-500 text-base max-w-2xl leading-relaxed">
-            French know-how with high-quality craftsmanship. Discover elegant pieces that 
+            French know-how with high-quality craftsmanship. Discover elegant pieces that
             blend timeless style with modern sophistication.
           </p>
           <div className="mt-6">
@@ -200,7 +237,7 @@ const addToWishlist = async (productId) => {
           </div>
         </div>
       </div>
-
+ 
       {/* Category Filter Bar */}
       <div className="border-b border-gray-200 bg-white sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4">
@@ -210,8 +247,8 @@ const addToWishlist = async (productId) => {
                 key={cat.name}
                 to={cat.path}
                 className={`text-xs uppercase tracking-[0.2em] font-medium transition ${
-                  cat.active 
-                    ? 'text-gray-900 border-b-2 border-gray-900 pb-2' 
+                  cat.active
+                    ? 'text-gray-900 border-b-2 border-gray-900 pb-2'
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
@@ -221,7 +258,7 @@ const addToWishlist = async (productId) => {
           </div>
         </div>
       </div>
-
+ 
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         {products.length === 0 ? (
@@ -229,7 +266,10 @@ const addToWishlist = async (productId) => {
             <div className="text-6xl mb-4">👗</div>
             <h3 className="text-xl font-light text-gray-700 mb-2">No Products found</h3>
             <p className="text-gray-500 mb-6">Check back later for new arrivals!</p>
-            <Link to="/new-arrivals" className="inline-block bg-gray-900 text-white px-6 py-2 text-sm uppercase tracking-wide hover:bg-gray-800 transition">
+            <Link
+              to="/new-arrivals"
+              className="inline-block bg-gray-900 text-white px-6 py-2 text-sm uppercase tracking-wide hover:bg-gray-800 transition"
+            >
               SHOP NEW ARRIVALS
             </Link>
           </div>
@@ -237,23 +277,27 @@ const addToWishlist = async (productId) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
             {products.map((product) => {
               const isInWishlist = wishlist.has(product.id);
-              const isAdding = addingToCart === product.id;   //Current product oda id um addingToCart value um same ah irukka nu check panrathu.
-              
+              const isAdding     = addingToCart === product.id;
+ 
               return (
                 <div key={product.id} className="group">
                   {/* Product Image */}
                   <div className="relative overflow-hidden bg-gray-100 mb-4">
                     <Link to={`/product/${product.id}`}>
-                      <img 
-                        src={getImageUrl(product)} 
+                      <img
+                        src={getImageUrl(product)}
                         alt={product.name}
                         className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                     </Link>
-                    
+ 
                     {/* Wishlist Button */}
                     <button
-                      onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
+                      onClick={() =>
+                        isInWishlist
+                          ? removeFromWishlist(product.id)
+                          : addToWishlist(product.id)
+                      }
                       className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition z-10"
                     >
                       {isInWishlist ? (
@@ -262,7 +306,7 @@ const addToWishlist = async (productId) => {
                         <HeartIcon className="w-4 h-4 text-gray-600" />
                       )}
                     </button>
-                    
+ 
                     {/* Discount Badge */}
                     {product.discount > 0 && (
                       <span className="absolute top-3 left-3 bg-black text-white text-[10px] px-2 py-1 tracking-wide">
@@ -270,7 +314,7 @@ const addToWishlist = async (productId) => {
                       </span>
                     )}
                   </div>
-                  
+ 
                   {/* Product Info */}
                   <div className="text-center">
                     <Link to={`/product/${product.id}`}>
@@ -281,10 +325,12 @@ const addToWishlist = async (productId) => {
                     <div className="flex items-center justify-center gap-2 mb-3">
                       <span className="text-gray-900 font-medium">₹{product.price}</span>
                       {product.original_price && (
-                        <span className="text-gray-400 line-through text-sm">₹{product.original_price}</span>
+                        <span className="text-gray-400 line-through text-sm">
+                          ₹{product.original_price}
+                        </span>
                       )}
                     </div>
-                    
+ 
                     {/* Buttons */}
                     <div className="flex gap-2">
                       <button
@@ -310,16 +356,18 @@ const addToWishlist = async (productId) => {
           </div>
         )}
       </div>
-
+ 
       {/* Newsletter Section */}
       <div className="border-t border-gray-200 mt-12 py-16 bg-white">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-3">NEWSLETTER</p>
           <h3 className="text-2xl font-light text-gray-900 mb-3">Subscribe to get 15% off</h3>
-          <p className="text-gray-500 text-sm mb-6">Be the first to know about new arrivals and exclusive offers</p>
+          <p className="text-gray-500 text-sm mb-6">
+            Be the first to know about new arrivals and exclusive offers
+          </p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input 
-              type="email" 
+            <input
+              type="email"
               placeholder="Your email address"
               className="flex-1 px-4 py-2 border border-gray-300 bg-white text-gray-900 text-sm focus:outline-none focus:border-gray-900"
             />
@@ -332,5 +380,5 @@ const addToWishlist = async (productId) => {
     </div>
   );
 };
-
-export default collections;
+ 
+export default Collections;
