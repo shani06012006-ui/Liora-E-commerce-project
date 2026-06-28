@@ -26,7 +26,6 @@ import Collections from './pages/Collections';
 import BestSellers from './pages/BestSellers';
 import Sale from './pages/Sale';
 
-
 //Resuable layout 
 const MainLayout = ({ children }) => (
   <div className="min-h-screen flex flex-col bg-gray-50">

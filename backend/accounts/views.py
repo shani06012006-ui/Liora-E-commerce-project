@@ -4,14 +4,14 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny  #permision check
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from django.db.models import Sum, Count
+from django.db.models import Sum
 from orders.models import Order
 from products.models import Product
 from django.contrib.auth import get_user_model
 from .models import User
 from .serializers import UserSerializer, RegisterSerializer
 
-User = get_user_model()      #Settings la set panniruka User model
+get_user_model()      #Settings la set panniruka User model
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -42,7 +42,7 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password) #Indha username password correct ah?
         
         if user and user.is_active and not user.is_blocked:
-            refresh = RefreshToken.for_user(user)      #Indha user login aayitan , Token create pannu
+            refresh = RefreshToken.for_user(user)      #Indha user login aayitan , intha user iku pudhu token create pannu
             return Response({
                 'user': UserSerializer(user).data,
                 'refresh': str(refresh),

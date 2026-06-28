@@ -2,25 +2,25 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { ShoppingBagIcon, UserIcon, MagnifyingGlassIcon, HeartIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { logout } from '../redux/authSlice';
 import { cartAPI, wishlistAPI } from '../services/api';
 import { setCart } from '../redux/cartSlice';
-import toast from 'react-hot-toast';
- 
+import { handleLogout } from '../redux/authUtils';
+
+
 const uiReducer = (state, action) => {
   switch (action.type) {
-    case 'SET_WISHLIST_COUNT': 
-     return { ...state, wishlistCount: action.payload };
-    case 'SET_DROPDOWN':       
-     return { ...state, isDropdownOpen: action.payload };
-    case 'SET_SEARCH_OPEN':    
-     return { ...state, isSearchOpen: action.payload };
-    case 'SET_SEARCH_TERM':    
-     return { ...state, searchTerm: action.payload };
-    case 'LOGOUT':             
-     return { ...state, wishlistCount: 0, isDropdownOpen: false };
-    default:                   
-     return state;
+    case 'SET_WISHLIST_COUNT':
+      return { ...state, wishlistCount: action.payload };
+    case 'SET_DROPDOWN':
+      return { ...state, isDropdownOpen: action.payload };
+    case 'SET_SEARCH_OPEN':
+      return { ...state, isSearchOpen: action.payload };
+    case 'SET_SEARCH_TERM':
+      return { ...state, searchTerm: action.payload };
+    case 'LOGOUT':
+      return { ...state, wishlistCount: 0, isDropdownOpen: false };
+    default:
+      return state;
   }
 };
  
@@ -30,7 +30,7 @@ const initialUI = {
   isSearchOpen:   false,
   searchTerm:     '',
 };
-  
+ 
 const Navbar = () => {
   const reduxDispatch = useDispatch();
   const navigate      = useNavigate();
@@ -51,7 +51,7 @@ const Navbar = () => {
   const { wishlistCount, isDropdownOpen, isSearchOpen, searchTerm } = ui;
  
   const dropdownRef = useRef(null);
-
+ 
   const fetchCartCount = useCallback(async () => {
     if (!localStorage.getItem('access_token')) return;
     try {
@@ -97,16 +97,10 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
  
-
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user');
-    reduxDispatch(logout());
-    reduxDispatch(setCart({ items: [] }));
+  // ✅ Shared logout utility use பண்றோம் + Navbar local state reset
+  const onLogout = () => {
     uiDispatch({ type: 'LOGOUT' });
-    toast.success('Logged out successfully!');
-    navigate('/');
+    handleLogout(reduxDispatch, navigate);
   };
  
   const handleSearch = (e) => {
@@ -117,7 +111,6 @@ const Navbar = () => {
     }
   };
  
-
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -215,10 +208,9 @@ const Navbar = () => {
                     >
                       My Orders
                     </Link>
-
                     <hr className="my-1" />
                     <button
-                      onClick={handleLogout}
+                      onClick={onLogout}
                       className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 rounded-b-lg"
                     >
                       Logout
