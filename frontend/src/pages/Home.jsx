@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../services/api';
-import { TruckIcon,  ArrowPathIcon,  ShieldCheckIcon,  CreditCardIcon,  ChevronRightIcon,  HeartIcon } from '@heroicons/react/24/outline';
+import { TruckIcon, ArrowPathIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon, HeartIcon } from '@heroicons/react/24/outline';
  
-
+ 
 const Hero = () => (
   <div className="relative h-screen w-full overflow-hidden bg-white">
     <div className="absolute inset-0 flex justify-center items-center">
@@ -14,7 +14,6 @@ const Hero = () => (
       />
     </div>
  
-  
     <div className="absolute left-16 top-32 z-20">
       <p className="text-xs uppercase tracking-[0.35em] text-black/70 leading-6">
         Fashion
@@ -25,7 +24,6 @@ const Hero = () => (
       </p>
     </div>
  
-  
     <div className="absolute right-16 bottom-24 z-20 text-right">
       <p className="text-xs uppercase tracking-[0.35em] text-black/70 leading-6">
         New
@@ -44,29 +42,29 @@ const Hero = () => (
   </div>
 );
  
-
+ 
 const CategorySection = () => {
   const categories = [
     {
-      name: 'NEW ARRIVALS',
+      name:      'NEW ARRIVALS',
       shopLabel: 'SHOP NEW ARRIVALS',
-      desc: 'Fresh drops, every season.',
-      image: 'NEW.jpg',
-      link: '/new-arrivals',
+      desc:      'Fresh drops, every season.',
+      image:     'NEW.jpg',
+      link:      '/new-arrivals',
     },
     {
-      name: 'COLLECTIONS',
+      name:      'COLLECTIONS',
       shopLabel: 'SHOP COLLECTIONS',
-      desc: 'Curated for every you.',
-      image: 'collections.jpg',
-      link: '/Collections',
+      desc:      'Curated for every you.',
+      image:     'collections.jpg',
+      link:      '/Collections',
     },
     {
-      name: 'SIGNATURE STYLES',
+      name:      'SIGNATURE STYLES',
       shopLabel: 'SHOP SIGNATURE',
-      desc: 'Timeless. Effortlessly iconic.',
-      image: 'Signature.jpg',
-      link: '/signature',
+      desc:      'Timeless. Effortlessly iconic.',
+      image:     'Signature.jpg',
+      link:      '/signature',
     },
   ];
  
@@ -91,31 +89,19 @@ const CategorySection = () => {
             <div>
               <p
                 className="text-white font-semibold mb-1"
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '13px',
-                  letterSpacing: '0.12em',
-                }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '13px', letterSpacing: '0.12em' }}
               >
                 {cat.name}
               </p>
               <p
                 className="text-white/55 mb-4 leading-snug"
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '11px',
-                  letterSpacing: '0.04em',
-                }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '11px', letterSpacing: '0.04em' }}
               >
                 {cat.desc}
               </p>
               <span
                 className="inline-flex items-center gap-1 text-white/70 group-hover:text-white transition-colors border-b border-white/30 group-hover:border-white pb-[2px]"
-                style={{
-                  fontFamily: "'Montserrat', sans-serif",
-                  fontSize: '10px',
-                  letterSpacing: '0.15em',
-                }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px', letterSpacing: '0.15em' }}
               >
                 {cat.shopLabel} →
               </span>
@@ -127,7 +113,7 @@ const CategorySection = () => {
   );
 };
  
-
+ 
 const NewSeasonBanner = () => (
   <div
     className="relative w-full overflow-hidden"
@@ -142,32 +128,25 @@ const NewSeasonBanner = () => (
       />
       <div
         className="absolute inset-0"
-        style={{
-          background: 'linear-gradient(to right, #e8e5e0 38%, transparent 70%)',
-        }}
+        style={{ background: 'linear-gradient(to right, #e8e5e0 38%, transparent 70%)' }}
       />
     </div>
  
-    <div className="relative z-10 flex flex-col justify-center h-full px-16 py-20"
-         style={{ minHeight: '520px' }}>
+    <div className="relative z-10 flex flex-col justify-center h-full px-16 py-20" style={{ minHeight: '520px' }}>
       <p
         className="uppercase text-black/50 mb-3"
-        style={{
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: '11px',
-          letterSpacing: '0.3em',
-        }}
+        style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '11px', letterSpacing: '0.3em' }}
       >
         NEW SEASON
       </p>
       <h2
         className="text-black leading-none mb-5"
         style={{
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: 'clamp(56px, 8vw, 100px)',
-          fontWeight: 800,
+          fontFamily:    "'Montserrat', sans-serif",
+          fontSize:      'clamp(56px, 8vw, 100px)',
+          fontWeight:    800,
           letterSpacing: '-0.02em',
-          lineHeight: 0.9,
+          lineHeight:    0.9,
         }}
       >
         NEW
@@ -176,11 +155,7 @@ const NewSeasonBanner = () => (
       </h2>
       <p
         className="text-black/60 mb-8 max-w-xs"
-        style={{
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: '13px',
-          letterSpacing: '0.04em',
-        }}
+        style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '13px', letterSpacing: '0.04em' }}
       >
         Discover everything new and now.
       </p>
@@ -188,31 +163,32 @@ const NewSeasonBanner = () => (
         to="/new-arrivals"
         className="inline-block w-fit"
         style={{
-          background: '#111',
-          color: '#fff',
-          fontFamily: "'Montserrat', sans-serif",
-          fontSize: '11px',
-          fontWeight: 600,
+          background:    '#111',
+          color:         '#fff',
+          fontFamily:    "'Montserrat', sans-serif",
+          fontSize:      '11px',
+          fontWeight:    600,
           letterSpacing: '0.2em',
-          padding: '14px 28px',
+          padding:       '14px 28px',
           textDecoration: 'none',
-          transition: 'background 0.2s',
+          transition:    'background 0.2s',
         }}
         onMouseOver={e => (e.currentTarget.style.background = '#333')}
-        onMouseOut={e => (e.currentTarget.style.background = '#111')}
+        onMouseOut={e  => (e.currentTarget.style.background = '#111')}
       >
         EXPLORE COLLECTION
       </Link>
     </div>
   </div>
 );
-
+ 
+ 
 const FeaturesSection = () => {
   const features = [
-    { icon: TruckIcon,       title: 'FAST DELIVERY',   description: 'Quick & safe delivery' },
-    { icon: ArrowPathIcon,   title: 'EASY RETURNS',    description: 'Within 15 days' },
+    { icon: TruckIcon,       title: 'FAST DELIVERY',   description: 'Quick & safe delivery'  },
+    { icon: ArrowPathIcon,   title: 'EASY RETURNS',    description: 'Within 15 days'          },
     { icon: ShieldCheckIcon, title: 'QUALITY ASSURED', description: 'Best fashion, best quality' },
-    { icon: CreditCardIcon,  title: 'SECURE PAYMENT',  description: '100% secure checkout' },
+    { icon: CreditCardIcon,  title: 'SECURE PAYMENT',  description: '100% secure checkout'   },
   ];
  
   return (
@@ -227,21 +203,13 @@ const FeaturesSection = () => {
               <div>
                 <h3
                   className="text-gray-900 mb-0.5"
-                  style={{
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    letterSpacing: '0.15em',
-                  }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em' }}
                 >
                   {f.title}
                 </h3>
                 <p
                   className="text-gray-400"
-                  style={{
-                    fontFamily: "'Montserrat', sans-serif",
-                    fontSize: '10px',
-                  }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px' }}
                 >
                   {f.description}
                 </p>
@@ -253,20 +221,18 @@ const FeaturesSection = () => {
     </div>
   );
 };
-
+ 
+ 
 const ProductSection = ({ title, subtitle, link, products }) => {
   const getImageUrl = (product) => {
     if (product.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
       return product.image;
     }
-    // Check for image_url from API
     if (product?.image_url) return product.image_url;
-    // Check for image from API
-    if (product?.image) return `http://localhost:8000${product.image}`;
-    // Return placeholder if nothing works
+    if (product?.image)     return `http://localhost:8000${product.image}`;
     return 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=Product';
   };
-
+ 
   return (
     <div className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
@@ -275,20 +241,23 @@ const ProductSection = ({ title, subtitle, link, products }) => {
             <h2 className="text-gray-900 mb-1 text-3xl md:text-4xl font-serif">{title}</h2>
             <p className="text-gray-400 text-xs uppercase tracking-[0.25em]">{subtitle}</p>
           </div>
-          <Link to={link} className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-xs uppercase tracking-[0.2em]">
+          <Link
+            to={link}
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-xs uppercase tracking-[0.2em]"
+          >
             VIEW ALL <ChevronRightIcon className="w-3 h-3" />
           </Link>
         </div>
-
+ 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.map((product) => (
             <div key={product.id} className="group">
               <Link to={`/product/${product.id}`}>
                 <div className="relative overflow-hidden bg-gray-100 aspect-[3/4]">
-                  <img 
-                    src={getImageUrl(product)} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                  <img
+                    src={getImageUrl(product)}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   {product.discount > 0 && (
                     <span className="absolute top-3 left-3 bg-black text-white px-2 py-1 text-[9px] tracking-wide">
@@ -300,6 +269,7 @@ const ProductSection = ({ title, subtitle, link, products }) => {
                   </button>
                 </div>
               </Link>
+ 
               <div className="mt-3">
                 <Link to={`/product/${product.id}`}>
                   <h3 className="text-gray-800 hover:text-gray-500 text-xs font-medium tracking-wide line-clamp-1">
@@ -312,9 +282,6 @@ const ProductSection = ({ title, subtitle, link, products }) => {
                     <p className="text-gray-400 line-through text-xs">₹{product.original_price}</p>
                   )}
                 </div>
-                <button className="mt-3 w-full py-2 border border-gray-200 text-gray-700 hover:bg-black hover:text-white hover:border-black text-[9px] font-semibold tracking-[0.2em] transition-all">
-                  ADD TO CART
-                </button>
               </div>
             </div>
           ))}
@@ -324,8 +291,9 @@ const ProductSection = ({ title, subtitle, link, products }) => {
   );
 };
  
+ 
 const NewsletterSection = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail]           = useState('');
   const [subscribed, setSubscribed] = useState(false);
  
   const handleSubscribe = (e) => {
@@ -348,12 +316,7 @@ const NewsletterSection = () => {
         </p>
         <h2
           className="text-white mb-3"
-          style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(32px, 5vw, 48px)',
-            fontWeight: 300,
-            letterSpacing: '0.05em',
-          }}
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 300, letterSpacing: '0.05em' }}
         >
           Join Our Community
         </h2>
@@ -396,17 +359,15 @@ const NewsletterSection = () => {
   );
 };
  
-
+ 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [newArrivals, setNewArrivals] = useState([]);
-  const [loading, setLoading] = useState(true);
- 
-
+  const [newArrivals, setNewArrivals]           = useState([]);
+  const [loading, setLoading]                   = useState(true);
  
   const fetchProducts = async () => {
     try {
-      const res = await productAPI.getAll({ limit: 8 });
+      const res      = await productAPI.getAll({ limit: 8 });
       const products = res.data;
       setFeaturedProducts(products.slice(0, 4));
       setNewArrivals(products.slice(4, 8));
@@ -415,48 +376,20 @@ const Home = () => {
     }
     setLoading(false);
   };
-
-    useEffect(() => {
+ 
+  useEffect(() => {
     fetchProducts();
   }, []);
  
   const fallbackProducts = [
-  {
-    id: 1,
-    name: 'Jacket',
-    price: 2499,
-    original_price: 3499,
-    discount: 28,
-    image: 'https://i.pinimg.com/1200x/27/ea/c2/27eac2b4e982614e9dfc988f8d45cacd.jpg'
-  },
-  {
-    id: 2,
-    name: 'Joggers ',
-    price: 5999,
-    original_price: 8999,
-    discount: 33,
-    image:'https://i.pinimg.com/736x/74/d2/0a/74d20ab68e3d1b9552d1d6509055e351.jpg'
-  },
-  {
-    id: 3,
-    name: 'Office Wear',
-    price: 1299,
-    original_price: 1999,
-    discount: 35,
-    image: 'https://i.pinimg.com/1200x/23/74/5d/23745d46473b0a11655a093dcdc85ce5.jpg'
-  },
-  {
-    id: 4,
-    name: 'Cargo Pants',
-    price: 2999,
-    original_price: 3999,
-    discount: 34,
-    image: 'https://i.pinimg.com/736x/f9/0f/81/f90f81779a5afc0780ec6287b143aff1.jpg'
-  }
-];
+    { id: 1, name: 'Jacket',      price: 2499, original_price: 3499, discount: 28, image: 'https://i.pinimg.com/1200x/27/ea/c2/27eac2b4e982614e9dfc988f8d45cacd.jpg' },
+    { id: 2, name: 'Joggers',     price: 5999, original_price: 8999, discount: 33, image: 'https://i.pinimg.com/736x/74/d2/0a/74d20ab68e3d1b9552d1d6509055e351.jpg'  },
+    { id: 3, name: 'Office Wear', price: 1299, original_price: 1999, discount: 35, image: 'https://i.pinimg.com/1200x/23/74/5d/23745d46473b0a11655a093dcdc85ce5.jpg'  },
+    { id: 4, name: 'Cargo Pants', price: 2999, original_price: 3999, discount: 34, image: 'https://i.pinimg.com/736x/f9/0f/81/f90f81779a5afc0780ec6287b143aff1.jpg'  },
+  ];
  
-  const displayProducts    = featuredProducts.length  > 0 ? featuredProducts  : fallbackProducts;
-  const displayNewArrivals = newArrivals.length        > 0 ? newArrivals        : fallbackProducts;
+  const displayProducts    = featuredProducts.length > 0 ? featuredProducts : fallbackProducts;
+  const displayNewArrivals = newArrivals.length       > 0 ? newArrivals      : fallbackProducts;
  
   if (loading) {
     return (
@@ -469,11 +402,8 @@ const Home = () => {
   return (
     <main>
       <Hero />
- 
       <CategorySection />
-
       <NewSeasonBanner />
- 
       <ProductSection
         title="Best of Liora"
         subtitle="Editor's Picks"
@@ -481,16 +411,13 @@ const Home = () => {
         products={displayProducts}
       />
       <ProductSection
-      title="New Arrivals"
-      subtitle="Just Dropped"
-      link="/new-arrivals"
-      products={displayNewArrivals}
+        title="New Arrivals"
+        subtitle="Just Dropped"
+        link="/new-arrivals"
+        products={displayNewArrivals}
       />
- 
       <FeaturesSection />
- 
       <NewsletterSection />
- 
     </main>
   );
 };
