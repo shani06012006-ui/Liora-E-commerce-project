@@ -97,7 +97,6 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
  
-  // ✅ Shared logout utility use பண்றோம் + Navbar local state reset
   const onLogout = () => {
     uiDispatch({ type: 'LOGOUT' });
     handleLogout(reduxDispatch, navigate);

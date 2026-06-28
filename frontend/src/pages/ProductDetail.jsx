@@ -2,39 +2,26 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { productAPI, cartAPI, wishlistAPI, reviewAPI } from '../services/api';
-import { setCart } from '../redux/cartSlice';
+import { refreshCart } from '../redux/cartUtils';
 import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
  
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'SET_PRODUCT':        
-     return { ...state, product: action.payload };
-    case 'SET_LOADING':       
-     return { ...state, loading: action.payload };
-    case 'SET_QUANTITY':      
-     return { ...state, quantity: action.payload };
-    case 'SET_SELECTED_SIZE':  
-     return { ...state, selectedSize: action.payload };
-    case 'SET_SELECTED_COLOR': 
-     return { ...state, selectedColor: action.payload };
-    case 'SET_WISHLIST':       
-     return { ...state, isInWishlist: action.payload.status, wishlistId: action.payload.id };
-    case 'SET_REVIEWS':       
-     return { ...state, reviews: action.payload.reviews, averageRating: action.payload.averageRating };
-    case 'SET_SHOW_REVIEW_FORM': 
-     return { ...state, showReviewForm: action.payload };
-    case 'SET_REVIEW_DATA':    
-     return { ...state, reviewData: { ...state.reviewData, ...action.payload } };
-    case 'RESET_REVIEW_DATA':  
-     return { ...state, reviewData: { rating: 5, title: '', comment: '' }, showReviewForm: false };
-    case 'SET_ADDING_TO_CART': 
-     return { ...state, addingToCart: action.payload };
-    case 'SET_SUBMITTING':     
-     return { ...state, submitting: action.payload };
-    default:                   
-     return state;
+    case 'SET_PRODUCT':          return { ...state, product:        action.payload };
+    case 'SET_LOADING':          return { ...state, loading:        action.payload };
+    case 'SET_QUANTITY':         return { ...state, quantity:       action.payload };
+    case 'SET_SELECTED_SIZE':    return { ...state, selectedSize:   action.payload };
+    case 'SET_SELECTED_COLOR':   return { ...state, selectedColor:  action.payload };
+    case 'SET_WISHLIST':         return { ...state, isInWishlist:   action.payload.status, wishlistId: action.payload.id };
+    case 'SET_REVIEWS':          return { ...state, reviews:        action.payload.reviews, averageRating: action.payload.averageRating };
+    case 'SET_SHOW_REVIEW_FORM': return { ...state, showReviewForm: action.payload };
+    case 'SET_REVIEW_DATA':      return { ...state, reviewData:     { ...state.reviewData, ...action.payload } };
+    case 'RESET_REVIEW_DATA':    return { ...state, reviewData:     { rating: 5, title: '', comment: '' }, showReviewForm: false };
+    case 'SET_ADDING_TO_CART':   return { ...state, addingToCart:   action.payload };
+    case 'SET_SUBMITTING':       return { ...state, submitting:     action.payload };
+    default:                     return state;
   }
 };
  
@@ -57,12 +44,11 @@ const initialState = {
 const sizes  = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const colors = ['Black', 'White', 'Navy', 'Burgundy', 'Beige'];
  
- 
 const ProductDetail = () => {
-  const { id }       = useParams();
-  const navigate     = useNavigate();
+  const { id }        = useParams();
+  const navigate      = useNavigate();
   const reduxDispatch = useDispatch();
-  const { user }     = useSelector((state) => state.auth);
+  const { user }      = useSelector((state) => state.auth);
  
   const [state, dispatch] = useReducer(reducer, initialState);
   const {
@@ -71,7 +57,6 @@ const ProductDetail = () => {
     showReviewForm, reviewData, addingToCart, submitting,
   } = state;
  
-
   const fetchProduct = useCallback(async () => {
     try {
       const res = await productAPI.getById(id);
@@ -100,17 +85,13 @@ const ProductDetail = () => {
   }, [id]);
  
   const checkWishlistStatus = useCallback(async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) return;
+    if (!localStorage.getItem('access_token')) return;
     try {
-      const res = await wishlistAPI.getWishlist();
+      const res  = await wishlistAPI.getWishlist();
       const item = res.data.find(
         (i) => i.product === parseInt(id) || i.product_details?.id === parseInt(id)
       );
-      dispatch({
-        type: 'SET_WISHLIST',
-        payload: { status: !!item, id: item?.id || null },
-      });
+      dispatch({ type: 'SET_WISHLIST', payload: { status: !!item, id: item?.id || null } });
     } catch (error) {
       console.error('Error:', error);
     }
@@ -122,10 +103,9 @@ const ProductDetail = () => {
     checkWishlistStatus();
   }, [fetchProduct, fetchReviews, checkWishlistStatus]);
  
-
+  // ─── Cart actions ────────────
   const addToCart = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!localStorage.getItem('access_token')) {
       toast.error('Please login to add items to cart');
       navigate('/Login');
       return;
@@ -133,8 +113,7 @@ const ProductDetail = () => {
     dispatch({ type: 'SET_ADDING_TO_CART', payload: true });
     try {
       await cartAPI.addToCart({ product_id: product.id, quantity });
-      const cartRes = await cartAPI.getCart();
-      reduxDispatch(setCart(cartRes.data));
+      await refreshCart(reduxDispatch);
       toast.success(`Added ${quantity} item(s) to cart!`);
     } catch {
       toast.error('Failed to add to cart');
@@ -144,25 +123,23 @@ const ProductDetail = () => {
   };
  
   const buyNow = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!localStorage.getItem('access_token')) {
       toast.error('Please login to buy');
       navigate('/Login');
       return;
     }
     try {
       await cartAPI.addToCart({ product_id: product.id, quantity });
-      const cartRes = await cartAPI.getCart();
-      reduxDispatch(setCart(cartRes.data));
+      await refreshCart(reduxDispatch);
       navigate('/checkout');
     } catch {
       toast.error('Failed to proceed');
     }
   };
  
+  // ─── Wishlist ───────────────
   const toggleWishlist = async () => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    if (!localStorage.getItem('access_token')) {
       toast.error('Please login to add to wishlist');
       navigate('/Login');
       return;
@@ -177,11 +154,13 @@ const ProductDetail = () => {
         toast.success('Added to wishlist');
         checkWishlistStatus();
       }
+      window.dispatchEvent(new Event('wishlistUpdated'));
     } catch {
       toast.error('Failed to update wishlist');
     }
   };
  
+  // ─── Review ────────────
   const submitReview = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -204,20 +183,24 @@ const ProductDetail = () => {
       dispatch({ type: 'RESET_REVIEW_DATA' });
       fetchReviews();
     } catch (error) {
-      const msg = error.response?.data?.error || error.response?.data?.message || 'Failed to submit review';
+      const msg =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        'Failed to submit review';
       toast.error(msg);
     } finally {
       dispatch({ type: 'SET_SUBMITTING', payload: false });
     }
   };
  
+  // ─── Image helper ─────────────────────────────────────────────────
   const getImageUrl = (p) => {
     if (p?.image_url) return p.image_url;
     if (p?.image)     return `http://localhost:8000${p.image}`;
     return 'https://placehold.co/600x800/e0e0e0/2D2D2D?text=No+Image';
   };
  
-
+  // ─── Loading / Not found ──────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -233,11 +216,14 @@ const ProductDetail = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
         <p className="text-gray-500">Product not found.</p>
-        <Link to="/Collections" className="inline-block mt-4 text-gray-900 hover:text-gray-600">Back to Shop</Link>
+        <Link to="/Collections" className="inline-block mt-4 text-gray-900 hover:text-gray-600">
+          Back to Shop
+        </Link>
       </div>
     );
   }
  
+  // ─── Render ──────────────
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Breadcrumb */}
@@ -262,7 +248,10 @@ const ProductDetail = () => {
               <h1 className="text-3xl font-serif text-gray-900 mb-2">{product.name}</h1>
               <p className="text-gray-500 text-sm">{product.category?.toUpperCase()}</p>
             </div>
-            <button onClick={toggleWishlist} className="p-2 border border-gray-200 rounded-full hover:border-gray-900 transition">
+            <button
+              onClick={toggleWishlist}
+              className="p-2 border border-gray-200 rounded-full hover:border-gray-900 transition"
+            >
               {isInWishlist
                 ? <HeartSolidIcon className="w-5 h-5 text-red-500" />
                 : <HeartIcon className="w-5 h-5 text-gray-400 hover:text-gray-900" />}
@@ -273,7 +262,10 @@ const ProductDetail = () => {
           <div className="flex items-center gap-2 mt-3">
             <div className="flex">
               {[1,2,3,4,5].map((star) => (
-                <StarSolidIcon key={star} className={`w-4 h-4 ${star <= averageRating ? 'text-yellow-400' : 'text-gray-300'}`} />
+                <StarSolidIcon
+                  key={star}
+                  className={`w-4 h-4 ${star <= averageRating ? 'text-yellow-400' : 'text-gray-300'}`}
+                />
               ))}
             </div>
             <span className="text-sm text-gray-500">({reviews.length} reviews)</span>
@@ -298,10 +290,13 @@ const ProductDetail = () => {
             <h3 className="font-semibold text-gray-900 mb-2">Select Size</h3>
             <div className="flex flex-wrap gap-3">
               {sizes.map((size) => (
-                <button key={size}
+                <button
+                  key={size}
                   onClick={() => dispatch({ type: 'SET_SELECTED_SIZE', payload: size })}
                   className={`px-4 py-2 border rounded-lg transition ${
-                    selectedSize === size ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 hover:border-gray-900'
+                    selectedSize === size
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-300 hover:border-gray-900'
                   }`}
                 >
                   {size}
@@ -315,10 +310,13 @@ const ProductDetail = () => {
             <h3 className="font-semibold text-gray-900 mb-2">Select Color</h3>
             <div className="flex flex-wrap gap-3">
               {colors.map((color) => (
-                <button key={color}
+                <button
+                  key={color}
                   onClick={() => dispatch({ type: 'SET_SELECTED_COLOR', payload: color })}
                   className={`px-4 py-2 border rounded-lg transition ${
-                    selectedColor === color ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 hover:border-gray-900'
+                    selectedColor === color
+                      ? 'border-gray-900 bg-gray-900 text-white'
+                      : 'border-gray-300 hover:border-gray-900'
                   }`}
                 >
                   {color}
@@ -331,11 +329,19 @@ const ProductDetail = () => {
           <div className="mt-6">
             <h3 className="font-semibold text-gray-900 mb-2">Quantity</h3>
             <div className="flex items-center gap-4">
-              <button onClick={() => dispatch({ type: 'SET_QUANTITY', payload: Math.max(1, quantity - 1) })}
-                className="w-10 h-10 border rounded-lg hover:bg-gray-100 text-xl">-</button>
+              <button
+                onClick={() => dispatch({ type: 'SET_QUANTITY', payload: Math.max(1, quantity - 1) })}
+                className="w-10 h-10 border rounded-lg hover:bg-gray-100 text-xl"
+              >
+                -
+              </button>
               <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
-              <button onClick={() => dispatch({ type: 'SET_QUANTITY', payload: quantity + 1 })}
-                className="w-10 h-10 border rounded-lg hover:bg-gray-100 text-xl">+</button>
+              <button
+                onClick={() => dispatch({ type: 'SET_QUANTITY', payload: quantity + 1 })}
+                className="w-10 h-10 border rounded-lg hover:bg-gray-100 text-xl"
+              >
+                +
+              </button>
               <span className="text-sm text-gray-500">Stock: {product.stock} available</span>
             </div>
           </div>
@@ -347,19 +353,27 @@ const ProductDetail = () => {
             </div>
           )}
  
-          {/* Cart + Buy Now buttons */}
+          {/* Cart + Buy Now */}
           <div className="flex gap-3 mt-8">
-            <button onClick={addToCart} disabled={product.stock === 0 || addingToCart}
+            <button
+              onClick={addToCart}
+              disabled={product.stock === 0 || addingToCart}
               className={`flex-1 py-3 rounded-lg transition flex items-center justify-center gap-2 ${
-                product.stock === 0 || addingToCart ? 'bg-gray-300 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-gray-800'
+                product.stock === 0 || addingToCart
+                  ? 'bg-gray-300 cursor-not-allowed'
+                  : 'bg-gray-900 text-white hover:bg-gray-800'
               }`}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6.5M17 13l1.5 6.5M9 21h6M12 21v-8" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.5 6.5M17 13l1.5 6.5M9 21h6M12 21v-8" />
               </svg>
               {addingToCart ? 'ADDING...' : 'ADD TO CART'}
             </button>
-            <button onClick={buyNow} disabled={product.stock === 0}
+ 
+            <button
+              onClick={buyNow}
+              disabled={product.stock === 0}
               className={`flex-1 border border-gray-900 text-gray-900 py-3 rounded-lg transition flex items-center justify-center gap-2 ${
                 product.stock === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-900 hover:text-white'
               }`}
@@ -395,7 +409,10 @@ const ProductDetail = () => {
             <div className="flex items-center gap-2 mt-1">
               <div className="flex">
                 {[1,2,3,4,5].map((star) => (
-                  <StarSolidIcon key={star} className={`w-5 h-5 ${star <= averageRating ? 'text-yellow-400' : 'text-gray-300'}`} />
+                  <StarSolidIcon
+                    key={star}
+                    className={`w-5 h-5 ${star <= averageRating ? 'text-yellow-400' : 'text-gray-300'}`}
+                  />
                 ))}
               </div>
               <span className="text-sm text-gray-500">({reviews.length} reviews)</span>
@@ -418,38 +435,51 @@ const ProductDetail = () => {
               <label className="block text-sm text-gray-700 mb-2">Rating</label>
               <div className="flex gap-2">
                 {[1,2,3,4,5].map((star) => (
-                  <button key={star} type="button"
+                  <button
+                    key={star}
+                    type="button"
                     onClick={() => dispatch({ type: 'SET_REVIEW_DATA', payload: { rating: star } })}
                     className="focus:outline-none"
                   >
                     {star <= reviewData.rating
                       ? <StarSolidIcon className="w-8 h-8 text-yellow-400" />
-                      : <StarIcon className="w-8 h-8 text-gray-300" />}
+                      : <StarIcon     className="w-8 h-8 text-gray-300" />}
                   </button>
                 ))}
               </div>
             </div>
  
-            <input type="text" placeholder="Review Title" required
+            <input
+              type="text"
+              placeholder="Review Title"
+              required
               value={reviewData.title}
               onChange={(e) => dispatch({ type: 'SET_REVIEW_DATA', payload: { title: e.target.value } })}
               className="w-full px-4 py-2 border border-gray-200 rounded-lg mb-4 focus:ring-2 focus:ring-gray-900"
             />
  
-            <textarea placeholder="Your Review" rows="4" required
+            <textarea
+              placeholder="Your Review"
+              rows="4"
+              required
               value={reviewData.comment}
               onChange={(e) => dispatch({ type: 'SET_REVIEW_DATA', payload: { comment: e.target.value } })}
               className="w-full px-4 py-2 border border-gray-200 rounded-lg mb-4 focus:ring-2 focus:ring-gray-900"
             />
  
             <div className="flex gap-3">
-              <button type="submit" disabled={submitting}
-                className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-gray-900 text-white px-6 py-2 rounded-lg hover:bg-gray-800 disabled:opacity-50"
+              >
                 {submitting ? 'Submitting...' : 'Submit Review'}
               </button>
-              <button type="button"
+              <button
+                type="button"
                 onClick={() => dispatch({ type: 'SET_SHOW_REVIEW_FORM', payload: false })}
-                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
                 Cancel
               </button>
             </div>
@@ -467,17 +497,23 @@ const ProductDetail = () => {
                   <div>
                     <div className="flex gap-1 mb-1">
                       {[1,2,3,4,5].map((star) => (
-                        <StarSolidIcon key={star} className={`w-4 h-4 ${star <= review.rating ? 'text-yellow-400' : 'text-gray-300'}`} />
+                        <StarSolidIcon
+                          key={star}
+                          className={`w-4 h-4 ${star <= review.rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                        />
                       ))}
                     </div>
                     <h4 className="font-semibold text-gray-900">{review.title}</h4>
                     <p className="text-gray-600 text-sm mt-1">{review.comment}</p>
                     <p className="text-xs text-gray-400 mt-2">
-                      By {review.user_name || 'Anonymous'} • {new Date(review.created_at).toLocaleDateString()}
+                      By {review.user_name || 'Anonymous'} •{' '}
+                      {new Date(review.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   {review.is_verified_purchase && (
-                    <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">Verified Purchase</span>
+                    <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+                      Verified Purchase
+                    </span>
                   )}
                 </div>
               </div>

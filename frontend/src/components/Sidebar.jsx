@@ -1,11 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { handleLogout } from '../redux/authUtils';
-import {
-  UserIcon, HeartIcon, ShoppingBagIcon, MapPinIcon,
-  ShieldCheckIcon, DocumentTextIcon, QuestionMarkCircleIcon,
-  ArrowRightOnRectangleIcon, BellIcon, Cog6ToothIcon,
-} from '@heroicons/react/24/outline';
+import { UserIcon, HeartIcon, ShoppingBagIcon, MapPinIcon, ShieldCheckIcon, DocumentTextIcon, QuestionMarkCircleIcon, ArrowRightOnRectangleIcon, BellIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
  
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const { user } = useSelector((state) => state.auth);
