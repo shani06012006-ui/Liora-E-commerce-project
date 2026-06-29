@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
-import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
 import toast from 'react-hot-toast';
+import {addToWishlistUtil, removeFromWishlistUtil } from "../redux/wishlistUtils";
  
 /* ─── Font loader ─── */
 const FontLoader = () => (
@@ -211,7 +211,7 @@ const BestSellers = () => {
   const [email,        setEmail]        = useState('');
   const [subscribed,   setSubscribed]   = useState(false);
   const [wishlist,     setWishlist]     = useState(new Set());
-  const [wishlistIds,  setWishlistIds]  = useState({});
+  const [,  setWishlistIds]  = useState({});
   const [addingToCart, setAddingToCart] = useState(null);
  
   const fetchProducts = async () => {
@@ -266,29 +266,41 @@ const BestSellers = () => {
     }
   };
  
-  const toggleWishlist = async (productId) => {
-    if (wishlist.has(productId)) {
-      const wishlistItemId = wishlistIds[productId];
-      if (!wishlistItemId) return;
-      const result = await removeFromWishlistUtil(wishlistItemId);
-      if (result.success) {
-        setWishlist(prev => { const s = new Set(prev); s.delete(productId); return s; });
-        setWishlistIds(prev => { const m = { ...prev }; delete m[productId]; return m; });
-        toast.success('Removed from wishlist');
-      } else {
-        toast.error(result.message);
-      }
+
+const toggleWishlist = async (
+  productId,
+  isInWishlist,
+  wishlistId
+) => {
+
+  if (isInWishlist) {
+
+    const result = await removeFromWishlistUtil(wishlistId);
+
+    if (result.success) {
+      toast.success("Removed from wishlist");
+      fetchWishlist();
     } else {
-      const result = await addToWishlistUtil(productId, navigate);
-      if (result.success) {
-        setWishlist(prev => new Set([...prev, productId]));
-        await fetchWishlist(); // wishlistId map update
-        toast.success('Added to wishlist');
-      } else {
-        toast.error(result.message);
-      }
+      toast.error(result.message);
     }
-  };
+
+  } else {
+
+    const result = await addToWishlistUtil(
+      productId,
+      navigate
+    );
+
+    if (result.success) {
+      toast.success("Added to wishlist");
+      fetchWishlist();
+    } else {
+      toast.error(result.message);
+    }
+
+  }
+
+};
  
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -452,5 +464,5 @@ const BestSellers = () => {
     </>
   );
 };
- 
+
 export default BestSellers;

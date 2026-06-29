@@ -6,6 +6,7 @@ import { addToCartSafe, refreshCart } from '../redux/cartUtils';
 import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
+import { addToWishlistUtil, removeFromWishlistUtil } from "../redux/wishlistUtils";
  
 const reducer = (state, action) => {
   switch (action.type) {
@@ -141,27 +142,42 @@ const ProductDetail = () => {
     }
   };
  
-  const toggleWishlist = async () => {
-    if (!localStorage.getItem('access_token')) {
-      toast.error('Please login to add to wishlist');
-      navigate('/Login');
-      return;
+const toggleWishlist = async () => {
+
+  if (isInWishlist) {
+
+    const result = await removeFromWishlistUtil(wishlistId);
+
+    if (result.success) {
+      dispatch({
+        type: "SET_WISHLIST",
+        payload: {
+          status: false,
+          id: null,
+        },
+      });
+
+      toast.success("Removed from wishlist");
+    } else {
+      toast.error(result.message);
     }
-    try {
-      if (isInWishlist) {
-        await wishlistAPI.removeFromWishlist(wishlistId);
-        dispatch({ type: 'SET_WISHLIST', payload: { status: false, id: null } });
-        toast.success('Removed from wishlist');
-      } else {
-        await wishlistAPI.addToWishlist(product.id);
-        toast.success('Added to wishlist');
-        checkWishlistStatus();
-      }
-      window.dispatchEvent(new Event('wishlistUpdated'));
-    } catch {
-      toast.error('Failed to update wishlist');
+
+  } else {
+
+    const result = await addToWishlistUtil(
+      product.id,
+      navigate
+    );
+
+    if (result.success) {
+      toast.success("Added to wishlist");
+      checkWishlistStatus();
+    } else {
+      toast.error(result.message);
     }
-  };
+
+  }
+};
  
   const submitReview = async (e) => {
     e.preventDefault();

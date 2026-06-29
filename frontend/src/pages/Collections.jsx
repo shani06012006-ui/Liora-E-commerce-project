@@ -116,7 +116,7 @@ const Collections = () => {
     dispatch({ type: 'SET_ADDING_TO_CART', payload: productId });
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
-      await refreshCart(reduxDispatch); // ✅ Redux + Navbar cart count
+      await refreshCart(reduxDispatch);
       toast.success('Added to cart!');
     } catch {
       toast.error('Failed to add to cart');
