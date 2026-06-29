@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { HeartIcon, TrashIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { wishlistAPI, cartAPI } from '../services/api';
-import { setCart } from '../redux/cartSlice';
+import { refreshCart } from '../redux/cartUtils';
 import toast from 'react-hot-toast';
-
+ 
 const Wishlist = () => {
-  const navigate = useNavigate();
+  const navigate        = useNavigate();
+  const dispatch        = useDispatch();
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [addingToCart, setAddingToCart] = useState(null);
-  const dispatch = useDispatch();
-
+  const [loading,       setLoading]       = useState(true);
+  const [addingToCart,  setAddingToCart]  = useState(null);
+ 
   const fetchWishlist = async () => {
     try {
       const res = await wishlistAPI.getWishlist();
@@ -22,30 +22,32 @@ const Wishlist = () => {
     }
     setLoading(false);
   };
-
-    useEffect(() => {
+ 
+  useEffect(() => {
     fetchWishlist();
   }, []);
-
+ 
   const removeFromWishlist = async (id) => {
     try {
       await wishlistAPI.removeFromWishlist(id);
       setWishlistItems(wishlistItems.filter(item => item.id !== id));
+      window.dispatchEvent(new Event('wishlistUpdated'));
       toast.success('Removed from wishlist');
     } catch {
       toast.error('Failed to remove');
     }
   };
-
+ 
   const addToCart = async (productId, wishlistId) => {
     setAddingToCart(productId);
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
-      const cartRes = await cartAPI.getCart();
-      dispatch(setCart(cartRes.data));
-      // Remove from wishlist after adding to cart
+      await refreshCart(dispatch);
+ 
       await wishlistAPI.removeFromWishlist(wishlistId);
       setWishlistItems(wishlistItems.filter(item => item.id !== wishlistId));
+      window.dispatchEvent(new Event('wishlistUpdated'));
+ 
       toast.success('Moved to cart!');
     } catch {
       toast.error('Failed to add to cart');
@@ -53,8 +55,7 @@ const Wishlist = () => {
       setAddingToCart(null);
     }
   };
-
-  // Buy Now function - Direct checkout
+ 
   const buyNow = async (productId, wishlistId) => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -62,25 +63,26 @@ const Wishlist = () => {
       navigate('/Login');
       return;
     }
-    
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
-      const cartRes = await cartAPI.getCart();
-      dispatch(setCart(cartRes.data));
-      // Remove from wishlist
+      await refreshCart(dispatch);
+ 
       await wishlistAPI.removeFromWishlist(wishlistId);
+      setWishlistItems(wishlistItems.filter(item => item.id !== wishlistId));
+      window.dispatchEvent(new Event('wishlistUpdated'));
+ 
       navigate('/checkout');
     } catch {
       toast.error('Failed to proceed');
     }
   };
-
+ 
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
-    if (product?.image) return `http://localhost:8000${product.image}`;
+    if (product?.image)     return `http://localhost:8000${product.image}`;
     return 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=No+Image';
   };
-
+ 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -88,7 +90,7 @@ const Wishlist = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Header */}
@@ -97,12 +99,15 @@ const Wishlist = () => {
         <h1 className="text-3xl font-serif text-gray-900">My Wishlist</h1>
         <span className="text-sm text-gray-500">({wishlistItems.length} items)</span>
       </div>
-
+ 
       {wishlistItems.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
           <HeartIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <p className="text-gray-500 mb-4">Your wishlist is empty</p>
-          <Link to="/Collections" className="inline-block bg-gray-900 text-white px-6 py-2 text-sm uppercase tracking-wide hover:bg-gray-800 transition">
+          <Link
+            to="/Collections"
+            className="inline-block bg-gray-900 text-white px-6 py-2 text-sm uppercase tracking-wide hover:bg-gray-800 transition"
+          >
             Start Shopping
           </Link>
         </div>
@@ -115,18 +120,19 @@ const Wishlist = () => {
             <div className="col-span-2 text-center">Discount</div>
             <div className="col-span-3 text-right">Actions</div>
           </div>
-
+ 
           {/* Wishlist Items */}
           <div className="divide-y divide-gray-100">
             {wishlistItems.map((item) => (
               <div key={item.id} className="p-6 hover:bg-gray-50 transition">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+ 
                   {/* Product Image & Name */}
                   <div className="md:col-span-5">
                     <div className="flex gap-4">
                       <Link to={`/product/${item.product_details.id}`} className="flex-shrink-0">
-                        <img 
-                          src={getImageUrl(item.product_details)} 
+                        <img
+                          src={getImageUrl(item.product_details)}
                           alt={item.product_details.name}
                           className="w-20 h-24 object-cover rounded-lg bg-gray-100"
                         />
@@ -137,7 +143,9 @@ const Wishlist = () => {
                             {item.product_details.name}
                           </h3>
                         </Link>
-                        <p className="text-xs text-gray-400 mt-1 uppercase">{item.product_details.category}</p>
+                        <p className="text-xs text-gray-400 mt-1 uppercase">
+                          {item.product_details.category}
+                        </p>
                         <div className="flex items-center gap-3 mt-2 md:hidden">
                           <div>
                             <p className="text-xs text-gray-500">Price</p>
@@ -146,22 +154,26 @@ const Wishlist = () => {
                           {item.product_details.discount > 0 && (
                             <div>
                               <p className="text-xs text-gray-500">Discount</p>
-                              <p className="text-sm text-green-600 font-medium">-{item.product_details.discount}%</p>
+                              <p className="text-sm text-green-600 font-medium">
+                                -{item.product_details.discount}%
+                              </p>
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
                   </div>
-
+ 
                   {/* Price - Desktop */}
                   <div className="hidden md:block md:col-span-2 text-center">
                     <p className="font-medium text-gray-900">₹{item.product_details.price}</p>
                     {item.product_details.original_price && (
-                      <p className="text-xs text-gray-400 line-through">₹{item.product_details.original_price}</p>
+                      <p className="text-xs text-gray-400 line-through">
+                        ₹{item.product_details.original_price}
+                      </p>
                     )}
                   </div>
-
+ 
                   {/* Discount - Desktop */}
                   <div className="hidden md:block md:col-span-2 text-center">
                     {item.product_details.discount > 0 ? (
@@ -172,8 +184,8 @@ const Wishlist = () => {
                       <span className="text-gray-400 text-sm">—</span>
                     )}
                   </div>
-
-                  {/* Actions - Move to Cart & Buy Now */}
+ 
+                  {/* Actions */}
                   <div className="md:col-span-3 flex items-center justify-end gap-2">
                     <button
                       onClick={() => addToCart(item.product_details.id, item.id)}
@@ -198,6 +210,7 @@ const Wishlist = () => {
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
+ 
                 </div>
               </div>
             ))}
@@ -207,5 +220,5 @@ const Wishlist = () => {
     </div>
   );
 };
-
+ 
 export default Wishlist;

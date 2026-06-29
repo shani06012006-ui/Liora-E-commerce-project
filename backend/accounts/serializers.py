@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from products.models import Product
 from wishlist.models import Wishlist
 
 User = get_user_model()

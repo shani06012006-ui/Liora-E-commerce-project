@@ -11,7 +11,7 @@ class Cart(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        unique_together = ['user', 'product'] #Ensures a user cannot have the same product in the cart more than once.
+        unique_together = ['user', 'product'] 
     
     def total_price(self):
         return self.product.price * self.quantity
@@ -19,7 +19,6 @@ class Cart(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.product.name} x{self.quantity}"
     
-#checkout mudincha aprm create agum
 class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),

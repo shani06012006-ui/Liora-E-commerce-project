@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../services/api';
-import { TruckIcon, ArrowPathIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon, HeartIcon } from '@heroicons/react/24/outline';
+import { TruckIcon, ArrowPathIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
  
  
 const Hero = () => (
@@ -264,9 +264,6 @@ const ProductSection = ({ title, subtitle, link, products }) => {
                       {product.discount}% OFF
                     </span>
                   )}
-                  <button className="absolute top-3 right-3 bg-white p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <HeartIcon className="w-3.5 h-3.5 text-gray-700" />
-                  </button>
                 </div>
               </Link>
  

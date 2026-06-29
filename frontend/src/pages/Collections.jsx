@@ -1,41 +1,27 @@
 import { useReducer, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import { productAPI, cartAPI, wishlistAPI } from '../services/api';
+import { productAPI, cartAPI } from '../services/api';
 import { useDispatch } from 'react-redux';
-import { setCart } from '../redux/cartSlice';
+import { refreshCart } from '../redux/cartUtils';
+import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
 import { HeartIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
+import { wishlistAPI } from '../services/api';
 import toast from 'react-hot-toast';
  
-
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'SET_PRODUCTS':
-      return { ...state, products: action.payload };
-    case 'SET_LOADING':
-      return { ...state, loading: action.payload };
-    case 'SET_WISHLIST':
-      return {
-        ...state,
-        wishlist:    action.payload.wishlistSet,
-        wishlistIds: action.payload.wishlistMap,
-      };
-    case 'ADD_WISHLIST_ITEM':
-      return {
-        ...state,
-        wishlist: new Set([...state.wishlist, action.payload]),
-      };
-    case 'REMOVE_WISHLIST_ITEM': {
-      const newSet = new Set(state.wishlist);
-      newSet.delete(action.payload);
-      const newMap = { ...state.wishlistIds };
-      delete newMap[action.payload];
+    case 'SET_PRODUCTS':    return { ...state, products: action.payload };
+    case 'SET_LOADING':     return { ...state, loading: action.payload };
+    case 'SET_WISHLIST':    return { ...state, wishlist: action.payload.wishlistSet, wishlistIds: action.payload.wishlistMap };
+    case 'ADD_WISHLIST':    return { ...state, wishlist: new Set([...state.wishlist, action.payload]) };
+    case 'REMOVE_WISHLIST': {
+      const newSet = new Set(state.wishlist); newSet.delete(action.payload);
+      const newMap = { ...state.wishlistIds }; delete newMap[action.payload];
       return { ...state, wishlist: newSet, wishlistIds: newMap };
     }
-    case 'SET_ADDING_TO_CART':
-      return { ...state, addingToCart: action.payload };
-    default:
-      return state;
+    case 'SET_ADDING_TO_CART': return { ...state, addingToCart: action.payload };
+    default: return state;
   }
 };
  
@@ -47,17 +33,15 @@ const initialState = {
   addingToCart: null,
 };
  
- 
 const Collections = () => {
-  const { style }       = useParams();
-  const reduxDispatch   = useDispatch();
-  const navigate        = useNavigate();
+  const { style }         = useParams();
+  const reduxDispatch     = useDispatch();
+  const navigate          = useNavigate();
   const [state, dispatch] = useReducer(reducer, initialState);
  
   const { products, loading, wishlist, wishlistIds, addingToCart } = state;
   const title = 'Collections';
  
-
   const fetchProducts = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
@@ -80,10 +64,7 @@ const Collections = () => {
   const fetchWishlist = useCallback(async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
-      dispatch({
-        type: 'SET_WISHLIST',
-        payload: { wishlistSet: new Set(), wishlistMap: {} },
-      });
+      dispatch({ type: 'SET_WISHLIST', payload: { wishlistSet: new Set(), wishlistMap: {} } });
       return;
     }
     try {
@@ -107,53 +88,35 @@ const Collections = () => {
   }, [fetchProducts, fetchWishlist]);
  
   const addToWishlist = async (productId) => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      toast.error('Please login to add to wishlist');
-      navigate('/Login');
-      return;
-    }
-    try {
-      await wishlistAPI.addToWishlist(productId);
-      dispatch({ type: 'ADD_WISHLIST_ITEM', payload: productId });
+    const result = await addToWishlistUtil(productId, navigate);
+    if (result.success) {
+      dispatch({ type: 'ADD_WISHLIST', payload: productId });
+      await fetchWishlist(); // wishlistId map update
       toast.success('Added to wishlist');
-      setTimeout(() => fetchWishlist(), 500);
-      window.dispatchEvent(new Event('wishlistUpdated'));
-    } catch {
-      toast.error('Already in wishlist');
+    } else {
+      toast.error(result.message);
     }
   };
  
   const removeFromWishlist = async (productId) => {
     const wishlistItemId = wishlistIds[productId];
-    if (!wishlistItemId) {
-      toast.error('Item not found in wishlist');
-      return;
-    }
-    try {
-      await wishlistAPI.removeFromWishlist(wishlistItemId);
-      dispatch({ type: 'REMOVE_WISHLIST_ITEM', payload: productId });
+    if (!wishlistItemId) { toast.error('Item not found in wishlist'); return; }
+    const result = await removeFromWishlistUtil(wishlistItemId);
+    if (result.success) {
+      dispatch({ type: 'REMOVE_WISHLIST', payload: productId });
       toast.success('Removed from wishlist');
-      window.dispatchEvent(new Event('wishlistUpdated'));
-    } catch {
-      toast.error('Failed to remove');
+    } else {
+      toast.error(result.message);
     }
   };
  
-
   const addToCart = async (productId) => {
     const token = localStorage.getItem('access_token');
-    if (!token) {
-      toast.error('Please login to add to cart');
-      navigate('/Login');
-      return;
-    }
+    if (!token) { toast.error('Please login to add to cart'); navigate('/Login'); return; }
     dispatch({ type: 'SET_ADDING_TO_CART', payload: productId });
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
-      const cartRes = await cartAPI.getCart();
-      reduxDispatch(setCart(cartRes.data));
-      window.dispatchEvent(new Event('cartUpdated'));
+      await refreshCart(reduxDispatch); // ✅ Redux + Navbar cart count
       toast.success('Added to cart!');
     } catch {
       toast.error('Failed to add to cart');
@@ -164,26 +127,19 @@ const Collections = () => {
  
   const buyNow = async (productId) => {
     const token = localStorage.getItem('access_token');
-    if (!token) {
-      toast.error('Please login to buy');
-      navigate('/Login');
-      return;
-    }
+    if (!token) { toast.error('Please login to buy'); navigate('/Login'); return; }
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
-      const cartRes = await cartAPI.getCart();
-      reduxDispatch(setCart(cartRes.data));
-      window.dispatchEvent(new Event('cartUpdated'));
+      await refreshCart(reduxDispatch); 
       navigate('/checkout');
     } catch {
       toast.error('Failed to proceed');
     }
   };
  
-
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
-    if (product?.image) return `http://localhost:8000${product.image}`;
+    if (product?.image)     return `http://localhost:8000${product.image}`;
     return 'https://placehold.co/400x500/f5f5f5/999999?text=No+Image';
   };
  
@@ -195,7 +151,6 @@ const Collections = () => {
     { name: 'AESTHETIC',        path: '/Collections/aesthetic', active: style === 'aesthetic' },
   ];
  
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
@@ -206,7 +161,8 @@ const Collections = () => {
  
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
-      {/* Hero Section */}
+ 
+      {/* Hero */}
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-16">
           <h1 className="text-5xl md:text-6xl font-light text-gray-900 tracking-wide mb-4">{title}</h1>
@@ -275,20 +231,14 @@ const Collections = () => {
                       />
                     </Link>
  
-                    {/* Wishlist Button */}
+                    {/* ✅ Wishlist Button */}
                     <button
-                      onClick={() =>
-                        isInWishlist
-                          ? removeFromWishlist(product.id)
-                          : addToWishlist(product.id)
-                      }
+                      onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
                       className="absolute top-3 right-3 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition z-10"
                     >
-                      {isInWishlist ? (
-                        <HeartSolidIcon className="w-4 h-4 text-red-500" />
-                      ) : (
-                        <HeartIcon className="w-4 h-4 text-gray-600" />
-                      )}
+                      {isInWishlist
+                        ? <HeartSolidIcon className="w-4 h-4 text-red-500" />
+                        : <HeartIcon      className="w-4 h-4 text-gray-600" />}
                     </button>
  
                     {/* Discount Badge */}
@@ -309,9 +259,7 @@ const Collections = () => {
                     <div className="flex items-center justify-center gap-2 mb-3">
                       <span className="text-gray-900 font-medium">₹{product.price}</span>
                       {product.original_price && (
-                        <span className="text-gray-400 line-through text-sm">
-                          ₹{product.original_price}
-                        </span>
+                        <span className="text-gray-400 line-through text-sm">₹{product.original_price}</span>
                       )}
                     </div>
  
@@ -341,14 +289,12 @@ const Collections = () => {
         )}
       </div>
  
-      {/* Newsletter Section */}
+      {/* Newsletter */}
       <div className="border-t border-gray-200 mt-12 py-16 bg-white">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-gray-400 mb-3">NEWSLETTER</p>
           <h3 className="text-2xl font-light text-gray-900 mb-3">Subscribe to get 15% off</h3>
-          <p className="text-gray-500 text-sm mb-6">
-            Be the first to know about new arrivals and exclusive offers
-          </p>
+          <p className="text-gray-500 text-sm mb-6">Be the first to know about new arrivals and exclusive offers</p>
           <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input
               type="email"
@@ -361,6 +307,7 @@ const Collections = () => {
           </form>
         </div>
       </div>
+ 
     </div>
   );
 };

@@ -2,7 +2,7 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { productAPI, cartAPI, wishlistAPI, reviewAPI } from '../services/api';
-import { refreshCart } from '../redux/cartUtils';
+import { addToCartSafe, refreshCart } from '../redux/cartUtils';
 import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
@@ -26,7 +26,7 @@ const reducer = (state, action) => {
 };
  
 const initialState = {
-  product:        null,
+  product:        null, 
   loading:        true,
   quantity:       1,
   selectedSize:   '',
@@ -102,8 +102,8 @@ const ProductDetail = () => {
     fetchReviews();
     checkWishlistStatus();
   }, [fetchProduct, fetchReviews, checkWishlistStatus]);
- 
-  // ─── Cart actions ────────────
+  
+ //ADD to cart --------------
   const addToCart = async () => {
     if (!localStorage.getItem('access_token')) {
       toast.error('Please login to add items to cart');
@@ -112,11 +112,15 @@ const ProductDetail = () => {
     }
     dispatch({ type: 'SET_ADDING_TO_CART', payload: true });
     try {
-      await cartAPI.addToCart({ product_id: product.id, quantity });
-      await refreshCart(reduxDispatch);
-      toast.success(`Added ${quantity} item(s) to cart!`);
-    } catch {
-      toast.error('Failed to add to cart');
+      const result = await addToCartSafe(reduxDispatch, product.id, quantity);
+ 
+      if (result.alreadyExists) {
+        toast.error('Already in cart! Use + / - to change quantity.');
+      } else if (result.success) {
+        toast.success(`Added ${quantity} item(s) to cart!`);
+      } else {
+        toast.error('Failed to add to cart');
+      }
     } finally {
       dispatch({ type: 'SET_ADDING_TO_CART', payload: false });
     }
@@ -137,7 +141,6 @@ const ProductDetail = () => {
     }
   };
  
-  // ─── Wishlist ───────────────
   const toggleWishlist = async () => {
     if (!localStorage.getItem('access_token')) {
       toast.error('Please login to add to wishlist');
@@ -160,7 +163,6 @@ const ProductDetail = () => {
     }
   };
  
-  // ─── Review ────────────
   const submitReview = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -193,14 +195,12 @@ const ProductDetail = () => {
     }
   };
  
-  // ─── Image helper ─────────────────────────────────────────────────
   const getImageUrl = (p) => {
     if (p?.image_url) return p.image_url;
     if (p?.image)     return `http://localhost:8000${p.image}`;
     return 'https://placehold.co/600x800/e0e0e0/2D2D2D?text=No+Image';
   };
  
-  // ─── Loading / Not found ──────────────────────────────────────────
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -223,7 +223,6 @@ const ProductDetail = () => {
     );
   }
  
-  // ─── Render ──────────────
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Breadcrumb */}

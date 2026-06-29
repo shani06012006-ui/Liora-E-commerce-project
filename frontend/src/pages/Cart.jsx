@@ -32,7 +32,6 @@ const Cart = () => {
   const removeItem = async (itemId) => {
     try {
       await cartAPI.removeItem(itemId);
-      // ✅ remove பண்ணிட்டு cart refresh — Navbar count உடனே மாறும்
       await refreshCart(dispatch);
       toast.success('Item removed');
     } catch {
@@ -51,7 +50,7 @@ const Cart = () => {
     return 'https://placehold.co/200x200/e0e0e0/2D2D2D?text=No+Image';
   };
  
-  // ─── Not logged in ────────────────────────────────────────────────
+  // ─── Not logged in ───────────
   if (!localStorage.getItem('access_token')) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
@@ -62,7 +61,7 @@ const Cart = () => {
     );
   }
  
-  // ─── Empty cart ───────────────────────────────────────────────────
+  // ─── Empty cart ─────────────────
   if (items.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center">
@@ -76,7 +75,6 @@ const Cart = () => {
     );
   }
  
-  // ─── Render ───────────────────────────────────────────────────────
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4">
