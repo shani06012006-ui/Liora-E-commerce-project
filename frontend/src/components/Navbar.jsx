@@ -30,7 +30,7 @@ const initialUI = {
   isSearchOpen:   false,
   searchTerm:     '',
 };
- 
+
 const Navbar = () => {
   const reduxDispatch = useDispatch();
   const navigate      = useNavigate();
@@ -62,6 +62,7 @@ const Navbar = () => {
     }
   }, [reduxDispatch]);
  
+//------ uiDispatch -------  
   const fetchWishlistCount = useCallback(async () => {
     if (!localStorage.getItem('access_token')) return;
     try {

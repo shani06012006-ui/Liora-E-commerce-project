@@ -419,7 +419,8 @@ const BestSellers = () => {
  
         {/* Features */}
         <div className="bs-feats">
-          {[{ title: 'Fast Delivery', desc: 'Quick & safe, 48 hours', icon: <><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1" /><rect width="7" height="5" x="12" y="14" rx="1" /></> }, { title: 'Easy Returns', desc: 'Hassle-free, 15 days', icon: <><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></> }, { title: 'Quality Assured', desc: 'Best fashion, best quality', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> }, { title: 'Secure Payment', desc: '100% secure checkout', icon: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></> }].map((f, i) => (
+          {[{ title: 'Fast Delivery', desc: 'Quick & safe, 48 hours', icon: <>
+          <path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1" /><rect width="7" height="5" x="12" y="14" rx="1" /></> }, { title: 'Easy Returns', desc: 'Hassle-free, 15 days', icon: <><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></> }, { title: 'Quality Assured', desc: 'Best fashion, best quality', icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /> }, { title: 'Secure Payment', desc: '100% secure checkout', icon: <><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></> }].map((f, i) => (
             <div key={i} className="bs-feat animate-fadeUp delay-1">
               <div className="bs-feat-icon"><svg viewBox="0 0 24 24">{f.icon}</svg></div>
               <div className="bs-feat-title">{f.title}</div>

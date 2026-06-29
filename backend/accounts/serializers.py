@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from wishlist.models import Wishlist
 
 User = get_user_model()
 
@@ -39,13 +38,3 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
-class WishlistSerializer(serializers.ModelSerializer):
-    product_details = serializers.SerializerMethodField()
-    
-    class Meta:
-        model = Wishlist
-        fields = ['id', 'product', 'product_details', 'added_at']
-    
-    def get_product_details(self, obj):
-        from products.serializers import ProductSerializer
-        return ProductSerializer(obj.product).data

@@ -8,14 +8,12 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from accounts.views import RegisterView, LoginView, UserProfileView
 from products.views import ProductViewSet
 from orders.views import CartView, CheckoutView, OrderHistoryView
-from wishlist.views import WishlistViewSet
 from reviews.views import ReviewListView
 
 
 
 router = DefaultRouter()
 router.register('products', ProductViewSet)
-router.register('wishlist', WishlistViewSet, basename='wishlist')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

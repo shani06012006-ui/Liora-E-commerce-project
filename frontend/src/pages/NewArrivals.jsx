@@ -196,7 +196,7 @@ const NewArrivals = () => {
 
         <div className="text-center mt-8 pt-8">
           <Link 
-            to="/products" 
+            to="/Sale" 
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm uppercase tracking-[0.2em] transition"
           >
             DISCOVER MORE

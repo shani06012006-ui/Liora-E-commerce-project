@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -44,9 +44,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'accounts',
     'products',
-    'orders',
-    'wishlist',        
-    'shipping', 
+    'wishlist',
+    'shipping',
+    'orders', 
     'reviews', 
 ]
 
@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'gurl_backend.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-import os
+
 
 DATABASES = {
     'default': {
@@ -186,7 +186,6 @@ REST_FRAMEWORK = {
 
 
 # JWT Settings - Make tokens last longer
-from datetime import timedelta
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  
