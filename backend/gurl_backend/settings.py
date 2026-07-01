@@ -50,8 +50,6 @@ INSTALLED_APPS = [
     'reviews', 
 ]
 
-AUTH_USER_MODEL = 'accounts.User'
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -225,3 +223,24 @@ LOGIN_REDIRECT_URL = '/admin/'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+AUTH_USER_MODEL = "accounts.User"
+
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Kolkata"
+
+# Email
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "shani06012006@gmail.com"       
+EMAIL_HOST_PASSWORD = "khiz qewm zoyx jskq"   
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

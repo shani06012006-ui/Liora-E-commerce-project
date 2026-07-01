@@ -39,11 +39,16 @@ const Navbar = () => {
   const { items }           = useSelector((state) => state.cart);
  
   const currentUser =
-    reduxUser ??
-    (() => {
-      const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
-    })();
+  reduxUser ??
+  (() => {
+    const stored = localStorage.getItem('user');
+    if (!stored || stored === 'undefined' || stored === 'null') return null;
+    try {
+      return JSON.parse(stored);
+    } catch {
+      return null;
+    }
+  })();
  
   const cartCount = items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
  

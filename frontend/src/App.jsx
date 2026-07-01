@@ -25,6 +25,7 @@ import NewArrivals from './pages/NewArrivals';
 import Collections from './pages/Collections';
 import BestSellers from './pages/BestSellers';
 import Sale from './pages/Sale';
+import OTPVerify from './pages/OTPVerify';
 
 //Resuable layout 
 const MainLayout = ({ children }) => (
@@ -65,6 +66,7 @@ const AppContent = () => {
   return (
     <Routes>
       <Route path="/" element={<MainLayout><Home /></MainLayout>} />
+      <Route path="/verify-otp" element={<OTPVerify />} />
       
       <Route path="/new-arrivals" element={<MainLayout><NewArrivals /></MainLayout>} />
       <Route path="/new-arrivals/:subcategory" element={<MainLayout><NewArrivals /></MainLayout>} />

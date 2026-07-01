@@ -6,8 +6,8 @@ import { addToCartSafe, refreshCart } from '../redux/cartUtils';
 import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
-import { addToWishlistUtil, removeFromWishlistUtil } from "../redux/wishlistUtils";
- 
+import { toggleWishlistUtil } from "../redux/wishlistUtils";
+
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_PRODUCT':          return { ...state, product:        action.payload };
@@ -143,39 +143,23 @@ const ProductDetail = () => {
   };
  
 const toggleWishlist = async () => {
+  const result = await toggleWishlistUtil({
+    productId: product.id,
+    isInWishlist,
+    wishlistId,
+    navigate,
+  });
 
-  if (isInWishlist) {
-
-    const result = await removeFromWishlistUtil(wishlistId);
-
-    if (result.success) {
-      dispatch({
-        type: "SET_WISHLIST",
-        payload: {
-          status: false,
-          id: null,
-        },
-      });
-
+  if (result.success) {
+    if (result.removed) {
+      dispatch({ type: "SET_WISHLIST", payload: { status: false, id: null } });
       toast.success("Removed from wishlist");
-    } else {
-      toast.error(result.message);
-    }
-
-  } else {
-
-    const result = await addToWishlistUtil(
-      product.id,
-      navigate
-    );
-
-    if (result.success) {
+    } else if (result.added) {
+      dispatch({ type: "SET_WISHLIST", payload: { status: true, id: result.wishlistId } });
       toast.success("Added to wishlist");
-      checkWishlistStatus();
-    } else {
-      toast.error(result.message);
     }
-
+  } else {
+    toast.error(result.message || "Failed to update wishlist");
   }
 };
  

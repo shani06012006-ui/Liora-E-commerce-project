@@ -1,107 +1,172 @@
-from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.views import APIView 
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny  #permision check
+from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from django.db.models import Sum
-from orders.models import Order
-from products.models import Product
-from django.contrib.auth import get_user_model
-from .models import User
-from .serializers import UserSerializer, RegisterSerializer
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import authenticate, get_user_model
+from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer
+from .models import OTPVerification
+from .tasks import send_otp_email
 
-get_user_model()      #Settings la set panniruka User model
+User = get_user_model()
+
 
 class RegisterView(APIView):
-    permission_classes = [AllowAny]
-    
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                'user': UserSerializer(user).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            }, status=status.HTTP_201_CREATED)
+            otp_code = OTPVerification.generate_otp()
+            OTPVerification.objects.create(user=user, otp_code=otp_code)
+            send_otp_email.delay(user.email, otp_code, user.username)
+            return Response(
+                {"message": "Registered successfully. OTP sent to your email."},
+                status=status.HTTP_201_CREATED,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class LoginView(APIView):
-    permission_classes = [AllowAny]
-    
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        
-        if not username or not password:
-            return Response({'error': 'Please provide both username and password'}, 
-                          status=status.HTTP_400_BAD_REQUEST)
-        
-        user = authenticate(username=username, password=password) #Indha username password correct ah?
-        
-        if user and user.is_active and not user.is_blocked:
-            refresh = RefreshToken.for_user(user)      #Indha user login aayitan , intha user iku pudhu token create pannu
-            return Response({
-                'user': UserSerializer(user).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
-            })
-        return Response({'error': 'Invalid credentials or account blocked'}, 
-                      status=status.HTTP_401_UNAUTHORIZED)
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        if not email or not password:
+            return Response(
+                {"error": "Email and password are required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user_obj = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if not user_obj.is_active:
+            return Response(
+                {"error": "Account not verified. Please verify OTP first."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        user = authenticate(request, username=user_obj.username, password=password)
+        if not user:
+            return Response(
+                {"error": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
 class UserProfileView(APIView):
     permission_classes = [IsAuthenticated]
-    
+
     def get(self, request):
         serializer = UserSerializer(request.user)
-        return Response(serializer.data)
-    
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def put(self, request):
         serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class AdminStatsView(APIView):
-    permission_classes = [IsAdminUser]
-    
-    def get(self, request):
-        total_orders = Order.objects.count()
-        total_revenue = Order.objects.filter(status='delivered').aggregate(Sum('total_amount'))['total_amount__sum'] or 0
-        total_products = Product.objects.count()
-        total_users = User.objects.count()
-        pending_orders = Order.objects.filter(status='pending').count()
-        
-        # Recent orders
-        recent_orders = Order.objects.order_by('-created_at')[:5]
-        recent_orders_data = [
+    def patch(self, request):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyOTPView(APIView):
+    def post(self, request):
+        serializer = OTPVerifySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data["email"]
+        otp_code = serializer.validated_data["otp_code"]
+
+        try:
+            user = User.objects.get(email=email, is_active=False)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found or already verified."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        otp_obj = (
+            OTPVerification.objects
+            .filter(user=user, otp_code=otp_code)
+            .order_by("-created_at")
+            .first()
+        )
+
+        if not otp_obj:
+            return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if otp_obj.is_expired():
+            return Response(
+                {"error": "OTP expired. Please request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.is_active = True
+        user.save()
+        otp_obj.is_verified = True
+        otp_obj.save()
+
+        refresh = RefreshToken.for_user(user)
+        return Response(
             {
-                'id': order.id,
-                'order_number': order.order_number,
-                'total_amount': order.total_amount,
-                'status': order.status,
-                'created_at': order.created_at,
-                'user': order.user.username
-            }
-            for order in recent_orders
-        ]
-        
-        # Low stock products
-        low_stock = Product.objects.filter(stock__lt=10)[:5]
-        low_stock_data = [
-            {'id': p.id, 'name': p.name, 'stock': p.stock}
-            for p in low_stock
-        ]
-        
-        return Response({
-            'total_orders': total_orders,
-            'total_revenue': total_revenue,
-            'total_products': total_products,
-            'total_users': total_users,
-            'pending_orders': pending_orders,
-            'recent_orders': recent_orders_data,
-            'low_stock': low_stock_data,
-        })
+                "message": "Account verified successfully.",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ResendOTPView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        try:
+            user = User.objects.get(email=email, is_active=False)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found or already verified."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        otp_code = OTPVerification.generate_otp()
+        OTPVerification.objects.create(user=user, otp_code=otp_code)
+        send_otp_email.delay(user.email, otp_code, user.username)
+
+        return Response(
+            {"message": "OTP resent successfully."},
+            status=status.HTTP_200_OK,
+        )
