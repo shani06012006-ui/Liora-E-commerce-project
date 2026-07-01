@@ -23,7 +23,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, min_length=6)
+    password = serializers.CharField(
+        write_only=True,
+        min_length=6,
+        error_messages={
+            'min_length': 'Password must be at least 6 characters.',
+            'blank': 'Password cannot be empty.',
+        }
+    )
 
     class Meta:
         model = User
@@ -32,6 +39,11 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate_email(self, value):
         if User.objects.filter(email=value, is_active=True).exists():
             raise serializers.ValidationError("Email already registered.")
+        return value
+
+    def validate_password(self, value):
+        if len(value) < 6:
+            raise serializers.ValidationError("Password must be at least 6 characters.")
         return value
 
     def create(self, validated_data):

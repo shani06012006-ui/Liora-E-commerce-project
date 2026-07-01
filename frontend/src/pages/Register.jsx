@@ -83,7 +83,7 @@ const Register = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 required
               />
-              <p className="text-xs text-gray-400 mt-1">Minimum 6 characters</p>
+              <p className="text-xs text-gray-400 mt-1">Minimum 6 characters (Numbers / Text)</p>
             </div>
 
             <button
