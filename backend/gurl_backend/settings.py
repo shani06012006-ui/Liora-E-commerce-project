@@ -231,3 +231,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "shani06012006@gmail.com"       
 EMAIL_HOST_PASSWORD = "khiz qewm zoyx jskq"   
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+GOOGLE_CLIENT_ID = "980000414161-dga95g5f6i88a04h98a7u071uugeuf0v.apps.googleusercontent.com"

@@ -2,11 +2,14 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from .models import Cart, Order, OrderItem
 from .serializers import CartSerializer, OrderSerializer
 from products.models import Product
 import uuid
+ 
+User = get_user_model()
  
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
@@ -95,3 +98,50 @@ class OrderHistoryView(APIView):
         orders     = Order.objects.filter(user=request.user).order_by('-created_at')
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
+    
+    
+class AdminOrderListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'admin':
+            return Response({"error": "Access denied."}, status=403)
+        orders = Order.objects.all().order_by('-created_at')
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+    
+class AdminOrderDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, order_id):
+        if request.user.role != 'admin':
+            return Response({"error": "Access denied."}, status=403)
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found."}, status=404)
+        serializer = OrderSerializer(order)
+        return Response(serializer.data)
+
+    def patch(self, request, order_id):
+        if request.user.role != 'admin':
+            return Response({"error": "Access denied."}, status=403)
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found."}, status=404)
+        serializer = OrderSerializer(order, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, order_id):
+        if request.user.role != 'admin':
+            return Response({"error": "Access denied."}, status=403)
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response({"error": "Order not found."}, status=404)
+        order.delete()
+        return Response({"message": "Order deleted."}, status=204)        
