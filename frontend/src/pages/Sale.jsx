@@ -4,7 +4,7 @@ import { productAPI, wishlistAPI } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
 import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
-import { HeartIcon, ShoppingBagIcon, BoltIcon, TruckIcon, ArrowPathIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { HeartIcon, ShoppingBagIcon, BoltIcon, FireIcon, TruckIcon, ArrowPathIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { cartAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -138,21 +138,17 @@ const Sale = () => {
   };
  
 
-  const buyNow = (productId) => {
-  const token = localStorage.getItem('access_token');
-  if (!token) {
-    toast.error('Please login to buy');
-    navigate('/Login');
-    return;
-  }
-  navigate('/checkout', {
-    state: {
-      buyNow: true,
-      product: products.find(p => p.id === productId),
-      quantity: 1,
+  const buyNow = async (productId) => {
+    const token = localStorage.getItem('access_token');
+    if (!token) { toast.error('Please login to buy'); navigate('/Login'); return; }
+    try {
+      await cartAPI.addToCart({ product_id: productId, quantity: 1 });
+      await refreshCart(reduxDispatch);
+      navigate('/checkout');
+    } catch {
+      toast.error('Failed to proceed');
     }
-  });
-};
+  };
  
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
@@ -185,22 +181,29 @@ const Sale = () => {
     <div className="min-h-screen bg-white">
  
       {/* Hero */}
-    <div className="relative min-h-[350px] md:min-h-[500px] overflow-hidden">
-    {/* ... same content ... */}
-    <div className="relative max-w-7xl mx-auto px-4 py-14 md:py-20 text-center text-white z-10">
-    <h1 className="text-5xl md:text-8xl font-light tracking-wide mb-3 md:mb-4">SALE</h1>
-    <p className="text-lg md:text-2xl font-light mb-2">UP TO <span className="font-bold text-3xl md:text-4xl">50% OFF</span></p>
-    {/* Timer — smaller on mobile */}
-    <div className="flex flex-wrap justify-center gap-2 md:gap-4 mt-6 md:mt-8">
-      {[{ value: timeLeft.days, label: 'Days' }, { value: timeLeft.hours, label: 'Hours' }, { value: timeLeft.minutes, label: 'Mins' }, { value: timeLeft.seconds, label: 'Secs' }].map(({ value, label }) => (
-        <div key={label} className="bg-white/20 backdrop-blur-sm rounded-lg px-3 md:px-4 py-2 text-center min-w-[60px] md:min-w-[80px] border border-white/20">
-          <span className="block text-xl md:text-2xl font-bold">{String(value).padStart(2, '0')}</span>
-          <span className="text-[9px] md:text-[10px] uppercase tracking-wide">{label}</span>
+      <div className="relative min-h-[500px] overflow-hidden">
+        <div className="absolute inset-0">
+          <img src="SL.png" alt="Sale Banner" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black bg-opacity-50" />
         </div>
-      ))}
-    </div>
-  </div>
-</div>
+        <div className="relative max-w-7xl mx-auto px-4 py-20 text-center text-white z-10">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-1 rounded-full mb-4">
+            <FireIcon className="w-4 h-4" />
+            <span className="text-xs uppercase tracking-wider">Limited Time Offer</span>
+          </div>
+          <h1 className="text-6xl md:text-8xl font-light tracking-wide mb-4">SALE</h1>
+          <p className="text-xl md:text-2xl font-light mb-2">UP TO <span className="font-bold text-4xl">50% OFF</span></p>
+          <p className="text-white/80 text-sm max-w-md mx-auto">Don't miss out on our biggest sale of the season!</p>
+          <div className="flex flex-wrap justify-center gap-4 mt-8">
+            {[{ value: timeLeft.days, label: 'Days' }, { value: timeLeft.hours, label: 'Hours' }, { value: timeLeft.minutes, label: 'Mins' }, { value: timeLeft.seconds, label: 'Secs' }].map(({ value, label }) => (
+              <div key={label} className="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-2 text-center min-w-[80px] border border-white/20">
+                <span className="block text-2xl font-bold">{String(value).padStart(2, '0')}</span>
+                <span className="text-[10px] uppercase tracking-wide">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
  
       {/* Filter Bar */}
       <div className="sticky top-16 z-40 bg-white border-b border-gray-200">
