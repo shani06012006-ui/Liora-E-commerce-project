@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider, useSelector } from 'react-redux';  //Provider- Entire app ku redux store iku data share panna.  useSelector → Redux la irundhu data edukka.
+import { Provider, useSelector } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import { store } from './redux/store';
 import Navbar from './components/Navbar';
@@ -26,6 +26,13 @@ import Collections from './pages/Collections';
 import BestSellers from './pages/BestSellers';
 import Sale from './pages/Sale';
 import OTPVerify from './pages/OTPVerify';
+import AdminRoute      from './components/AdminRoute';
+import AdminDashboard  from './pages/admin/AdminDashboard';
+import AdminUsers      from './pages/admin/AdminUsers';
+import AdminOrders     from './pages/admin/AdminOrders';
+import AdminProducts   from './pages/admin/AdminProducts';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminReviews    from './pages/admin/AdminReviews';
 
 //Resuable layout 
 const MainLayout = ({ children }) => (
@@ -52,7 +59,7 @@ const AppContent = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { user, token } = useSelector((state) => state.auth);
 
-  useEffect(() => {  //component render ana aprm run agum
+  useEffect(() => {
     const storedToken = localStorage.getItem('access_token');
     const storedUser = localStorage.getItem('user');
     
@@ -61,12 +68,19 @@ const AppContent = () => {
     } else {
       setIsAuthenticated(false);
     }
-  }, [user, token]);  //user illa token change ana marubadium run agum 
+  }, [user, token]);
 
   return (
     <Routes>
       <Route path="/" element={<MainLayout><Home /></MainLayout>} />
       <Route path="/verify-otp" element={<OTPVerify />} />
+
+      <Route path="/admin"            element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+      <Route path="/admin/users"      element={<AdminRoute><AdminUsers /></AdminRoute>} />
+      <Route path="/admin/products"   element={<AdminRoute><AdminProducts /></AdminRoute>} />
+      <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
+      <Route path="/admin/orders"     element={<AdminRoute><AdminOrders /></AdminRoute>} />
+      <Route path="/admin/reviews"    element={<AdminRoute><AdminReviews /></AdminRoute>} />
       
       <Route path="/new-arrivals" element={<MainLayout><NewArrivals /></MainLayout>} />
       <Route path="/new-arrivals/:subcategory" element={<MainLayout><NewArrivals /></MainLayout>} />

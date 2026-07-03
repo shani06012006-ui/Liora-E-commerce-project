@@ -21,21 +21,30 @@ class Cart(models.Model):
     
 class Order(models.Model):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
+        ('pending',   'Pending'),
         ('confirmed', 'Confirmed'),
-        ('shipped', 'Shipped'),
+        ('shipped',   'Shipped'),
         ('delivered', 'Delivered'),
         ('cancelled', 'Cancelled'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order_number = models.CharField(max_length=50, unique=True)
-    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    PAYMENT_STATUS = [
+        ('pending',  'Pending'),
+        ('paid',     'Paid'),
+        ('failed',   'Failed'),
+        ('refunded', 'Refunded'),
+    ]
+    
+    user             = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_number     = models.CharField(max_length=50, unique=True)
+    total_amount     = models.DecimalField(max_digits=10, decimal_places=2)
+    status           = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    payment_status   = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    payment_method   = models.CharField(max_length=50, blank=True, default='cod')
     shipping_address = models.TextField()
-    phone = models.CharField(max_length=15)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    phone            = models.CharField(max_length=15)
+    created_at       = models.DateTimeField(auto_now_add=True)
+    updated_at       = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return f"Order {self.order_number}"

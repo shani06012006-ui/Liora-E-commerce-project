@@ -1,8 +1,8 @@
 ﻿import { useReducer, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { productAPI, cartAPI, wishlistAPI, reviewAPI } from '../services/api';
-import { addToCartSafe, refreshCart } from '../redux/cartUtils';
+import { productAPI, wishlistAPI, reviewAPI } from '../services/api';
+import { addToCartSafe } from '../redux/cartUtils';
 import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
@@ -127,20 +127,20 @@ const ProductDetail = () => {
     }
   };
  
-  const buyNow = async () => {
-    if (!localStorage.getItem('access_token')) {
-      toast.error('Please login to buy');
-      navigate('/Login');
-      return;
+  const buyNow = () => {
+  if (!localStorage.getItem('access_token')) {
+    toast.error('Please login to buy');
+    navigate('/Login');
+    return;
+  }
+  navigate('/checkout', {
+    state: {
+      buyNow: true,
+      product: product,
+      quantity: quantity,
     }
-    try {
-      await cartAPI.addToCart({ product_id: product.id, quantity });
-      await refreshCart(reduxDispatch);
-      navigate('/checkout');
-    } catch {
-      toast.error('Failed to proceed');
-    }
-  };
+  });
+};
  
 const toggleWishlist = async () => {
   const result = await toggleWishlistUtil({

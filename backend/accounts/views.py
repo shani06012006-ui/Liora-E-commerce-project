@@ -9,6 +9,8 @@ from google.auth.transport import requests as google_requests
 from django.conf import settings
 from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer
 from .models import OTPVerification
+from rest_framework.permissions import IsAuthenticated
+
 from .tasks import send_otp_email
 
 
@@ -107,6 +109,7 @@ class GoogleLoginView(APIView):
             }
         )
 
+        # New user na active பண்ணு (OTP வேண்டாம் Google users ku)
         if not user.is_active:
             user.is_active = True
             user.save()
@@ -229,6 +232,7 @@ class AdminUserListView(APIView):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+
 class AdminUserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -263,4 +267,4 @@ class AdminUserDetailView(APIView):
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
-        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)            
+        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)        

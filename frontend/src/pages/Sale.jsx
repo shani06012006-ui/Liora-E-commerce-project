@@ -138,17 +138,21 @@ const Sale = () => {
   };
  
 
-  const buyNow = async (productId) => {
-    const token = localStorage.getItem('access_token');
-    if (!token) { toast.error('Please login to buy'); navigate('/Login'); return; }
-    try {
-      await cartAPI.addToCart({ product_id: productId, quantity: 1 });
-      await refreshCart(reduxDispatch);
-      navigate('/checkout');
-    } catch {
-      toast.error('Failed to proceed');
+  const buyNow = (productId) => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    toast.error('Please login to buy');
+    navigate('/Login');
+    return;
+  }
+  navigate('/checkout', {
+    state: {
+      buyNow: true,
+      product: products.find(p => p.id === productId),
+      quantity: 1,
     }
-  };
+  });
+};
  
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;

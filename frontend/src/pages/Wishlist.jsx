@@ -56,26 +56,22 @@ const Wishlist = () => {
     }
   };
  
-  const buyNow = async (productId, wishlistId) => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
-      toast.error('Please login to buy');
-      navigate('/Login');
-      return;
+  const buyNow = (productId, wishlistId) => {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    toast.error('Please login to buy');
+    navigate('/Login');
+    return;
+  }
+  const item = wishlistItems.find(i => i.id === wishlistId);
+  navigate('/checkout', {
+    state: {
+      buyNow: true,
+      product: item?.product_details,
+      quantity: 1,
     }
-    try {
-      await cartAPI.addToCart({ product_id: productId, quantity: 1 });
-      await refreshCart(dispatch);
- 
-      await wishlistAPI.removeFromWishlist(wishlistId);
-      setWishlistItems(wishlistItems.filter(item => item.id !== wishlistId));
-      window.dispatchEvent(new Event('wishlistUpdated'));
- 
-      navigate('/checkout');
-    } catch {
-      toast.error('Failed to proceed');
-    }
-  };
+  });
+};
  
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;

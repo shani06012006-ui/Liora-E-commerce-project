@@ -10,7 +10,7 @@ from products.models import Product
 import uuid
  
 User = get_user_model()
- 
+
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
  
@@ -144,4 +144,47 @@ class AdminOrderDetailView(APIView):
         except Order.DoesNotExist:
             return Response({"error": "Order not found."}, status=404)
         order.delete()
-        return Response({"message": "Order deleted."}, status=204)        
+        return Response({"message": "Order deleted."}, status=204)
+    
+class BuyNowView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        product_id = request.data.get('product_id')
+        quantity   = int(request.data.get('quantity', 1))
+
+        if not product_id:
+            return Response({'error': 'Product ID required'}, status=400)
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=404)
+
+        if product.stock < quantity:
+            return Response({'error': 'Insufficient stock'}, status=400)
+
+        total        = product.price * quantity
+        order_number = str(uuid.uuid4())[:8].upper()
+
+        order = Order.objects.create(
+            user             = request.user,
+            order_number     = order_number,
+            total_amount     = total,
+            shipping_address = request.data.get('shipping_address', request.user.address),
+            phone            = request.data.get('phone', request.user.phone),
+            payment_method   = request.data.get('payment_method', 'cod'),
+        )
+
+        OrderItem.objects.create(
+            order    = order,
+            product  = product,
+            quantity = quantity,
+            price    = product.price,
+        )
+
+        product.stock -= quantity
+        product.save()
+
+        serializer = OrderSerializer(order)
+        return Response(serializer.data, status=201)        
