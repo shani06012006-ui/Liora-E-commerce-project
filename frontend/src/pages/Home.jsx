@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../services/api';
 import { TruckIcon, ArrowPathIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
- 
- 
+
 const Hero = () => (
-  <div className="relative h-screen w-full overflow-hidden bg-white">
+  <div className="relative min-h-[100svh] w-full overflow-hidden bg-white">
     <div className="absolute inset-0 flex justify-center items-center">
       <img
         src="Liora.png"
@@ -13,9 +12,8 @@ const Hero = () => (
         className="h-full w-full object-contain"
       />
     </div>
- 
-    <div className="absolute left-16 top-32 z-20">
-      <p className="text-xs uppercase tracking-[0.35em] text-black/70 leading-6">
+    <div className="absolute left-4 md:left-16 top-24 md:top-32 z-20">
+      <p className="text-[10px] md:text-xs uppercase tracking-[0.25em] md:tracking-[0.35em] text-black/70 leading-6">
         Fashion
         <br />
         That Moves
@@ -23,9 +21,8 @@ const Hero = () => (
         With You.
       </p>
     </div>
- 
-    <div className="absolute right-16 bottom-24 z-20 text-right">
-      <p className="text-xs uppercase tracking-[0.35em] text-black/70 leading-6">
+    <div className="absolute right-4 md:right-16 bottom-16 md:bottom-24 z-20 text-right">
+      <p className="text-[10px] md:text-xs uppercase tracking-[0.25em] md:tracking-[0.35em] text-black/70 leading-6">
         New
         <br />
         Collection
@@ -33,16 +30,14 @@ const Hero = () => (
         2026
       </p>
     </div>
- 
-    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce">
       <svg className="w-5 h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
       </svg>
     </div>
   </div>
 );
- 
- 
+
 const CategorySection = () => {
   const categories = [
     {
@@ -67,41 +62,41 @@ const CategorySection = () => {
       link:      '/signature',
     },
   ];
- 
+
   return (
     <div style={{ background: '#0a0a0a' }} className="w-full">
-      <div className="flex divide-x divide-white/10">
+      <div className="flex flex-col md:flex-row md:divide-x divide-white/10 divide-y md:divide-y-0">
         {categories.map((cat, idx) => (
           <Link
             key={idx}
             to={cat.link}
-            className="flex-1 flex items-center gap-5 px-8 py-7 group transition-colors hover:bg-white/5"
+            className="flex-1 flex items-center gap-4 md:gap-5 px-5 md:px-8 py-5 md:py-7 group transition-colors hover:bg-white/5"
             style={{ textDecoration: 'none' }}
           >
-            <div className="flex-shrink-0 w-[90px] h-[110px] overflow-hidden">
+            <div className="flex-shrink-0 w-[70px] h-[85px] md:w-[90px] md:h-[110px] overflow-hidden">
               <img
                 src={cat.image}
                 alt={cat.name}
                 className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
               />
             </div>
- 
+
             <div>
               <p
                 className="text-white font-semibold mb-1"
-                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '13px', letterSpacing: '0.12em' }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '12px', letterSpacing: '0.12em' }}
               >
                 {cat.name}
               </p>
               <p
-                className="text-white/55 mb-4 leading-snug"
-                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '11px', letterSpacing: '0.04em' }}
+                className="text-white/55 mb-3 leading-snug"
+                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px', letterSpacing: '0.04em' }}
               >
                 {cat.desc}
               </p>
               <span
                 className="inline-flex items-center gap-1 text-white/70 group-hover:text-white transition-colors border-b border-white/30 group-hover:border-white pb-[2px]"
-                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px', letterSpacing: '0.15em' }}
+                style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '9px', letterSpacing: '0.15em' }}
               >
                 {cat.shopLabel} →
               </span>
@@ -112,12 +107,12 @@ const CategorySection = () => {
     </div>
   );
 };
- 
- 
+
+
 const NewSeasonBanner = () => (
   <div
     className="relative w-full overflow-hidden"
-    style={{ background: '#e8e5e0', minHeight: '520px' }}
+    style={{ background: '#e8e5e0', minHeight: '400px' }}
   >
     <div className="absolute inset-0">
       <img
@@ -128,22 +123,33 @@ const NewSeasonBanner = () => (
       />
       <div
         className="absolute inset-0"
-        style={{ background: 'linear-gradient(to right, #e8e5e0 38%, transparent 70%)' }}
+        style={{
+          background: 'linear-gradient(to bottom, #e8e5e080 0%, #e8e5e0 100%)',
+        }}
+      />
+      <div
+        className="absolute inset-0 hidden md:block"
+        style={{
+          background: 'linear-gradient(to right, #e8e5e0 38%, transparent 70%)',
+        }}
       />
     </div>
- 
-    <div className="relative z-10 flex flex-col justify-center h-full px-16 py-20" style={{ minHeight: '520px' }}>
+
+    <div
+      className="relative z-10 flex flex-col justify-end md:justify-center h-full px-6 md:px-16 py-10 md:py-20"
+      style={{ minHeight: '400px' }}
+    >
       <p
-        className="uppercase text-black/50 mb-3"
-        style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '11px', letterSpacing: '0.3em' }}
+        className="uppercase text-black/50 mb-2"
+        style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px', letterSpacing: '0.3em' }}
       >
         NEW SEASON
       </p>
       <h2
-        className="text-black leading-none mb-5"
+        className="text-black leading-none mb-4"
         style={{
           fontFamily:    "'Montserrat', sans-serif",
-          fontSize:      'clamp(56px, 8vw, 100px)',
+          fontSize:      'clamp(40px, 8vw, 100px)',
           fontWeight:    800,
           letterSpacing: '-0.02em',
           lineHeight:    0.9,
@@ -154,8 +160,8 @@ const NewSeasonBanner = () => (
         VIBES
       </h2>
       <p
-        className="text-black/60 mb-8 max-w-xs"
-        style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '13px', letterSpacing: '0.04em' }}
+        className="text-black/60 mb-6 max-w-xs"
+        style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '12px', letterSpacing: '0.04em' }}
       >
         Discover everything new and now.
       </p>
@@ -163,53 +169,49 @@ const NewSeasonBanner = () => (
         to="/new-arrivals"
         className="inline-block w-fit"
         style={{
-          background:    '#111',
-          color:         '#fff',
-          fontFamily:    "'Montserrat', sans-serif",
-          fontSize:      '11px',
-          fontWeight:    600,
-          letterSpacing: '0.2em',
-          padding:       '14px 28px',
+          background:     '#111',
+          color:          '#fff',
+          fontFamily:     "'Montserrat', sans-serif",
+          fontSize:       '10px',
+          fontWeight:     600,
+          letterSpacing:  '0.2em',
+          padding:        '12px 24px',
           textDecoration: 'none',
-          transition:    'background 0.2s',
         }}
-        onMouseOver={e => (e.currentTarget.style.background = '#333')}
-        onMouseOut={e  => (e.currentTarget.style.background = '#111')}
       >
         EXPLORE COLLECTION
       </Link>
     </div>
   </div>
 );
- 
- 
+
 const FeaturesSection = () => {
   const features = [
-    { icon: TruckIcon,       title: 'FAST DELIVERY',   description: 'Quick & safe delivery'  },
-    { icon: ArrowPathIcon,   title: 'EASY RETURNS',    description: 'Within 15 days'          },
-    { icon: ShieldCheckIcon, title: 'QUALITY ASSURED', description: 'Best fashion, best quality' },
-    { icon: CreditCardIcon,  title: 'SECURE PAYMENT',  description: '100% secure checkout'   },
+    { icon: TruckIcon,       title: 'FAST DELIVERY',   description: 'Quick & safe delivery'      },
+    { icon: ArrowPathIcon,   title: 'EASY RETURNS',    description: 'Within 15 days'              },
+    { icon: ShieldCheckIcon, title: 'QUALITY ASSURED', description: 'Best fashion, best quality'  },
+    { icon: CreditCardIcon,  title: 'SECURE PAYMENT',  description: '100% secure checkout'        },
   ];
- 
+
   return (
-    <div className="py-12 bg-white border-y border-gray-100">
+    <div className="py-10 md:py-12 bg-white border-y border-gray-100">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {features.map((f, idx) => (
-            <div key={idx} className="flex items-start gap-4">
-              <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-100">
-                <f.icon className="w-5 h-5 text-gray-700" />
+            <div key={idx} className="flex items-start gap-3">
+              <div className="w-9 h-9 md:w-10 md:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-100">
+                <f.icon className="w-4 h-4 md:w-5 md:h-5 text-gray-700" />
               </div>
               <div>
                 <h3
                   className="text-gray-900 mb-0.5"
-                  style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em' }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '9px', fontWeight: 700, letterSpacing: '0.15em' }}
                 >
                   {f.title}
                 </h3>
                 <p
                   className="text-gray-400"
-                  style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px' }}
+                  style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '9px' }}
                 >
                   {f.description}
                 </p>
@@ -221,8 +223,8 @@ const FeaturesSection = () => {
     </div>
   );
 };
- 
- 
+
+
 const ProductSection = ({ title, subtitle, link, products }) => {
   const getImageUrl = (product) => {
     if (product.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
@@ -232,24 +234,25 @@ const ProductSection = ({ title, subtitle, link, products }) => {
     if (product?.image)     return `http://localhost:8000${product.image}`;
     return 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=Product';
   };
- 
+
   return (
-    <div className="py-16 bg-white">
+    <div className="py-12 md:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between items-end mb-10">
+        <div className="flex justify-between items-end mb-6 md:mb-10">
           <div>
-            <h2 className="text-gray-900 mb-1 text-3xl md:text-4xl font-serif">{title}</h2>
-            <p className="text-gray-400 text-xs uppercase tracking-[0.25em]">{subtitle}</p>
+            <h2 className="text-gray-900 mb-1 text-2xl md:text-4xl font-serif">{title}</h2>
+            <p className="text-gray-400 text-[10px] uppercase tracking-[0.2em] md:tracking-[0.25em]">{subtitle}</p>
           </div>
           <Link
             to={link}
-            className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-xs uppercase tracking-[0.2em]"
+            className="flex items-center gap-1 text-gray-500 hover:text-gray-900 text-[10px] uppercase tracking-[0.15em] md:tracking-[0.2em] whitespace-nowrap"
           >
             VIEW ALL <ChevronRightIcon className="w-3 h-3" />
           </Link>
         </div>
- 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+        {/* Mobile: 2 col, Desktop: 4 col */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {products.map((product) => (
             <div key={product.id} className="group">
               <Link to={`/product/${product.id}`}>
@@ -260,23 +263,22 @@ const ProductSection = ({ title, subtitle, link, products }) => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   {product.discount > 0 && (
-                    <span className="absolute top-3 left-3 bg-black text-white px-2 py-1 text-[9px] tracking-wide">
+                    <span className="absolute top-2 left-2 bg-black text-white px-1.5 py-0.5 text-[8px] md:text-[9px] tracking-wide">
                       {product.discount}% OFF
                     </span>
                   )}
                 </div>
               </Link>
- 
-              <div className="mt-3">
+              <div className="mt-2 md:mt-3">
                 <Link to={`/product/${product.id}`}>
-                  <h3 className="text-gray-800 hover:text-gray-500 text-xs font-medium tracking-wide line-clamp-1">
+                  <h3 className="text-gray-800 hover:text-gray-500 text-[11px] md:text-xs font-medium tracking-wide line-clamp-1">
                     {product.name}
                   </h3>
                 </Link>
                 <div className="flex items-center gap-2 mt-1">
-                  <p className="text-gray-900 font-semibold text-xs">₹{product.price}</p>
+                  <p className="text-gray-900 font-semibold text-[11px] md:text-xs">₹{product.price}</p>
                   {product.original_price && (
-                    <p className="text-gray-400 line-through text-xs">₹{product.original_price}</p>
+                    <p className="text-gray-400 line-through text-[10px] md:text-xs">₹{product.original_price}</p>
                   )}
                 </div>
               </div>
@@ -287,12 +289,11 @@ const ProductSection = ({ title, subtitle, link, products }) => {
     </div>
   );
 };
- 
- 
+
 const NewsletterSection = () => {
   const [email, setEmail]           = useState('');
   const [subscribed, setSubscribed] = useState(false);
- 
+
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (email) {
@@ -301,9 +302,9 @@ const NewsletterSection = () => {
       setEmail('');
     }
   };
- 
+
   return (
-    <div className="py-20 bg-black">
+    <div className="py-16 md:py-20 bg-black">
       <div className="max-w-2xl mx-auto px-4 text-center">
         <p
           className="text-white/40 mb-3 uppercase tracking-widest"
@@ -313,33 +314,33 @@ const NewsletterSection = () => {
         </p>
         <h2
           className="text-white mb-3"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 300, letterSpacing: '0.05em' }}
+          style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(28px, 5vw, 48px)', fontWeight: 300, letterSpacing: '0.05em' }}
         >
           Join Our Community
         </h2>
         <p
-          className="text-white/50 mb-10"
+          className="text-white/50 mb-8 md:mb-10"
           style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '12px', letterSpacing: '0.05em' }}
         >
           Subscribe and get 15% off your first order
         </p>
- 
+
         {subscribed ? (
           <div
-            className="text-white/80 py-4 border border-white/20 px-8 inline-block"
+            className="text-white/80 py-4 border border-white/20 px-6 md:px-8 inline-block"
             style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '11px', letterSpacing: '0.1em' }}
           >
             Thank you — your discount code is on its way.
           </div>
         ) : (
-          <form onSubmit={handleSubscribe} className="flex gap-0 max-w-md mx-auto">
+          <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-0 max-w-md mx-auto">
             <input
               type="email"
               placeholder="Your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="flex-1 px-4 py-3 bg-white/5 border border-white/20 border-r-0 text-white placeholder-white/30 focus:outline-none focus:border-white/50"
+              className="flex-1 px-4 py-3 bg-white/5 border border-white/20 sm:border-r-0 text-white placeholder-white/30 focus:outline-none focus:border-white/50"
               style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '11px', letterSpacing: '0.05em' }}
             />
             <button
@@ -355,13 +356,13 @@ const NewsletterSection = () => {
     </div>
   );
 };
- 
- 
+
+
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals]           = useState([]);
   const [loading, setLoading]                   = useState(true);
- 
+
   const fetchProducts = async () => {
     try {
       const res      = await productAPI.getAll({ limit: 8 });
@@ -373,21 +374,19 @@ const Home = () => {
     }
     setLoading(false);
   };
- 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
- 
+
+  useEffect(() => { fetchProducts(); }, []);
+
   const fallbackProducts = [
     { id: 1, name: 'Jacket',      price: 2499, original_price: 3499, discount: 28, image: 'https://i.pinimg.com/1200x/27/ea/c2/27eac2b4e982614e9dfc988f8d45cacd.jpg' },
     { id: 2, name: 'Joggers',     price: 5999, original_price: 8999, discount: 33, image: 'https://i.pinimg.com/736x/74/d2/0a/74d20ab68e3d1b9552d1d6509055e351.jpg'  },
     { id: 3, name: 'Office Wear', price: 1299, original_price: 1999, discount: 35, image: 'https://i.pinimg.com/1200x/23/74/5d/23745d46473b0a11655a093dcdc85ce5.jpg'  },
     { id: 4, name: 'Cargo Pants', price: 2999, original_price: 3999, discount: 34, image: 'https://i.pinimg.com/736x/f9/0f/81/f90f81779a5afc0780ec6287b143aff1.jpg'  },
   ];
- 
+
   const displayProducts    = featuredProducts.length > 0 ? featuredProducts : fallbackProducts;
   const displayNewArrivals = newArrivals.length       > 0 ? newArrivals      : fallbackProducts;
- 
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -395,7 +394,7 @@ const Home = () => {
       </div>
     );
   }
- 
+
   return (
     <main>
       <Hero />
@@ -418,5 +417,5 @@ const Home = () => {
     </main>
   );
 };
- 
+
 export default Home;

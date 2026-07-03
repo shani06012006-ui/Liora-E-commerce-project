@@ -56,18 +56,18 @@ const ProfileLayout = ({ children }) => (
 );
 
 const AppContent = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { user, token } = useSelector((state) => state.auth);
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const storedToken = localStorage.getItem('access_token');
+    const storedUser  = localStorage.getItem('user');
+    return !!(storedToken && storedUser && storedUser !== 'undefined');
+  });
 
   useEffect(() => {
     const storedToken = localStorage.getItem('access_token');
-    const storedUser = localStorage.getItem('user');
-    
-    if (storedToken && storedUser) {
-      setIsAuthenticated(true);
-    } else {
-      setIsAuthenticated(false);
-    }
+    const storedUser  = localStorage.getItem('user');
+    setIsAuthenticated(!!(storedToken && storedUser && storedUser !== 'undefined'));
   }, [user, token]);
 
   return (
