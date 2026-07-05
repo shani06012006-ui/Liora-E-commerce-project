@@ -9,7 +9,6 @@ from google.auth.transport import requests as google_requests
 from django.conf import settings
 from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer
 from .models import OTPVerification
-from rest_framework.permissions import IsAuthenticated
 
 from .tasks import send_otp_email
 
@@ -109,7 +108,6 @@ class GoogleLoginView(APIView):
             }
         )
 
-        # New user na active பண்ணு (OTP வேண்டாம் Google users ku)
         if not user.is_active:
             user.is_active = True
             user.save()
@@ -162,10 +160,7 @@ class VerifyOTPView(APIView):
         try:
             user = User.objects.get(email=email, is_active=False)
         except User.DoesNotExist:
-            return Response(
-                {"error": "User not found or already verified."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "User not found or already verified."}, status=400)
 
         otp_obj = (
             OTPVerification.objects
@@ -175,31 +170,20 @@ class VerifyOTPView(APIView):
         )
 
         if not otp_obj:
-            return Response({"error": "Invalid OTP."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Invalid OTP."}, status=400)
 
         if otp_obj.is_expired():
-            return Response(
-                {"error": "OTP expired. Please request a new one."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({"error": "OTP expired. Please request a new one."}, status=400)
 
         user.is_active = True
         user.save()
         otp_obj.is_verified = True
         otp_obj.save()
 
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "message": "Account verified successfully.",
-            "access": str(refresh.access_token),
-            "refresh": str(refresh),
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": user.role,
-            },
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Account verified successfully! Welcome"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class ResendOTPView(APIView):

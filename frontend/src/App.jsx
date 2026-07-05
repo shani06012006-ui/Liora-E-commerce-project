@@ -74,6 +74,9 @@ const AppContent = () => {
     <Routes>
       <Route path="/" element={<MainLayout><Home /></MainLayout>} />
       <Route path="/verify-otp" element={<OTPVerify />} />
+      <Route path="/Home" element={<Home />} />
+      <Route path="/Login" element={!isAuthenticated ? <MainLayout><Login /></MainLayout> : <Navigate to="/" />} />
+      <Route path="/register" element={!isAuthenticated ? <MainLayout><Register /></MainLayout> : <Navigate to="/" />} />      
 
       <Route path="/admin"            element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin/users"      element={<AdminRoute><AdminUsers /></AdminRoute>} />
@@ -101,9 +104,6 @@ const AppContent = () => {
       <Route path="/terms" element={<MainLayout><Terms /></MainLayout>} />
       <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
       <Route path="/help" element={<MainLayout><Help /></MainLayout>} />
-      
-      <Route path="/Login" element={!isAuthenticated ? <MainLayout><Login /></MainLayout> : <Navigate to="/" />} />
-      <Route path="/register" element={!isAuthenticated ? <MainLayout><Register /></MainLayout> : <Navigate to="/" />} />
       
       <Route path="/checkout" element={isAuthenticated ? <MainLayout><Checkout /></MainLayout> : <Navigate to="/Login" />} />
       <Route path="/address" element={isAuthenticated ? <MainLayout><Address /></MainLayout> : <Navigate to="/Login" />} />
