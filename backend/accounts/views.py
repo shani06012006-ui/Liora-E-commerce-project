@@ -151,16 +151,20 @@ class UserProfileView(APIView):
 class VerifyOTPView(APIView):
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
+
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        email    = serializer.validated_data["email"]
+        email = serializer.validated_data["email"]
         otp_code = serializer.validated_data["otp_code"]
 
         try:
             user = User.objects.get(email=email, is_active=False)
         except User.DoesNotExist:
-            return Response({"error": "User not found or already verified."}, status=400)
+            return Response(
+                {"error": "User not found or already verified."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         otp_obj = (
             OTPVerification.objects
@@ -170,21 +174,39 @@ class VerifyOTPView(APIView):
         )
 
         if not otp_obj:
-            return Response({"error": "Invalid OTP."}, status=400)
+            return Response(
+                {"error": "Invalid OTP."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if otp_obj.is_expired():
-            return Response({"error": "OTP expired. Please request a new one."}, status=400)
+            return Response(
+                {"error": "OTP expired. Please request a new one."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         user.is_active = True
         user.save()
+
         otp_obj.is_verified = True
         otp_obj.save()
 
+        refresh = RefreshToken.for_user(user)
+
         return Response(
-            {"message": "Account verified successfully! Welcome"},
+            {
+                "message": "Account verified successfully.",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role,
+                },
+            },
             status=status.HTTP_200_OK,
         )
-
 
 class ResendOTPView(APIView):
     def post(self, request):

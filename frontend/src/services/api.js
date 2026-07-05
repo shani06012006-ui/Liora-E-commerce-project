@@ -67,7 +67,7 @@ API.interceptors.response.use(
   }
 );
 
-// Generic API Helpers
+// Axios making the HTTP request
 const get = (url, params) => API.get(url, { params });
 const post = (url, data) => API.post(url, data);
 const put = (url, data, config = {}) => API.put(url, data, config);

@@ -15,6 +15,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Confirm password check
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match!');
       return;
@@ -88,6 +89,7 @@ const Register = () => {
                 {name === 'password' && (
                   <p className="text-xs text-gray-400 mt-1">Minimum 6 characters (Numbers / Text)</p>
                 )}
+                {/* Confirm password live feedback */}
                 {name === 'confirmPassword' && formData.confirmPassword && (
                   <p className={`text-xs mt-1 ${
                     formData.password === formData.confirmPassword ? 'text-green-600' : 'text-red-500'

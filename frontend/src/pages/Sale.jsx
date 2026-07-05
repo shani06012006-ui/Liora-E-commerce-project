@@ -186,7 +186,6 @@ const Sale = () => {
             <span className="text-[10px] md:text-xs uppercase tracking-wider">Limited Time Offer</span>
           </div>
 
-          {/* Title */}
           <h1 className="text-5xl md:text-8xl font-light tracking-wide mb-3 md:mb-4">SALE</h1>
 
           {/* Subtitle */}
