@@ -2,18 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
-import { 
-  BellIcon, 
-  MoonIcon, 
-  LockClosedIcon, 
-  TrashIcon, 
-  UserCircleIcon, 
-  EnvelopeIcon,
-  PhoneIcon,
-  PencilIcon,
-  CheckIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+import { BellIcon, MoonIcon, LockClosedIcon, TrashIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
 
