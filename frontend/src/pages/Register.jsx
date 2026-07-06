@@ -85,7 +85,6 @@ const Register = () => {
                       : 'border-gray-300'
                   }`}
                 />
-                {/* Password hint */}
                 {name === 'password' && (
                   <p className="text-xs text-gray-400 mt-1">Minimum 6 characters (Numbers / Text)</p>
                 )}

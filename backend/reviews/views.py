@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from orders.models import OrderItem
 from .models import Review
 from .serializers import ReviewSerializer
+from django.db import models
 
 
 class ReviewListView(APIView):
@@ -19,7 +20,13 @@ class ReviewListView(APIView):
             product_id=product_id, is_hidden=False
         ).order_by('-created_at')
         serializer = ReviewSerializer(reviews, many=True)
-        return Response(serializer.data)
+
+        avg_rating = reviews.aggregate(avg=models.Avg('rating'))['avg'] or 0
+
+        return Response({
+            'reviews': serializer.data,
+            'average_rating': round(avg_rating, 1),
+        })
 
     def post(self, request, product_id):
         has_purchased = OrderItem.objects.filter(

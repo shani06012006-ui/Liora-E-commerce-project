@@ -11,10 +11,7 @@ from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer
 from .models import OTPVerification
 
 from rest_framework.permissions import AllowAny
-
-
 from .tasks import send_otp_email
-
 
 User = get_user_model()
 
