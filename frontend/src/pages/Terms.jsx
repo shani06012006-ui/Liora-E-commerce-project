@@ -1,15 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  DocumentTextIcon, 
-  CheckCircleIcon, 
-  CreditCardIcon, 
-  TruckIcon, 
-  ArrowPathIcon,
-  EnvelopeIcon,
-  ShieldCheckIcon,
-  ScaleIcon
-} from '@heroicons/react/24/outline';
+import {  DocumentTextIcon, CheckCircleIcon, CreditCardIcon, TruckIcon, ArrowPathIcon, EnvelopeIcon, ShieldCheckIcon, ScaleIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
 

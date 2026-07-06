@@ -148,7 +148,6 @@ const Help = () => {
           })}
         </div>
 
-        {/* FAQ Section - Clean Accordion */}
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-semibold text-gray-800 text-center mb-8">Frequently Asked Questions</h2>
           <div className="space-y-3">
@@ -212,7 +211,6 @@ const Help = () => {
   );
 };
 
-// CurrencyRupeeIcon is not in the standard set, let me add a fallback
 const CurrencyRupeeIcon = ({ className }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 8h6m-5 0v12m0-12H8m10 0h-3m-2 0v12m0-12h-2m0 0H8m0 0H5m14 0h-3" />

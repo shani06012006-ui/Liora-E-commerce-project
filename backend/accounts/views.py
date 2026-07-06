@@ -292,17 +292,4 @@ class AdminUserDetailView(APIView):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
         return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)     
-    
-# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-#     def validate(self, attrs):
-#         data = super().validate(attrs)
-#         if self.user.is_blocked:
-#             raise AuthenticationFailed(
-#                 "Your account has been blocked by the administrator.",
-#                 code="user_blocked"
-#             )
-#         return data
-
-
-# class CustomTokenObtainPairView(TokenObtainPairView):
-#     serializer_class = CustomTokenObtainPairSerializer       
+         

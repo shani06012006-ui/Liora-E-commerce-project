@@ -51,7 +51,7 @@ const Navbar = () => {
 
   const dropdownRef  = useRef(null);
   const mobileRef    = useRef(null);
-  const debounceRef  = useRef(null);            // 🔴 ADD — for debounced live search
+  const debounceRef  = useRef(null);
 
   const fetchCartCount = useCallback(async () => {
     if (!localStorage.getItem('access_token')) return;
@@ -120,10 +120,9 @@ const Navbar = () => {
       if (value.trim()) params.set('search', value.trim());
       const query = params.toString();
       navigate(`/Collections${query ? `?${query}` : ''}`, { replace: true });
-    }, 400);   // waits 400ms after the user stops typing before filtering
+    }, 400);
   };
 
-  // 🔴 ADD — Clear All: wipes the input and removes the filter immediately
   const clearSearch = () => {
     clearTimeout(debounceRef.current);
     uiDispatch({ type: 'SET_SEARCH_TERM', payload: '' });
@@ -244,7 +243,6 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* 🔴 CHANGED — simplified search bar: live-filter input + Clear All */}
           {isSearchOpen && (
             <div className="py-3 border-t border-gray-100 animate-fadeIn">
               <div className="flex items-center gap-2 max-w-2xl mx-auto">

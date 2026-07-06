@@ -16,7 +16,6 @@ class ShippingViewSet(viewsets.ReadOnlyModelViewSet):
         if serializer.is_valid():
             subtotal = serializer.validated_data['subtotal']
             
-            # Find applicable shipping charge
             shipping_charge = ShippingCharge.objects.filter(
                 is_active=True,
                 min_amount__lte=subtotal
