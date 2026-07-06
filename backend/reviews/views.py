@@ -1,24 +1,42 @@
 ﻿from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from orders.models import OrderItem
 from .models import Review
 from .serializers import ReviewSerializer
 
 
 class ReviewListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return [AllowAny()]
+
     def get(self, request, product_id):
-        reviews = Review.objects.filter(product_id=product_id).order_by('-created_at')
+        reviews = Review.objects.filter(
+            product_id=product_id, is_hidden=False
+        ).order_by('-created_at')
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
 
     def post(self, request, product_id):
-        serializer = ReviewSerializer(data={
-            **request.data,
-            'product': product_id,
-            'user': request.user.id
-        })
+        has_purchased = OrderItem.objects.filter(
+            order__user=request.user,
+            order__status='delivered',
+            product_id=product_id
+        ).exists()
+
+        if not has_purchased:
+            return Response(
+                {"error": "You can only review products you've purchased and received."},
+                status=403
+            )
+
+        serializer = ReviewSerializer(data={**request.data, 'product': product_id})
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user, is_verified_purchase=True)
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 

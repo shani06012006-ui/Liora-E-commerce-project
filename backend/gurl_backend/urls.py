@@ -11,7 +11,7 @@ from wishlist.views import WishlistViewSet
 from reviews.views import ReviewListView
 
 router = DefaultRouter()
-router.register('products', ProductViewSet)
+router.register('products', ProductViewSet, basename='product')
 router.register('wishlist', WishlistViewSet, basename='wishlist')
 
 urlpatterns = [

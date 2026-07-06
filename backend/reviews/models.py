@@ -24,6 +24,7 @@ class Review(models.Model):
     helpful_count = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_hidden = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ['user', 'product']

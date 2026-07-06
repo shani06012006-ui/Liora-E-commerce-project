@@ -4,10 +4,11 @@ class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
-    
+    is_active = models.BooleanField(default=True)
+
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name_plural = 'Categories'
 
@@ -40,13 +41,23 @@ class Product(models.Model):
     is_new_arrival = models.BooleanField(default=False, help_text="Check this to show product in New Arrivals section")
     is_best_seller = models.BooleanField(default=False, help_text="Check this to show product in Best Sellers section")
     is_on_sale = models.BooleanField(default=False, help_text="Check this to show product in Sale section")
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-
-
     
     def __str__(self):
         return self.name
+    
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if self.price is not None and self.price < 0:
+            raise ValidationError({"price": "Price cannot be negative."})
+        if self.stock is not None and self.stock < 0:
+            raise ValidationError({"stock": "Stock cannot be negative."})
+        
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)        
+    
     
     @property
     def final_price(self):

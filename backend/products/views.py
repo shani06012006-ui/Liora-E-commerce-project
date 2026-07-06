@@ -1,14 +1,26 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import ModelViewSet
 from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
 
 
 class ProductViewSet(ModelViewSet):
-    queryset = Product.objects.all()
+    """Customer-facing browse endpoint — read-only, public."""
     serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    http_method_names = ['get', 'head']
+
+    def get_queryset(self):
+        qs = Product.objects.filter(is_active=True)
+        category = self.request.query_params.get('category')
+        search = self.request.query_params.get('search')
+        if category:
+            qs = qs.filter(category=category)
+        if search:
+            qs = qs.filter(name__icontains=search)
+        return qs.order_by('-created_at')
 
 
 class AdminProductListView(APIView):
@@ -18,6 +30,15 @@ class AdminProductListView(APIView):
         if request.user.role != 'admin':
             return Response({"error": "Access denied."}, status=403)
         products = Product.objects.all().order_by('-created_at')
+
+        search = request.query_params.get('search')
+        if search:
+            products = products.filter(name__icontains=search)
+
+        is_active = request.query_params.get('is_active')
+        if is_active is not None:
+            products = products.filter(is_active=is_active.lower() == 'true')
+
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
 
@@ -63,8 +84,9 @@ class AdminProductDetailView(APIView):
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return Response({"error": "Product not found."}, status=404)
-        product.delete()
-        return Response({"message": "Product deleted."}, status=204)
+        product.is_active = False
+        product.save()
+        return Response({"message": "Product deactivated."}, status=204)
 
 
 class AdminCategoryListView(APIView):
@@ -74,6 +96,11 @@ class AdminCategoryListView(APIView):
         if request.user.role != 'admin':
             return Response({"error": "Access denied."}, status=403)
         categories = Category.objects.all().order_by('name')
+
+        search = request.query_params.get('search')
+        if search:
+            categories = categories.filter(name__icontains=search)
+
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
 
