@@ -1,5 +1,5 @@
 ﻿import { useReducer, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   ShoppingBagIcon, UserIcon, MagnifyingGlassIcon,
@@ -30,8 +30,10 @@ const initialUI = {
 };
 
 const Navbar = () => {
-  const reduxDispatch = useDispatch();
-  const navigate      = useNavigate();
+  const reduxDispatch  = useDispatch();
+  const navigate       = useNavigate();
+  const location       = useLocation();
+  const [searchParams] = useSearchParams();
 
   const { user: reduxUser } = useSelector((state) => state.auth);
   const { items }           = useSelector((state) => state.cart);
@@ -49,6 +51,7 @@ const Navbar = () => {
 
   const dropdownRef  = useRef(null);
   const mobileRef    = useRef(null);
+  const debounceRef  = useRef(null);            // 🔴 ADD — for debounced live search
 
   const fetchCartCount = useCallback(async () => {
     if (!localStorage.getItem('access_token')) return;
@@ -99,17 +102,32 @@ const Navbar = () => {
     return () => { document.body.style.overflow = ''; };
   }, [isMobileOpen]);
 
+  useEffect(() => {
+    uiDispatch({ type: 'SET_SEARCH_TERM', payload: searchParams.get('search') || '' });
+  }, [location.pathname, location.search , searchParams]);
+
   const onLogout = () => {
     uiDispatch({ type: 'LOGOUT' });
     handleLogout(reduxDispatch, navigate);
   };
 
-  const handleSearch = (e) => {
-    if (e.key === 'Enter' && searchTerm.trim()) {
-      navigate(`/Collections?search=${encodeURIComponent(searchTerm)}`);
-      uiDispatch({ type: 'SET_SEARCH_TERM', payload: '' });
-      uiDispatch({ type: 'SET_SEARCH_OPEN', payload: false });
-    }
+  const handleSearchChange = (value) => {
+    uiDispatch({ type: 'SET_SEARCH_TERM', payload: value });
+
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      const params = new URLSearchParams();
+      if (value.trim()) params.set('search', value.trim());
+      const query = params.toString();
+      navigate(`/Collections${query ? `?${query}` : ''}`, { replace: true });
+    }, 400);   // waits 400ms after the user stops typing before filtering
+  };
+
+  // 🔴 ADD — Clear All: wipes the input and removes the filter immediately
+  const clearSearch = () => {
+    clearTimeout(debounceRef.current);
+    uiDispatch({ type: 'SET_SEARCH_TERM', payload: '' });
+    navigate('/Collections', { replace: true });
   };
 
   const closeMobile = () => uiDispatch({ type: 'SET_MOBILE_MENU', payload: false });
@@ -226,22 +244,34 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* Search Bar */}
+          {/* 🔴 CHANGED — simplified search bar: live-filter input + Clear All */}
           {isSearchOpen && (
             <div className="py-3 border-t border-gray-100 animate-fadeIn">
-              <div className="relative max-w-2xl mx-auto">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="What are you looking for?"
-                  value={searchTerm}
-                  onChange={(e) => uiDispatch({ type: 'SET_SEARCH_TERM', payload: e.target.value })}
-                  onKeyPress={handleSearch}
-                  className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm"
-                  autoFocus
-                />
+              <div className="flex items-center gap-2 max-w-2xl mx-auto">
+                <div className="relative flex-1">
+                  <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => handleSearchChange(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm"
+                    autoFocus
+                  />
+                </div>
+
+                {searchTerm && (
+                  <button
+                    onClick={clearSearch}
+                    className="flex items-center gap-1 text-gray-500 hover:text-gray-800 text-sm px-3 py-3 border border-gray-200 rounded-xl whitespace-nowrap transition"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                    Clear All
+                  </button>
+                )}
+
                 <button onClick={() => uiDispatch({ type: 'SET_SEARCH_OPEN', payload: false })}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">
+                  className="text-gray-400 hover:text-gray-600 text-xs px-1">
                   ESC
                 </button>
               </div>
@@ -264,7 +294,6 @@ const Navbar = () => {
           <div className="absolute inset-0 bg-black/40" onClick={closeMobile} />
           <div ref={mobileRef}
             className="absolute top-0 left-0 h-full w-72 bg-white shadow-xl flex flex-col">
-            {/* Header */}
             <div className="flex items-center justify-between px-6 h-16 border-b border-gray-100">
               <span className="text-xl font-serif font-light tracking-wide">L I O R A</span>
               <button onClick={closeMobile}>
@@ -272,7 +301,6 @@ const Navbar = () => {
               </button>
             </div>
 
-            {/* Nav Links */}
             <div className="flex-1 px-6 py-6 space-y-1 overflow-y-auto">
               {navLinks.map(({ to, label, className }) => (
                 <Link key={to} to={to} onClick={closeMobile}
@@ -302,7 +330,6 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* Bottom */}
             <div className="px-6 py-6 border-t border-gray-100">
               {currentUser ? (
                 <button onClick={() => { onLogout(); closeMobile(); }}

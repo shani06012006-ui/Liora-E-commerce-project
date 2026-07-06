@@ -1,10 +1,10 @@
 import { useReducer, useEffect, useCallback } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { productAPI, cartAPI, wishlistAPI } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
 import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
-import { HeartIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outline';
+import { HeartIcon, ShoppingBagIcon, BoltIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
 
@@ -29,24 +29,31 @@ const initialState = {
 };
 
 const Collections = () => {
-  const { style }         = useParams();
-  const reduxDispatch     = useDispatch();
-  const navigate          = useNavigate();
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const { style }           = useParams();
+  const [searchParams]      = useSearchParams();
+  const reduxDispatch       = useDispatch();
+  const navigate            = useNavigate();
+  const [state, dispatch]   = useReducer(reducer, initialState);
   const { products, loading, wishlist, wishlistIds, addingToCart } = state;
+
+  const searchTerm = searchParams.get('search') || '';   // 🔴 category removed — Navbar no longer sends it
 
   const fetchProducts = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
-      const res = await productAPI.getAll();
+      const params = {};
+      if (searchTerm) params.search = searchTerm;
+
+      const res = await productAPI.getAll(params);
       let filtered = res.data;
+
       if (style) {
-        filtered = res.data.filter(p => p.style && p.style.toLowerCase() === style.toLowerCase());
+        filtered = filtered.filter(p => p.style && p.style.toLowerCase() === style.toLowerCase());
       }
       dispatch({ type: 'SET_PRODUCTS', payload: filtered });
     } catch { toast.error('Failed to load products'); }
     finally { dispatch({ type: 'SET_LOADING', payload: false }); }
-  }, [style]);
+  }, [style, searchTerm]);
 
   const fetchWishlist = useCallback(async () => {
     const token = localStorage.getItem('access_token');
@@ -131,6 +138,21 @@ const Collections = () => {
               BUY 1 GET 1 15% OFF
             </span>
           </div>
+
+          {searchTerm && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
+                Search: "{searchTerm}"
+              </span>
+              <Link
+                to={style ? `/Collections/${style}` : '/Collections'}
+                className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 border border-gray-200 rounded-full px-3 py-1 transition"
+              >
+                <XMarkIcon className="h-3 w-3" />
+                Clear All
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 
@@ -154,9 +176,11 @@ const Collections = () => {
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {products.length === 0 ? (
           <div className="text-center py-20">
-            <div className="text-5xl mb-4">👗</div>
+            <div className="text-5xl mb-4">🔍</div>
             <h3 className="text-lg font-light text-gray-700 mb-2">No Products found</h3>
-            <p className="text-gray-500 mb-6 text-sm">Check back later for new arrivals!</p>
+            <p className="text-gray-500 mb-6 text-sm">
+              {searchTerm ? `No results for "${searchTerm}".` : 'Check back later for new arrivals!'}
+            </p>
             <Link to="/new-arrivals"
               className="inline-block bg-gray-900 text-white px-6 py-2 text-xs uppercase tracking-wide hover:bg-gray-800 transition">
               SHOP NEW ARRIVALS
@@ -204,7 +228,6 @@ const Collections = () => {
                       )}
                     </div>
 
-                    {/* Buttons — stack on very small, side by side on sm+ */}
                     <div className="flex gap-1.5 md:gap-2">
                       <button onClick={() => addToCart(product.id)} disabled={isAdding}
                         className="flex-1 bg-gray-900 text-white py-1.5 md:py-2 text-[10px] md:text-[11px] font-medium tracking-wide uppercase hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-1">
