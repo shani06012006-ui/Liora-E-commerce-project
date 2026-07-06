@@ -1,190 +1,186 @@
-from rest_framework import status
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import get_user_model
+import uuid
 from django.shortcuts import get_object_or_404
+from django.contrib.auth import get_user_model
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+
 from .models import Cart, Order, OrderItem
 from .serializers import CartSerializer, OrderSerializer
 from products.models import Product
-import uuid
- 
+
 User = get_user_model()
 
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
- 
+
     def get(self, request):
-        cart_items = Cart.objects.filter(user=request.user)
-        serializer = CartSerializer(cart_items, many=True)
-        total = sum(item.total_price() for item in cart_items)
-        return Response({'items': serializer.data, 'total': total})
- 
+        items = Cart.objects.filter(user=request.user)
+        serializer = CartSerializer(items, many=True)
+        total = sum(item.total_price() for item in items)
+
+        return Response({
+            "items": serializer.data,
+            "total": total
+        })
+
     def post(self, request):
-        product_id = request.data.get('product_id')
-        quantity   = request.data.get('quantity', 1)
-        product    = get_object_or_404(Product, id=product_id)
- 
+        product_id = request.data.get("product_id")
+        quantity = int(request.data.get("quantity", 1))
+
+        product = get_object_or_404(Product, id=product_id)
+
         cart_item, created = Cart.objects.get_or_create(
             user=request.user,
             product=product,
-            defaults={'quantity': quantity}
+            defaults={"quantity": quantity}
         )
- 
+
         if not created:
-            return Response(
-                {'message': 'Already in cart', 'already_exists': True},
-                status=status.HTTP_200_OK
-            )
- 
-        return Response(
-            {'message': 'Item added to cart'},
-            status=status.HTTP_201_CREATED
-        )
- 
+            cart_item.quantity += quantity
+            cart_item.save()
+
+        return Response({"message": "Cart updated"}, status=201)
+
     def put(self, request, item_id):
-        cart_item          = get_object_or_404(Cart, id=item_id, user=request.user)
-        cart_item.quantity = request.data.get('quantity', cart_item.quantity)
-        cart_item.save()
-        return Response({'message': 'Cart updated'})
- 
+        item = get_object_or_404(Cart, id=item_id, user=request.user)
+        item.quantity = int(request.data.get("quantity", item.quantity))
+        item.save()
+        return Response({"message": "Updated"})
+
     def delete(self, request, item_id):
-        cart_item = get_object_or_404(Cart, id=item_id, user=request.user)
-        cart_item.delete()
-        return Response({'message': 'Item removed'})
- 
- 
+        item = get_object_or_404(Cart, id=item_id, user=request.user)
+        item.delete()
+        return Response({"message": "Removed"})
+
+
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
- 
+
     def post(self, request):
         cart_items = Cart.objects.filter(user=request.user)
-        if not cart_items:
-            return Response(
-                {'error': 'Cart is empty'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
- 
-        total        = sum(item.total_price() for item in cart_items)
+
+        if not cart_items.exists():
+            return Response({"error": "Cart is empty"}, status=400)
+
+        total = sum(item.total_price() for item in cart_items)
         order_number = str(uuid.uuid4())[:8].upper()
- 
+
         order = Order.objects.create(
             user=request.user,
             order_number=order_number,
             total_amount=total,
-            shipping_address=request.data.get('shipping_address', request.user.address),
-            phone=request.data.get('phone', request.user.phone)
+            shipping_address=request.data.get("shipping_address", request.user.address),
+            phone=request.data.get("phone", request.user.phone),
         )
- 
-        for cart_item in cart_items:
+
+        for item in cart_items:
+            if item.product.stock < item.quantity:
+                return Response(
+                    {"error": f"Not enough stock for {item.product.name}"},
+                    status=400
+                )
+
             OrderItem.objects.create(
                 order=order,
-                product=cart_item.product,
-                quantity=cart_item.quantity,
-                price=cart_item.product.price
+                product=item.product,
+                quantity=item.quantity,
+                price=item.product.price
             )
-            cart_item.product.stock -= cart_item.quantity
-            cart_item.product.save()
- 
+
+            item.product.stock -= item.quantity
+            item.product.save()
+
         cart_items.delete()
-        serializer = OrderSerializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
- 
- 
+
+        return Response(OrderSerializer(order).data, status=201)
+
+
 class OrderHistoryView(APIView):
     permission_classes = [IsAuthenticated]
- 
+
     def get(self, request):
-        orders     = Order.objects.filter(user=request.user).order_by('-created_at')
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data)
-    
-    
+        orders = Order.objects.filter(user=request.user).order_by("-created_at")
+        return Response(OrderSerializer(orders, many=True).data)
+
+
 class AdminOrderListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.role != 'admin':
-            return Response({"error": "Access denied."}, status=403)
-        orders = Order.objects.all().order_by('-created_at')
-        serializer = OrderSerializer(orders, many=True)
-        return Response(serializer.data)
-    
+        if request.user.role != "admin":
+            return Response({"error": "Access denied"}, status=403)
+
+        orders = Order.objects.all().order_by("-created_at")
+        return Response(OrderSerializer(orders, many=True).data)
+
+
 class AdminOrderDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get_object(self, order_id):
+        return get_object_or_404(Order, id=order_id)
+
     def get(self, request, order_id):
-        if request.user.role != 'admin':
-            return Response({"error": "Access denied."}, status=403)
-        try:
-            order = Order.objects.get(id=order_id)
-        except Order.DoesNotExist:
-            return Response({"error": "Order not found."}, status=404)
-        serializer = OrderSerializer(order)
-        return Response(serializer.data)
+        if request.user.role != "admin":
+            return Response({"error": "Access denied"}, status=403)
+
+        order = self.get_object(order_id)
+        return Response(OrderSerializer(order).data)
 
     def patch(self, request, order_id):
-        if request.user.role != 'admin':
-            return Response({"error": "Access denied."}, status=403)
-        try:
-            order = Order.objects.get(id=order_id)
-        except Order.DoesNotExist:
-            return Response({"error": "Order not found."}, status=404)
-        serializer = OrderSerializer(order, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=400)
+        if request.user.role != "admin":
+            return Response({"error": "Access denied"}, status=403)
+
+        order = self.get_object(order_id)
+
+        status_value = request.data.get("status")
+        if status_value:
+            order.status = status_value
+            order.save()
+
+        return Response(OrderSerializer(order).data)
 
     def delete(self, request, order_id):
-        if request.user.role != 'admin':
-            return Response({"error": "Access denied."}, status=403)
-        try:
-            order = Order.objects.get(id=order_id)
-        except Order.DoesNotExist:
-            return Response({"error": "Order not found."}, status=404)
+        if request.user.role != "admin":
+            return Response({"error": "Access denied"}, status=403)
+
+        order = self.get_object(order_id)
         order.delete()
-        return Response({"message": "Order deleted."}, status=204)
-    
+        return Response({"message": "Deleted"}, status=204)
+
+
 class BuyNowView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        product_id = request.data.get('product_id')
-        quantity   = int(request.data.get('quantity', 1))
+        product_id = request.data.get("product_id")
+        quantity = int(request.data.get("quantity", 1))
 
-        if not product_id:
-            return Response({'error': 'Product ID required'}, status=400)
-
-        try:
-            product = Product.objects.get(id=product_id)
-        except Product.DoesNotExist:
-            return Response({'error': 'Product not found'}, status=404)
+        product = get_object_or_404(Product, id=product_id)
 
         if product.stock < quantity:
-            return Response({'error': 'Insufficient stock'}, status=400)
+            return Response({"error": "Insufficient stock"}, status=400)
 
-        total        = product.price * quantity
         order_number = str(uuid.uuid4())[:8].upper()
 
         order = Order.objects.create(
-            user             = request.user,
-            order_number     = order_number,
-            total_amount     = total,
-            shipping_address = request.data.get('shipping_address', request.user.address),
-            phone            = request.data.get('phone', request.user.phone),
-            payment_method   = request.data.get('payment_method', 'cod'),
+            user=request.user,
+            order_number=order_number,
+            total_amount=product.price * quantity,
+            shipping_address=request.data.get("shipping_address", request.user.address),
+            phone=request.data.get("phone", request.user.phone),
         )
 
         OrderItem.objects.create(
-            order    = order,
-            product  = product,
-            quantity = quantity,
-            price    = product.price,
+            order=order,
+            product=product,
+            quantity=quantity,
+            price=product.price
         )
 
         product.stock -= quantity
         product.save()
 
-        serializer = OrderSerializer(order)
-        return Response(serializer.data, status=201)        
+        return Response(OrderSerializer(order).data, status=201)

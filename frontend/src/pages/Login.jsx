@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState , useEffect } from 'react';
+import { Link, useNavigate , useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { GoogleLogin } from '@react-oauth/google';
 import { authAPI } from '../services/api';
@@ -14,6 +14,13 @@ const Login = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('blocked') === 'true') {
+      toast.error('Your account has been blocked by the administrator.');
+    }
+  }, [searchParams]);  
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -29,6 +29,17 @@ API.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    if (error.response?.status === 403) {
+      const detail = error.response?.data?.detail || "";
+      if (detail.toLowerCase().includes("blocked")) {
+        ["access_token", "refresh_token", "user"].forEach((key) =>
+          localStorage.removeItem(key)
+        );
+        window.location.href = "/Login?blocked=true";
+        return Promise.reject(error);
+      }
+    }    
+
     if (
       error.response?.status === 401 &&
       !originalRequest._retry

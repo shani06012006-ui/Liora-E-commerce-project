@@ -10,6 +10,9 @@ from django.conf import settings
 from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer
 from .models import OTPVerification
 
+from rest_framework.permissions import AllowAny
+
+
 from .tasks import send_otp_email
 
 
@@ -17,6 +20,7 @@ User = get_user_model()
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]    
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -32,6 +36,8 @@ class RegisterView(APIView):
 
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         email = request.data.get("email")
         password = request.data.get("password")
@@ -62,6 +68,12 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        if user.is_blocked:
+            return Response(
+                {"error": "Your account has been blocked by the administrator."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         refresh = RefreshToken.for_user(user)
         return Response({
             "access": str(refresh.access_token),
@@ -76,6 +88,7 @@ class LoginView(APIView):
 
 
 class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]    
     def post(self, request):
         credential = request.data.get("credential")
         if not credential:
@@ -111,6 +124,12 @@ class GoogleLoginView(APIView):
         if not user.is_active:
             user.is_active = True
             user.save()
+            
+        if user.is_blocked:
+            return Response(
+                {"error": "Your account has been blocked by the administrator."},
+                status=status.HTTP_403_FORBIDDEN,
+            )            
 
         refresh = RefreshToken.for_user(user)
         return Response({
@@ -149,6 +168,7 @@ class UserProfileView(APIView):
 
 
 class VerifyOTPView(APIView):
+    permission_classes = [AllowAny]    
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
 
@@ -209,6 +229,7 @@ class VerifyOTPView(APIView):
         )
 
 class ResendOTPView(APIView):
+    permission_classes = [AllowAny]    
     def post(self, request):
         email = request.data.get("email")
         try:
@@ -273,4 +294,18 @@ class AdminUserDetailView(APIView):
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
-        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)        
+        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)     
+    
+# class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+#     def validate(self, attrs):
+#         data = super().validate(attrs)
+#         if self.user.is_blocked:
+#             raise AuthenticationFailed(
+#                 "Your account has been blocked by the administrator.",
+#                 code="user_blocked"
+#             )
+#         return data
+
+
+# class CustomTokenObtainPairView(TokenObtainPairView):
+#     serializer_class = CustomTokenObtainPairSerializer       
