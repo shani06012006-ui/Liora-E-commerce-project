@@ -140,7 +140,6 @@ const Sale = () => {
 
   const categories  = [
     { value: 'all',   label: 'ALL SALE'    },
-    { value: 'dress', label: 'COLLECTIONS' },
   ];
   const sortOptions = [
     { value: 'discount',   label: 'BIGGEST DISCOUNT'   },
