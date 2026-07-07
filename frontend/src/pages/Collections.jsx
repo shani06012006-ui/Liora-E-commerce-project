@@ -36,7 +36,7 @@ const Collections = () => {
   const [state, dispatch]   = useReducer(reducer, initialState);
   const { products, loading, wishlist, wishlistIds, addingToCart } = state;
 
-  const searchTerm = searchParams.get('search') || '';   // 🔴 category removed — Navbar no longer sends it
+  const searchTerm = searchParams.get('search') || '';
 
   const fetchProducts = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });

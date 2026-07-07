@@ -279,7 +279,7 @@ const toggleWishlist = async (
 
     if (result.success) {
       toast.success("Removed from wishlist");
-      fetchWishlist();  //UI update panna
+      fetchWishlist();
     } else {
       toast.error(result.message);
     }
