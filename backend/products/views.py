@@ -5,7 +5,6 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
 
-
 class ProductViewSet(ModelViewSet):
     """Customer-facing browse endpoint — read-only, public."""
     serializer_class = ProductSerializer

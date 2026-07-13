@@ -171,9 +171,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-
-# JWT Settings - Make tokens last longer
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),  
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),  
@@ -182,7 +179,6 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-# Session settings for admin
 SESSION_COOKIE_AGE = 1209600  # 2 weeks
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
@@ -197,7 +193,7 @@ CSRF_COOKIE_HTTPONLY = False
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# For development only - allow both HTTP and HTTPS
+#  allow both HTTP and HTTPS
 if DEBUG:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
