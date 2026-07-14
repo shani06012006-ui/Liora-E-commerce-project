@@ -121,7 +121,7 @@ const Checkout = () => {
     try {
       let response;
       if (isBuyNow) {
-        response = await axios.post('http://localhost:8000/api/buy-now/', {
+        response = await axios.post('http://localhost:5174/api/buy-now/', {
           product_id: buyNowData.product.id, quantity: buyNowData.quantity,
           shipping_address: fullAddress, phone: formData.phone, payment_method: paymentMethod,
         }, { headers });
@@ -139,7 +139,7 @@ const Checkout = () => {
 
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
-    if (product?.image)     return `http://localhost:8000${product.image}`;
+    if (product?.image)     return `http://localhost:5174${product.image}`;
     return 'https://placehold.co/60x60/e0e0e0/2D2D2D?text=No';
   };
 

@@ -1,5 +1,6 @@
-import { useState , useEffect } from 'react';
-import { Link, useNavigate , useSearchParams } from 'react-router-dom';
+// frontend/src/pages/Login.jsx
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { GoogleLogin } from '@react-oauth/google';
 import { authAPI } from '../services/api';
@@ -8,9 +9,9 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const Login = () => {
-  const [email,    setEmail]    = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -20,56 +21,96 @@ const Login = () => {
     if (searchParams.get('blocked') === 'true') {
       toast.error('Your account has been blocked by the administrator.');
     }
-  }, [searchParams]);  
+  }, [searchParams]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast.error('Email and password are required.');
-      return;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!email || !password) {
+    toast.error('Email and password are required.');
+    return;
+  }
+  setLoading(true);
+  try {
+    const response = await authAPI.login({ email, password });
+    
+    const userData = response.data.user;
+    const accessToken = response.data.access;
+    const refreshToken = response.data.refresh;
+    
+    dispatch(setCredentials({
+      user: userData,
+      access: accessToken,
+    }));
+    
+    localStorage.setItem('access_token', accessToken);
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken);
     }
-    setLoading(true);
-    try {
-      const response = await authAPI.login({ email, password });
-      dispatch(setCredentials({
-        user:   response.data.user,
-        access: response.data.access,
-      }));
-      if (response.data.refresh) {
-        localStorage.setItem('refresh_token', response.data.refresh);
-      }
-      toast.success(`Welcome back, ${response.data.user?.username || ''}! `);
-      navigate('/');
-    } catch (error) {
-      toast.error(
-        error.response?.data?.error  ||
-        error.response?.data?.detail ||
-        'Invalid email or password.'
-      );
-    } finally {
-      setLoading(false);
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    toast.success(`Welcome back, ${userData?.username || 'User'}!`);
+    
+    console.log('User data:', userData);
+    console.log('Is admin?', userData?.role === 'admin' || userData?.is_staff === true);
+    
+    if (userData?.role === 'admin' || userData?.is_staff === true) {
+      navigate('/admin', { replace: true });
+    } else {
+      navigate('/', { replace: true });
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    toast.error(
+      error.response?.data?.error ||
+      error.response?.data?.detail ||
+      'Invalid email or password.'
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post('http://localhost:8000/api/auth/google/', {
+      const res = await axios.post('http://localhost:5174/api/auth/google/', {
         credential: credentialResponse.credential,
       });
+      
+      const userData = res.data.user;
+      const accessToken = res.data.access;
+      const refreshToken = res.data.refresh;
+      
       dispatch(setCredentials({
-        user:   res.data.user,
-        access: res.data.access,
+        user: userData,
+        access: accessToken,
       }));
-      localStorage.setItem('refresh_token', res.data.refresh);
+      
+      localStorage.setItem('access_token', accessToken);
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
+      }
+      localStorage.setItem('user', JSON.stringify(userData));
+      
       toast.success(
         res.data.created
-          ? `Welcome to Liora, ${res.data.user.username}! `
-          : `Welcome back, ${res.data.user.username}! `
+          ? `Welcome to Liora, ${userData?.username || 'User'}!`
+          : `Welcome back, ${userData?.username || 'User'}!`
       );
-      navigate('/');
-    } catch {
+      
+      // Redirect based on user role
+      if (userData?.role === 'admin' || userData?.is_staff === true) {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
       toast.error('Google login failed. Please try again.');
     }
+  };
+
+  const handleGoogleError = () => {
+    toast.error('Google login failed. Please try again.');
   };
 
   return (
@@ -89,11 +130,11 @@ const Login = () => {
             Login
           </h2>
 
-          {/* Google Login — fixed width */}
+          {/* Google Login - Comment out if causing issues */}
           <div className="w-full flex justify-center mb-5 md:mb-6">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
-              onError={() => toast.error('Google login failed.')}
+              onError={handleGoogleError}
               theme="outline"
               size="large"
               width="400"
@@ -127,22 +168,23 @@ const Login = () => {
             <div className="mb-5 md:mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none text-sm" />
-            <p className="text-xs text-gray-400 mt-1">
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none text-sm"
+              />
+              <p className="text-xs text-gray-400 mt-1">
                 Enter your Liora account password
-            </p>
-          </div>
+              </p>
+            </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition disabled:opacity-50 text-sm md:text-base"
+              className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">

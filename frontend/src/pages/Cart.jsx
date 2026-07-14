@@ -33,7 +33,7 @@ const Cart = () => {
   const getProductImage = (product) => {
     if (!product) return 'https://placehold.co/200x200/e0e0e0/2D2D2D?text=No+Image';
     if (product.image_url) return product.image_url.replace('127.0.0.1', 'localhost');
-    if (product.image)     return `http://localhost:8000/media/${product.image}`;
+    if (product.image)     return `http://localhost:5174/media/${product.image}`;
     return 'https://placehold.co/200x200/e0e0e0/2D2D2D?text=No+Image';
   };
 

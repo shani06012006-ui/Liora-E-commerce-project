@@ -6,7 +6,6 @@ import { logout } from '../redux/authSlice';
 import {
   FiHome,
   FiPackage,
-  FiFolder,
   FiUsers,
   FiStar,
   FiSettings,
@@ -36,10 +35,9 @@ const AdminLayout = ({ children, title = 'Dashboard' }) => {
   };
 
   const menuItems = [
-    { path: '/admin', icon: FiHome, label: 'Dashboard'},
+    { path: '/admin/dashboard', icon: FiHome, label: 'Dashboard' },
     { path: '/admin/orders', icon: FiShoppingCart, label: 'Orders' },
     { path: '/admin/products', icon: FiPackage, label: 'Products' },
-    { path: '/admin/categories', icon: FiFolder, label: 'Categories' },
     { path: '/admin/users', icon: FiUsers, label: 'Customers' },
     { path: '/admin/reviews', icon: FiStar, label: 'Reviews' },
     { path: '/admin/settings', icon: FiSettings, label: 'Settings' },
@@ -93,7 +91,7 @@ const AdminLayout = ({ children, title = 'Dashboard' }) => {
           )}
         </div>
 
-        {/* Navigation - ONLY THESE ITEMS */}
+        {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 px-2">
             {menuItems.map((item) => (
@@ -114,7 +112,7 @@ const AdminLayout = ({ children, title = 'Dashboard' }) => {
           </ul>
         </nav>
 
-        {/* Logout - Always visible */}
+        {/* Logout */}
         <div className="border-t border-gray-200 p-4">
           <button
             onClick={handleLogout}
@@ -211,7 +209,7 @@ const AdminLayout = ({ children, title = 'Dashboard' }) => {
             <div className="relative hidden md:block">
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search products, orders, customers..."
                 className="w-64 pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
               />
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
@@ -273,6 +271,9 @@ const AdminLayout = ({ children, title = 'Dashboard' }) => {
                   <div className="py-1">
                     <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                       My Profile
+                    </button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                      Settings
                     </button>
                     <button 
                       onClick={handleLogout}

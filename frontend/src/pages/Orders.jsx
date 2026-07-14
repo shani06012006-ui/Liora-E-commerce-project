@@ -49,7 +49,7 @@ const Orders = () => {
 
   const getProductImage = (productId) => {
     const image = productImages[productId];
-    if (image) return image.startsWith('http') ? image : `http://localhost:8000${image}`;
+    if (image) return image.startsWith('http') ? image : `http://localhost:5174${image}`;
     return 'https://placehold.co/60x60/e0e0e0/2D2D2D?text=No+Image';
   };
 

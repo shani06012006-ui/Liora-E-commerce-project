@@ -25,7 +25,7 @@ const NewArrivals = () => {
 
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
-    if (product?.image) return `http://localhost:8000${product.image}`;
+    if (product?.image) return `http://localhost:5174${product.image}`;
     return 'https://placehold.co/600x700/f5f5f5/999999?text=Image';
   };
 

@@ -1,22 +1,25 @@
-from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from accounts.views import ( RegisterView, LoginView, UserProfileView, VerifyOTPView, ResendOTPView, GoogleLoginView, AdminUserListView, AdminUserDetailView )
-from products.views import ProductViewSet, AdminProductListView, AdminProductDetailView
+from accounts.views import ( RegisterView, LoginView, UserProfileView, VerifyOTPView, 
+                            ResendOTPView, GoogleLoginView, AdminUserListView, 
+                            AdminUserDetailView )
+from products.views import ( ProductViewSet, AdminProductListView, AdminProductDetailView, 
+                             AdminCategoryListView, AdminCategoryDetailView, 
+                             AdminDashboardStatsView )
 from orders.views import CartView, CheckoutView, OrderHistoryView, AdminOrderListView, AdminOrderDetailView , BuyNowView
 from wishlist.views import WishlistViewSet
-from reviews.views import ReviewListView
+from reviews.views import ReviewListView, AdminReviewListView, AdminReviewDetailView
+from shipping.views import ShippingViewSet
 
 router = DefaultRouter()
 router.register('products', ProductViewSet, basename='product')
 router.register('wishlist', WishlistViewSet, basename='wishlist')
+router.register('shipping', ShippingViewSet, basename='shipping')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-
     # Auth
     path('api/register/', RegisterView.as_view(), name='register'),
     path('api/verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
@@ -33,12 +36,17 @@ urlpatterns = [
     path('api/buy-now/', BuyNowView.as_view(), name='buy-now'),
 
     # Admin APIs
+    path('api/admin/dashboard/stats/', AdminDashboardStatsView.as_view(), name='admin-dashboard-stats'),  # ← ADD THIS
     path('api/admin/users/', AdminUserListView.as_view(), name='admin-users'),
     path('api/admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('api/admin/orders/', AdminOrderListView.as_view(), name='admin-orders'),
     path('api/admin/orders/<int:order_id>/', AdminOrderDetailView.as_view(), name='admin-order-detail'),
     path('api/admin/products/', AdminProductListView.as_view(), name='admin-products'),
     path('api/admin/products/<int:product_id>/', AdminProductDetailView.as_view(), name='admin-product-detail'),
+    path('api/admin/categories/', AdminCategoryListView.as_view(), name='admin-categories'),  # ← ADD THIS
+    path('api/admin/categories/<int:category_id>/', AdminCategoryDetailView.as_view(), name='admin-category-detail'),  # ← ADD THIS
+    path('api/admin/reviews/', AdminReviewListView.as_view(), name='admin-reviews'),  # ← ADD THIS
+    path('api/admin/reviews/<int:review_id>/', AdminReviewDetailView.as_view(), name='admin-review-detail'),  # ← ADD THIS
 
     # Token & Reviews
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

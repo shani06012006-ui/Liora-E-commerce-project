@@ -31,6 +31,22 @@ class User(AbstractUser):
         blank=True,
     )
 
+def save(self, *args, **kwargs):
+    wants_admin = self.role == 'admin' or self.is_staff
+
+    if wants_admin:
+        existing_admin = User.objects.filter(
+            models.Q(role='admin') | models.Q(is_staff=True)
+        ).exclude(pk=self.pk).exists()
+
+        if existing_admin:
+            from django.core.exceptions import ValidationError
+            raise ValidationError(
+                "An admin account already exists. Only one admin is allowed."
+            )
+
+    super().save(*args, **kwargs)
+
     def __str__(self):
         return self.username
 

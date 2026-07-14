@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../redux/authSlice';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
 
 const OTPVerify = () => {
@@ -36,44 +36,23 @@ const OTPVerify = () => {
 
   const handleVerify = async (e) => {
     e.preventDefault();
-
     if (otp.length !== 6) {
       toast.error('Please enter a valid 6-digit OTP');
       return;
     }
-
     setLoading(true);
-
     try {
-      const response = await axios.post(
-        'http://localhost:8000/api/verify-otp/',
-        {
-          email,
-          otp_code: otp,
-        }
-      );
+      const response = await authAPI.verifyOtp({ email, otp_code: otp });
 
-      dispatch(
-        setCredentials({
-          user: response.data.user,
-          access: response.data.access,
-        })
-      );
-
-      localStorage.setItem(
-        'refresh_token',
-        response.data.refresh
-      );
-
+      dispatch(setCredentials({
+        user: response.data.user,
+        access: response.data.access,
+      }));
+      localStorage.setItem('refresh_token', response.data.refresh);
       toast.success('Account verified successfully!');
-
       navigate('/');
-
     } catch (err) {
-      toast.error(
-        err.response?.data?.error ||
-          'Invalid OTP. Please try again.'
-      );
+      toast.error(err.response?.data?.error || 'Invalid OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -81,20 +60,11 @@ const OTPVerify = () => {
 
   const handleResend = async () => {
     setResending(true);
-
     try {
-      await axios.post(
-        'http://localhost:8000/api/resend-otp/',
-        {
-          email,
-        }
-      );
-
+      await authAPI.resendOtp({ email });
       toast.success('A new OTP has been sent.');
-
       setOtp('');
       setTimer(300);
-
     } catch {
       toast.error('Failed to resend OTP');
     } finally {

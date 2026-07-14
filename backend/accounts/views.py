@@ -9,7 +9,6 @@ from google.auth.transport import requests as google_requests
 from django.conf import settings
 from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer
 from .models import OTPVerification
-
 from rest_framework.permissions import AllowAny
 from .tasks import send_otp_email
 
@@ -65,22 +64,34 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        if user.is_blocked:
+        # Safe check for is_blocked
+        if hasattr(user, 'is_blocked') and user.is_blocked:
             return Response(
                 {"error": "Your account has been blocked by the administrator."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
         refresh = RefreshToken.for_user(user)
+        
+        # Build user data safely
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_staff": user.is_staff,
+            "is_active": user.is_active,
+        }
+        
+        # Add role if field exists
+        if hasattr(user, 'role'):
+            user_data["role"] = user.role
+        else:
+            user_data["role"] = "user"
+        
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": user.role,
-            },
+            "user": user_data,
         }, status=status.HTTP_200_OK)
 
 
@@ -106,8 +117,8 @@ class GoogleLoginView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        email    = google_data.get("email")
-        name     = google_data.get("name", "")
+        email = google_data.get("email")
+        name = google_data.get("name", "")
 
         user, created = User.objects.get_or_create(
             email=email,
@@ -121,23 +132,32 @@ class GoogleLoginView(APIView):
         if not user.is_active:
             user.is_active = True
             user.save()
-            
-        if user.is_blocked:
+        
+        if hasattr(user, 'is_blocked') and user.is_blocked:
             return Response(
                 {"error": "Your account has been blocked by the administrator."},
                 status=status.HTTP_403_FORBIDDEN,
-            )            
+            )
 
         refresh = RefreshToken.for_user(user)
+        
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_staff": user.is_staff,
+            "is_active": user.is_active,
+        }
+        
+        if hasattr(user, 'role'):
+            user_data["role"] = user.role
+        else:
+            user_data["role"] = "user"
+        
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": user.role,
-            },
+            "user": user_data,
             "created": created,
         }, status=status.HTTP_200_OK)
 
@@ -209,21 +229,30 @@ class VerifyOTPView(APIView):
         otp_obj.save()
 
         refresh = RefreshToken.for_user(user)
+        
+        user_data = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_staff": user.is_staff,
+            "is_active": user.is_active,
+        }
+        
+        if hasattr(user, 'role'):
+            user_data["role"] = user.role
+        else:
+            user_data["role"] = "user"
 
         return Response(
             {
                 "message": "Account verified successfully.",
                 "access": str(refresh.access_token),
                 "refresh": str(refresh),
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "role": user.role,
-                },
+                "user": user_data,
             },
             status=status.HTTP_200_OK,
         )
+
 
 class ResendOTPView(APIView):
     permission_classes = [AllowAny]    
@@ -245,12 +274,14 @@ class ResendOTPView(APIView):
             {"message": "OTP resent successfully."},
             status=status.HTTP_200_OK,
         )
-        
+
+
 class AdminUserListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.role != 'admin':
+        # Check both role and is_staff
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         users = User.objects.all().order_by('-date_joined')
         serializer = UserSerializer(users, many=True)
@@ -261,7 +292,7 @@ class AdminUserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
-        if request.user.role != 'admin':
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         try:
             user = User.objects.get(id=user_id)
@@ -271,7 +302,7 @@ class AdminUserDetailView(APIView):
         return Response(serializer.data)
 
     def patch(self, request, user_id):
-        if request.user.role != 'admin':
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         try:
             user = User.objects.get(id=user_id)
@@ -284,12 +315,11 @@ class AdminUserDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, user_id):
-        if request.user.role != 'admin':
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         user.delete()
-        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)     
-         
+        return Response({"message": "User deleted."}, status=status.HTTP_204_NO_CONTENT)

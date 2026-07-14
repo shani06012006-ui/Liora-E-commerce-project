@@ -52,9 +52,27 @@ class AdminReviewListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.role != 'admin':
+        # Check both role and is_staff
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=403)
+        
         reviews = Review.objects.all().order_by('-created_at')
+        
+        # Filter by rating
+        rating = request.query_params.get('rating')
+        if rating:
+            reviews = reviews.filter(rating=rating)
+        
+        # Filter by verified purchase
+        is_verified = request.query_params.get('is_verified_purchase')
+        if is_verified is not None:
+            reviews = reviews.filter(is_verified_purchase=is_verified.lower() == 'true')
+        
+        # Filter by hidden
+        is_hidden = request.query_params.get('is_hidden')
+        if is_hidden is not None:
+            reviews = reviews.filter(is_hidden=is_hidden.lower() == 'true')
+        
         serializer = ReviewSerializer(reviews, many=True)
         return Response(serializer.data)
 
@@ -62,25 +80,42 @@ class AdminReviewListView(APIView):
 class AdminReviewDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request, review_id):
-        if request.user.role != 'admin':
+    def get(self, request, review_id):
+        # Check both role and is_staff
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=403)
+        
         try:
             review = Review.objects.get(id=review_id)
         except Review.DoesNotExist:
             return Response({"error": "Review not found."}, status=404)
-        review.delete()
-        return Response({"message": "Review deleted."}, status=204)
+        
+        serializer = ReviewSerializer(review)
+        return Response(serializer.data)
 
     def patch(self, request, review_id):
-        if request.user.role != 'admin':
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=403)
+        
         try:
             review = Review.objects.get(id=review_id)
         except Review.DoesNotExist:
             return Response({"error": "Review not found."}, status=404)
+        
         serializer = ReviewSerializer(review, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+    def delete(self, request, review_id):
+        if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
+            return Response({"error": "Access denied."}, status=403)
+        
+        try:
+            review = Review.objects.get(id=review_id)
+        except Review.DoesNotExist:
+            return Response({"error": "Review not found."}, status=404)
+        
+        review.delete()
+        return Response({"message": "Review deleted."}, status=204)

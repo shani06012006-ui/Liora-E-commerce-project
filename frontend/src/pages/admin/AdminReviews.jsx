@@ -1,34 +1,37 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
-import AdminLayout from './AdminLayout';
+// frontend/src/pages/admin/AdminReviews.jsx
+import { useEffect, useState, useCallback } from 'react';
+import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
+import { adminAPI } from '../../services/api';
 import { StarIcon } from '@heroicons/react/24/solid';
 
 const AdminReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch]   = useState('');
+  const [search, setSearch] = useState('');
 
-  const token   = localStorage.getItem('access_token');
-  const headers = { Authorization: `Bearer ${token}` };
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
-      const res = await axios.get('http://localhost:8000/api/admin/reviews/', { headers });
+      const res = await adminAPI.getReviews();
       setReviews(res.data);
-    } catch { toast.error('Failed to load reviews'); }
-    finally { setLoading(false); }
-  };
+    } catch {
+      toast.error('Failed to load reviews');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  useEffect(() => { fetchReviews(); } );
+  useEffect(() => { fetchReviews(); }, [fetchReviews]);
 
   const deleteReview = async (id) => {
     if (!window.confirm('Delete this review?')) return;
     try {
-      await axios.delete(`http://localhost:8000/api/admin/reviews/${id}/`, { headers });
+      await adminAPI.deleteReview(id);
       toast.success('Review deleted');
       fetchReviews();
-    } catch { toast.error('Failed to delete review'); }
+    } catch {
+      toast.error('Failed to delete review');
+    }
   };
 
   const filtered = reviews.filter(r =>

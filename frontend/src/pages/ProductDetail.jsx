@@ -120,7 +120,7 @@ const ProductDetail = () => {
 
   const getImageUrl = (p) => {
     if (p?.image_url) return p.image_url;
-    if (p?.image)     return `http://localhost:8000${p.image}`;
+    if (p?.image)     return `http://localhost:5174${p.image}`;
     return 'https://placehold.co/600x800/e0e0e0/2D2D2D?text=No+Image';
   };
 

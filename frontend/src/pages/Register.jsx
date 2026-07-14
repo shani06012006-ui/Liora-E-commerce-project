@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import { authAPI } from '../services/api';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +15,6 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Confirm password check
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match!');
       return;
@@ -27,9 +26,9 @@ const Register = () => {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:8000/api/register/', {
+      await authAPI.register({
         username: formData.username,
-        email:    formData.email,
+        email: formData.email,
         password: formData.password,
       });
       toast.success('OTP sent to your email!');

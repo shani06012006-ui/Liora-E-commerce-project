@@ -18,7 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_profile_pic_url(self, obj):
         if obj.profile_pic:
-            return f"http://localhost:8000/media/{obj.profile_pic}"
+            return f"http://localhost:5174/media/{obj.profile_pic}"
         return None
 
 

@@ -1,11 +1,7 @@
 import { Link } from 'react-router-dom';
+import { getImageUrl } from '../services/api';
 
 const ProductCard = ({ product }) => {
-  const getImageUrl = (product) => {
-    if (product?.image_url) return product.image_url;
-    if (product?.image) return `http://localhost:8000${product.image}`;
-    return 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=No+Image';
-  };
 
   return (
     <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">

@@ -144,7 +144,7 @@ const getImageUrl = (product) => {
   if (product.image) {
     if (product.image.startsWith('http') || product.image.startsWith('/') || product.image.startsWith('data:'))
       return product.image;
-    return `http://localhost:8000${product.image}`;
+    return `http://localhost:5174${product.image}`;
   }
   return null;
 };

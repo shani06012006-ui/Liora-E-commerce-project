@@ -75,7 +75,7 @@ const Wishlist = () => {
  
   const getImageUrl = (product) => {
     if (product?.image_url) return product.image_url;
-    if (product?.image)     return `http://localhost:8000${product.image}`;
+    if (product?.image)     return `http://localhost:5174${product.image}`;
     return 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=No+Image';
   };
  
