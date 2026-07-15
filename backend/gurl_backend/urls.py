@@ -36,17 +36,17 @@ urlpatterns = [
     path('api/buy-now/', BuyNowView.as_view(), name='buy-now'),
 
     # Admin APIs
-    path('api/admin/dashboard/stats/', AdminDashboardStatsView.as_view(), name='admin-dashboard-stats'),  # ← ADD THIS
+    path('api/admin/dashboard/stats/', AdminDashboardStatsView.as_view(), name='admin-dashboard-stats'),
     path('api/admin/users/', AdminUserListView.as_view(), name='admin-users'),
     path('api/admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('api/admin/orders/', AdminOrderListView.as_view(), name='admin-orders'),
     path('api/admin/orders/<int:order_id>/', AdminOrderDetailView.as_view(), name='admin-order-detail'),
     path('api/admin/products/', AdminProductListView.as_view(), name='admin-products'),
     path('api/admin/products/<int:product_id>/', AdminProductDetailView.as_view(), name='admin-product-detail'),
-    path('api/admin/categories/', AdminCategoryListView.as_view(), name='admin-categories'),  # ← ADD THIS
-    path('api/admin/categories/<int:category_id>/', AdminCategoryDetailView.as_view(), name='admin-category-detail'),  # ← ADD THIS
-    path('api/admin/reviews/', AdminReviewListView.as_view(), name='admin-reviews'),  # ← ADD THIS
-    path('api/admin/reviews/<int:review_id>/', AdminReviewDetailView.as_view(), name='admin-review-detail'),  # ← ADD THIS
+    path('api/admin/categories/', AdminCategoryListView.as_view(), name='admin-categories'),
+    path('api/admin/categories/<int:category_id>/', AdminCategoryDetailView.as_view(), name='admin-category-detail'),
+    path('api/admin/reviews/', AdminReviewListView.as_view(), name='admin-reviews'),
+    path('api/admin/reviews/<int:review_id>/', AdminReviewDetailView.as_view(), name='admin-review-detail'),
 
     # Token & Reviews
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

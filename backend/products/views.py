@@ -4,71 +4,158 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.viewsets import ModelViewSet
 from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.utils import timezone
 from datetime import timedelta
-from orders.models import Order
-from reviews.models import Review
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 class AdminDashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if not request.user.is_staff:
-            return Response({"error": "Access denied."}, status=403)
-        
-        total_users = User.objects.count()
-        total_products = Product.objects.count()
-        total_orders = Order.objects.count()
-        total_reviews = Review.objects.count()
-        
-        in_stock = Product.objects.filter(stock__gt=10).count()
-        low_stock = Product.objects.filter(stock__gt=0, stock__lte=10).count()
-        out_of_stock = Product.objects.filter(stock=0).count()
-        
-        pending_orders = Order.objects.filter(status='pending').count()
-        completed_orders = Order.objects.filter(status='delivered').count()
-        
-        last_30_days = timezone.now() - timedelta(days=30)
-        revenue = Order.objects.filter(
-            created_at__gte=last_30_days,
-            status='delivered'
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
-        
-        recent_orders = Order.objects.order_by('-created_at')[:10]
-        recent_orders_data = []
-        for order in recent_orders:
-            recent_orders_data.append({
-                'id': order.id,
-                'order_number': order.order_number,
-                'user_name': order.user.username,
-                'total_amount': order.total_amount,
-                'status': order.status,
-                'created_at': order.created_at
-            })
-        
-        popular_products = Product.objects.annotate(
-            total_sold=Sum('orderitem__quantity')
-        ).order_by('-total_sold')[:5]
-        popular_products_data = ProductSerializer(popular_products, many=True).data
-        
-        return Response({
-            'total_users': total_users,
-            'total_products': total_products,
-            'total_orders': total_orders,
-            'total_reviews': total_reviews,
-            'in_stock': in_stock,
-            'low_stock': low_stock,
-            'out_of_stock': out_of_stock,
-            'pending_orders': pending_orders,
-            'completed_orders': completed_orders,
-            'monthly_revenue': revenue,
-            'recent_orders': recent_orders_data,
-            'popular_products': popular_products_data
-        })
+        try:
+            # Check admin permission
+            if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
+                return Response({"error": "Access denied."}, status=403)
+            
+            # Get basic counts
+            total_users = User.objects.count()
+            total_products = Product.objects.count()
+            
+            # Get order counts safely
+            try:
+                from orders.models import Order
+                total_orders = Order.objects.count()
+                pending_orders = Order.objects.filter(status='pending').count()
+                completed_orders = Order.objects.filter(status='delivered').count()
+                
+                # Today's orders
+                today = timezone.now().date()
+                today_orders = Order.objects.filter(created_at__date=today).count()
+                
+                # Revenue (last 30 days)
+                last_30_days = timezone.now() - timedelta(days=30)
+                revenue_data = Order.objects.filter(
+                    created_at__gte=last_30_days,
+                    status='delivered'
+                ).aggregate(total=Sum('total_amount'))
+                revenue = float(revenue_data['total'] or 0)
+                
+                # Recent orders
+                recent_orders = Order.objects.order_by('-created_at')[:10]
+                recent_orders_data = []
+                for order in recent_orders:
+                    recent_orders_data.append({
+                        'id': order.id,
+                        'order_number': order.order_number,
+                        'user_name': order.user.username,
+                        'total_amount': float(order.total_amount),
+                        'status': order.status,
+                        'created_at': order.created_at.isoformat()
+                    })
+            except Exception:
+                total_orders = 0
+                pending_orders = 0
+                completed_orders = 0
+                today_orders = 0
+                revenue = 0
+                recent_orders_data = []
+            
+            # Get review counts safely
+            try:
+                from reviews.models import Review
+                total_reviews = Review.objects.count()
+            except Exception:
+                total_reviews = 0
+            
+            # Product stats
+            in_stock = Product.objects.filter(stock__gt=10).count()
+            low_stock = Product.objects.filter(stock__gt=0, stock__lte=10).count()
+            out_of_stock = Product.objects.filter(stock=0).count()
+            
+            # Popular products
+            popular_products_data = []
+            try:
+                popular_products = Product.objects.annotate(
+                    total_sold=Sum('orderitem__quantity')
+                ).order_by('-total_sold')[:5]
+                popular_products_data = ProductSerializer(popular_products, many=True).data
+            except Exception:
+                popular_products = Product.objects.all().order_by('-created_at')[:5]
+                popular_products_data = ProductSerializer(popular_products, many=True).data
+            
+            # Top categories
+            top_categories_data = []
+            try:
+                top_categories = Category.objects.annotate(
+                    product_count=Count('product')
+                ).order_by('-product_count')[:5]
+                top_categories_data = [
+                    {'name': cat.name, 'count': cat.product_count}
+                    for cat in top_categories
+                ]
+            except Exception:
+                top_categories = Category.objects.all()[:5]
+                top_categories_data = [
+                    {'name': cat.name, 'count': 0}
+                    for cat in top_categories
+                ]
+            
+            # Low stock products
+            low_stock_products = Product.objects.filter(
+                stock__gt=0, 
+                stock__lte=10
+            ).order_by('stock')[:5]
+            low_stock_products_data = ProductSerializer(low_stock_products, many=True).data
+            
+            # Monthly data
+            monthly_data = []
+            months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            for month in months:
+                monthly_data.append({
+                    'month': month,
+                    'revenue': 0,
+                    'orders': 0
+                })
+            
+            response_data = {
+                'total_users': total_users,
+                'total_products': total_products,
+                'total_orders': total_orders,
+                'total_reviews': total_reviews,
+                'in_stock': in_stock,
+                'low_stock': low_stock,
+                'out_of_stock': out_of_stock,
+                'pending_orders': pending_orders,
+                'completed_orders': completed_orders,
+                'monthly_revenue': revenue,
+                'today_orders': today_orders,
+                'recent_orders': recent_orders_data,
+                'popular_products': popular_products_data,
+                'top_categories': top_categories_data,
+                'low_stock_products': low_stock_products_data,
+                'monthly_data': monthly_data,
+                
+                'confirmed_orders': Order.objects.filter(status='confirmed').count(),
+                'processing_orders': Order.objects.filter(status='processing').count(),
+                'shipped_orders': Order.objects.filter(status='shipped').count(),
+                'cancelled_orders': Order.objects.filter(status='cancelled').count(),
+            }
+            
+            return Response(response_data)
+            
+        except Exception as error:
+            return Response(
+                {
+                    "error": str(error),
+                    "message": "Failed to load dashboard data."
+                },
+                status=500
+            )
+
 
 class ProductViewSet(ModelViewSet):
     """Customer-facing browse endpoint — read-only, public."""
@@ -91,7 +178,6 @@ class AdminProductListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Check both role and is_staff
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
         products = Product.objects.all().order_by('-created_at')

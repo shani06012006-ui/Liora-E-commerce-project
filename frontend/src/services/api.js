@@ -2,6 +2,7 @@
 
 const BASE_URL = "/api/";
 const MEDIA_BASE_URL = "http://localhost:8000";
+
 export const getImageUrl = (product) => {
   if (product?.image_url) return product.image_url;
   if (product?.image) return `${MEDIA_BASE_URL}${product.image}`;
@@ -39,7 +40,7 @@ API.interceptors.response.use(
         ["access_token", "refresh_token", "user"].forEach((key) =>
           localStorage.removeItem(key)
         );
-        window.location.href = "/login?blocked=true";   // ← lowercase
+        window.location.href = "/Login?blocked=true";
         return Promise.reject(error);
       }
     }
@@ -49,7 +50,7 @@ API.interceptors.response.use(
       const refreshToken = localStorage.getItem("refresh_token");
 
       if (!refreshToken) {
-        window.location.href = "/login";
+        window.location.href = "/Login";
         return Promise.reject(error);
       }
 
@@ -130,7 +131,7 @@ export const reviewAPI = {
   getUserReviews: () => get("/reviews/user_reviews/"),
 };
 
-// ADMIN APIs — new, centralizes every admin page's fetch logic
+// ADMIN APIs
 export const adminAPI = {
   // Dashboard
   getDashboardStats: () => get("/admin/dashboard/stats/"),
@@ -160,6 +161,7 @@ export const adminAPI = {
 
   // Reviews
   getReviews: () => get("/admin/reviews/"),
+  updateReview: (id, data) => patch(`/admin/reviews/${id}/`, data),
   deleteReview: (id) => del(`/admin/reviews/${id}/`),
 };
 
