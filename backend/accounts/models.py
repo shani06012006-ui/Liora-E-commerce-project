@@ -1,3 +1,4 @@
+# backend/accounts/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import random
@@ -12,7 +13,7 @@ class User(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     phone = models.CharField(max_length=15, blank=True)
-    address = models.TextField(blank=True)
+    address = models.TextField(blank=True)  # This will be the default address
     is_blocked = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     full_name = models.CharField(max_length=100, blank=True, null=True)
@@ -31,24 +32,58 @@ class User(AbstractUser):
         blank=True,
     )
 
-def save(self, *args, **kwargs):
-    wants_admin = self.role == 'admin' or self.is_staff
+    def save(self, *args, **kwargs):
+        wants_admin = self.role == 'admin' or self.is_staff
 
-    if wants_admin:
-        existing_admin = User.objects.filter(
-            models.Q(role='admin') | models.Q(is_staff=True)
-        ).exclude(pk=self.pk).exists()
+        if wants_admin:
+            existing_admin = User.objects.filter(
+                models.Q(role='admin') | models.Q(is_staff=True)
+            ).exclude(pk=self.pk).exists()
 
-        if existing_admin:
-            from django.core.exceptions import ValidationError
-            raise ValidationError(
-                "An admin account already exists. Only one admin is allowed."
-            )
+            if existing_admin:
+                from django.core.exceptions import ValidationError
+                raise ValidationError(
+                    "An admin account already exists. Only one admin is allowed."
+                )
 
-    super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.username
+
+
+class Address(models.Model):
+    """User-specific addresses"""
+    ADDRESS_TYPES = [
+        ('home', 'Home'),
+        ('work', 'Work'),
+        ('other', 'Other'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    address_line1 = models.CharField(max_length=255)
+    address_line2 = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    pincode = models.CharField(max_length=10)
+    landmark = models.CharField(max_length=255, blank=True, null=True)
+    address_type = models.CharField(max_length=10, choices=ADDRESS_TYPES, default='home')
+    is_default = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-is_default', '-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.address_line1[:30]}"
+
+    def save(self, *args, **kwargs):
+        if self.is_default:
+            Address.objects.filter(user=self.user, is_default=True).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
 
 
 class OTPVerification(models.Model):

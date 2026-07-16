@@ -2,14 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
-import {
-  FiDollarSign,
-  FiShoppingCart,
-  FiPackage,
-  FiUsers,
-  FiBox,
-  FiAlertTriangle,
-  FiXCircle,
+import { FiDollarSign, FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangle, FiXCircle,
   FiCalendar,
   FiPlus,
   FiFolder,
@@ -22,11 +15,10 @@ import {
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 import { adminAPI, getImageUrl } from '../../services/api';
-
-// Generate realistic monthly data for charts (ONLY USED AS FALLBACK IF API RETURNS NO DATA)
+ 
 const generateMonthlyData = (totalRevenue = 0, totalOrders = 0) => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  
+ 
   if (totalRevenue > 0 || totalOrders > 0) {
     return months.map((month, index) => {
       const factor = Math.sin((index / 11) * Math.PI) * 0.8 + 0.2;
@@ -35,7 +27,7 @@ const generateMonthlyData = (totalRevenue = 0, totalOrders = 0) => {
       return { month, revenue, orders };
     });
   }
-  
+ 
   return months.map((month, index) => {
     const baseRevenue = 500 + (index * 200) + Math.floor(Math.random() * 300);
     const baseOrders = 2 + (index * 2) + Math.floor(Math.random() * 3);
@@ -46,129 +38,323 @@ const generateMonthlyData = (totalRevenue = 0, totalOrders = 0) => {
     };
   });
 };
-
-// Donut Pie Chart Component
-const DonutPieChart = ({ data, colors }) => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-  
-  if (total === 0 || data.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-56 text-gray-400 text-sm">
-        No order data available
-      </div>
-    );
-  }
-
-  // Calculate angles for SVG pie chart
-  const slices = data.reduce((acc, item, index) => {
-    const percentage = (item.value / total) * 100;
-    const angle = (item.value / total) * 360;
-    const startAngle = acc.lastAngle;
-    const endAngle = startAngle + angle;
-    
-    const outerRadius = 42;
-    const innerRadius = 28;
-    const startRad = (startAngle - 90) * (Math.PI / 180);
-    const endRad = (endAngle - 90) * (Math.PI / 180);
-    
-    const x1Outer = 50 + outerRadius * Math.cos(startRad);
-    const y1Outer = 50 + outerRadius * Math.sin(startRad);
-    const x2Outer = 50 + outerRadius * Math.cos(endRad);
-    const y2Outer = 50 + outerRadius * Math.sin(endRad);
-    
-    const x1Inner = 50 + innerRadius * Math.cos(startRad);
-    const y1Inner = 50 + innerRadius * Math.sin(startRad);
-    const x2Inner = 50 + innerRadius * Math.cos(endRad);
-    const y2Inner = 50 + innerRadius * Math.sin(endRad);
-    
-    const largeArc = angle > 180 ? 1 : 0;
-    
-    const path = `
-      M ${x1Outer} ${y1Outer}
-      A ${outerRadius} ${outerRadius} 0 ${largeArc} 1 ${x2Outer} ${y2Outer}
-      L ${x2Inner} ${y2Inner}
-      A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x1Inner} ${y1Inner}
-      Z
-    `;
-    
-    acc.slices.push({
-      ...item,
-      percentage,
-      angle,
-      path,
-      color: colors[index % colors.length],
+ 
+const formatCurrencyShort = (value) => {
+  if (value >= 1000) return `₹${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
+  return `₹${value}`;
+};
+ 
+const RevenueLineChart = ({ data }) => {
+  const [progress, setProgress] = useState(0);
+  const [hoverIndex, setHoverIndex] = useState(null);
+  const dataKey = data.map((d) => `${d.label}:${d.revenue}`).join('|');
+ 
+  useEffect(() => {
+    setProgress(0);
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setProgress(1));
     });
-    acc.lastAngle = endAngle;
-    
-    return acc;
-  }, { slices: [], lastAngle: 0 });
-
-  const maxValue = Math.max(...data.map(d => d.value));
-  const maxSlice = slices.slices.find(s => s.value === maxValue);
-
+    return () => cancelAnimationFrame(raf);
+  }, [dataKey]);
+ 
+  const width = 700;
+  const height = 260;
+  const padLeft = 52;
+  const padRight = 16;
+  const padTop = 20;
+  const padBottom = 32;
+  const plotW = width - padLeft - padRight;
+  const plotH = height - padTop - padBottom;
+ 
+  const values = data.map((d) => d.revenue);
+  const maxValue = Math.max(...values, 1);
+  const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue || 1)));
+  const axisMax = Math.ceil((maxValue * 1.15) / magnitude) * magnitude || 1;
+ 
+  const xFor = (i) => padLeft + (data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2);
+  const yFor = (v) => padTop + plotH - (v / axisMax) * plotH;
+ 
+  const points = data.map((d, i) => ({ x: xFor(i), y: yFor(d.revenue), ...d }));
+ 
+  // Smooth path via Catmull-Rom -> cubic bezier conversion
+  const buildSmoothPath = (pts) => {
+    if (pts.length === 0) return '';
+    if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
+    let d = `M ${pts[0].x} ${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[i + 2] || p2;
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+    }
+    return d;
+  };
+ 
+  const linePath = buildSmoothPath(points);
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x} ${padTop + plotH} L ${points[0].x} ${padTop + plotH} Z`
+    : '';
+ 
+  const gridLines = 4;
+  const yTicks = Array.from({ length: gridLines + 1 }, (_, i) => (axisMax / gridLines) * i).reverse();
+ 
+  const hovered = hoverIndex !== null ? points[hoverIndex] : null;
+ 
+  const handleMouseMove = (e) => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const relX = ((e.clientX - rect.left) / rect.width) * width;
+    let closest = 0;
+    let bestDist = Infinity;
+    points.forEach((p, i) => {
+      const dist = Math.abs(p.x - relX);
+      if (dist < bestDist) {
+        bestDist = dist;
+        closest = i;
+      }
+    });
+    setHoverIndex(closest);
+  };
+ 
+  if (points.length === 0) {
+    return <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No revenue data available</div>;
+  }
+ 
+  return (
+    <div className="relative">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="w-full h-64 cursor-crosshair"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHoverIndex(null)}
+      >
+        <defs>
+          <linearGradient id="revenueAreaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#F43F5E" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#F43F5E" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+ 
+        {yTicks.map((tick, i) => {
+          const y = yFor(tick);
+          return (
+            <g key={i}>
+              <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="#F3F4F6" strokeWidth="1" />
+              <text x={padLeft - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#9CA3AF">
+                {formatCurrencyShort(Math.round(tick))}
+              </text>
+            </g>
+          );
+        })}
+ 
+        <path
+          d={areaPath}
+          fill="url(#revenueAreaGradient)"
+          style={{
+            opacity: progress,
+            transition: 'opacity 1s ease',
+          }}
+        />
+ 
+        <path
+          d={linePath}
+          fill="none"
+          stroke="#F43F5E"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          pathLength={100}
+          strokeDasharray={100}
+          strokeDashoffset={100 - progress * 100}
+          style={{ transition: 'stroke-dashoffset 1.1s cubic-bezier(0.4,0,0.2,1)' }}
+        />
+ 
+        {/* Point markers */}
+        {points.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x}
+            cy={p.y}
+            r={hoverIndex === i ? 5 : 3.5}
+            fill="#fff"
+            stroke="#F43F5E"
+            strokeWidth="2"
+            style={{ opacity: progress, transition: 'r 0.15s ease, opacity 0.6s ease' }}
+          />
+        ))}
+ 
+        {/* X axis labels */}
+        {points.map((p, i) => (
+          <text key={i} x={p.x} y={height - 8} textAnchor="middle" fontSize="10" fill="#9CA3AF">
+            {p.label}
+          </text>
+        ))}
+ 
+        {/* Hover guide line */}
+        {hovered && (
+          <line x1={hovered.x} y1={padTop} x2={hovered.x} y2={padTop + plotH} stroke="#E5E7EB" strokeWidth="1" strokeDasharray="3 3" />
+        )}
+      </svg>
+ 
+      {/* Floating tooltip */}
+      {hovered && (
+        <div
+          className="absolute bg-gray-900 text-white text-xs rounded-lg px-3 py-2 pointer-events-none shadow-lg -translate-x-1/2 -translate-y-full"
+          style={{
+            left: `${(hovered.x / width) * 100}%`,
+            top: `${(hovered.y / height) * 100}%`,
+            marginTop: '-10px',
+          }}
+        >
+          <div className="font-medium">{hovered.label}</div>
+          <div className="text-gray-300">₹{hovered.revenue.toLocaleString()}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+ 
+const STATUS_CONFIG = [
+  { key: 'pending', label: 'Pending', color: '#8B5CF6' },
+  { key: 'confirmed', label: 'Confirmed', color: '#2563EB' },
+  { key: 'packed', label: 'Packed', color: '#14B8A6' },
+  { key: 'shipped', label: 'Shipped', color: '#F59E0B' },
+  { key: 'delivered', label: 'Delivered', color: '#10B981' },
+  { key: 'cancelled', label: 'Cancelled', color: '#EF4444' },
+];
+ 
+const DonutPieChart = ({ counts }) => {
+  const [grow, setGrow] = useState(0);
+  const [hovered, setHovered] = useState(null);
+ 
+  const total = STATUS_CONFIG.reduce((sum, s) => sum + (counts[s.key] || 0), 0);
+  const isEmpty = total === 0;
+ 
+  const countsKey = STATUS_CONFIG.map((s) => counts[s.key] || 0).join('-');
+ 
+  useEffect(() => {
+    setGrow(0);
+    const raf1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setGrow(1));
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, [countsKey]);
+ 
+  const size = 220;
+  const strokeWidth = 28;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+ 
+  let cumulative = 0;
+  const slices = STATUS_CONFIG.map((s) => {
+    const value = counts[s.key] || 0;
+    const fraction = isEmpty ? 0 : value / total;
+    const dash = fraction * circumference * grow;
+    const offset = -cumulative * circumference * grow;
+    cumulative += fraction;
+    return { ...s, value, fraction, dash, offset };
+  });
+ 
   return (
     <div className="flex flex-col md:flex-row items-center justify-center gap-6">
       {/* Donut Chart */}
-      <div className="relative w-52 h-52 flex-shrink-0">
-        <svg viewBox="0 0 100 100" className="w-full h-full">
-          {slices.slices.map((slice, index) => (
-            <path
-              key={index}
-              d={slice.path}
-              fill={slice.color}
-              stroke="white"
-              strokeWidth="0.5"
-              className="hover:opacity-85 transition cursor-pointer"
-              title={`${slice.label}: ${slice.value} (${slice.percentage.toFixed(1)}%)`}
-            />
-          ))}
-          <circle cx="50" cy="50" r="24" fill="white" />
-          <text x="50" y="46" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#1a1a2e">
-            {total}
-          </text>
-          <text x="50" y="57" textAnchor="middle" fontSize="7" fill="#888">
-            Total
-          </text>
+      <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={isEmpty ? '#D1D5DB' : '#F3F4F6'}
+            strokeWidth={strokeWidth}
+          />
+          {!isEmpty &&
+            slices.map(
+              (s) =>
+                s.value > 0 && (
+                  <circle
+                    key={s.key}
+                    cx={size / 2}
+                    cy={size / 2}
+                    r={radius}
+                    fill="none"
+                    stroke={s.color}
+                    strokeWidth={hovered?.key === s.key ? strokeWidth + 4 : strokeWidth}
+                    strokeDasharray={`${s.dash} ${circumference - s.dash}`}
+                    strokeDashoffset={s.offset}
+                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                    strokeLinecap="butt"
+                    className="cursor-pointer"
+                    style={{
+                      transition:
+                        'stroke-dasharray 1s cubic-bezier(0.4,0,0.2,1), stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke-width 0.2s ease',
+                    }}
+                    onMouseEnter={() => setHovered(s)}
+                    onMouseLeave={() => setHovered(null)}
+                  />
+                )
+            )}
         </svg>
-      </div>
-
-      {/* Legend with percentages */}
-      <div className="flex-1 min-w-[180px]">
-        <div className="space-y-2">
-          {slices.slices.map((slice, index) => (
-            <div key={index} className="flex items-center justify-between group">
-              <div className="flex items-center gap-2">
-                <span 
-                  className="w-3 h-3 rounded-full flex-shrink-0 transition-transform group-hover:scale-110" 
-                  style={{ backgroundColor: slice.color }}
-                />
-                <span className="text-sm text-gray-700">{slice.label}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-gray-900">{slice.value}</span>
-                <span className="text-xs text-gray-400 w-12 text-right">
-                  {slice.percentage.toFixed(1)}%
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-        
-        {maxSlice && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-500">Highest</span>
-              <span className="font-medium text-gray-900">
-                {maxSlice.label} ({maxSlice.value})
+ 
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+          {hovered ? (
+            <>
+              <span className="text-sm font-semibold" style={{ color: hovered.color }}>
+                {hovered.label}
               </span>
+              <span className="text-2xl font-bold text-gray-900">{hovered.value}</span>
+              <span className="text-xs text-gray-400">
+                {total > 0 ? ((hovered.value / total) * 100).toFixed(0) : 0}% of orders
+              </span>
+            </>
+          ) : isEmpty ? (
+            <>
+              <span className="text-2xl font-bold text-gray-400">0</span>
+              <span className="text-xs text-gray-400">Orders</span>
+            </>
+          ) : (
+            <>
+              <span className="text-2xl font-bold text-gray-900">{total}</span>
+              <span className="text-xs text-gray-400">Total Orders</span>
+            </>
+          )}
+        </div>
+      </div>
+ 
+      <div className="flex-1 min-w-[180px] space-y-2">
+        {STATUS_CONFIG.map((s) => {
+          const value = counts[s.key] || 0;
+          const pct = total > 0 ? (value / total) * 100 : 0;
+          return (
+            <div
+              key={s.key}
+              className="flex items-center justify-between group cursor-pointer"
+              onMouseEnter={() => setHovered({ ...s, value })}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-3 h-3 rounded-full flex-shrink-0 transition-transform group-hover:scale-125"
+                  style={{ backgroundColor: s.color }}
+                />
+                <span className="text-sm text-gray-700">{s.label}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-900">{value}</span>
+                <span className="text-xs text-gray-400 w-10 text-right">{pct.toFixed(0)}%</span>
+              </div>
             </div>
-          </div>
-        )}
+          );
+        })}
       </div>
     </div>
   );
 };
-
+ 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -176,90 +362,84 @@ const AdminDashboard = () => {
   const [topProducts, setTopProducts] = useState([]);
   const [topCategories, setTopCategories] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
-  const [monthlyData, setMonthlyData] = useState([]);
-  const [orderStatusData, setOrderStatusData] = useState([]);
-
+ 
+  // ---- Order status counts (drives the donut chart) — always has all 6 keys ----
+  const [statusCounts, setStatusCounts] = useState({
+    pending: 0,
+    confirmed: 0,
+    packed: 0,
+    shipped: 0,
+    delivered: 0,
+    cancelled: 0,
+  });
+ 
+  const [dateRange, setDateRange] = useState('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
+ 
+  const [revenuePeriod, setRevenuePeriod] = useState('week');
+  const [revenueTrend, setRevenueTrend] = useState([]);
+ 
   const fetchDashboardData = useCallback(async () => {
+    setLoading(true);
     try {
-      console.log('🔄 Fetching dashboard data from backend...');
-      const res = await adminAPI.getDashboardStats();
-      console.log('✅ Dashboard data received:', res.data);
-      
+      const params = new URLSearchParams();
+      if (dateRange !== 'all') params.append('range', dateRange);
+      if (dateRange === 'custom' && customFrom && customTo) {
+        params.append('date_from', customFrom);
+        params.append('date_to', customTo);
+      }
+      params.append('revenue_period', revenuePeriod);
+ 
+      const res = await adminAPI.getDashboardStats(params);
+ 
       setStats(res.data);
       setRecentOrders(res.data.recent_orders || []);
       setTopProducts(res.data.popular_products || []);
       setTopCategories(res.data.top_categories || []);
       setLowStockProducts(res.data.low_stock_products || []);
-      
-      // ============ ORDER STATUS DATA - FROM BACKEND ============
-      // Build status data dynamically from backend response
-      const statusMapping = [
-        { key: 'pending_orders', label: 'Pending', color: '#F59E0B' },
-        { key: 'confirmed_orders', label: 'Confirmed', color: '#3B82F6' },
-        { key: 'processing_orders', label: 'Processing', color: '#8B5CF6' },
-        { key: 'shipped_orders', label: 'Shipped', color: '#10B981' },
-        { key: 'completed_orders', label: 'Delivered', color: '#EF4444' },
-        { key: 'cancelled_orders', label: 'Cancelled', color: '#6B7280' },
-      ];
-      
-      const statusData = statusMapping
-        .map(({ key, label, color }) => ({
-          label,
-          value: res.data[key] || 0,
-          color,
-        }))
-        .filter(d => d.value > 0); // Only show statuses with data
-      
-      console.log('📊 Order Status Data from Backend:', statusData);
-      
-      if (statusData.length > 0) {
-        setOrderStatusData(statusData);
-      } else {
-        // If no status data from backend, use total orders as pending
-        const totalOrders = res.data.total_orders || 0;
-        if (totalOrders > 0) {
-          setOrderStatusData([
-            { label: 'Pending', value: totalOrders, color: '#F59E0B' },
-          ]);
-        } else {
-          setOrderStatusData([]);
-        }
-      }
-      
-      // ============ MONTHLY DATA - FROM BACKEND ============
+ 
+      setStatusCounts({
+        pending: res.data.pending_orders || 0,
+        confirmed: res.data.confirmed_orders || 0,
+        packed: res.data.packed_orders || 0,
+        shipped: res.data.shipped_orders || 0,
+        delivered: res.data.delivered_orders || 0,
+        cancelled: res.data.cancelled_orders || 0,
+      });
+ 
       const apiMonthlyData = res.data.monthly_data || [];
-      const hasRealData = apiMonthlyData.some(d => d.revenue > 0 || d.orders > 0);
-      
+      const hasRealData = apiMonthlyData.some((d) => d.revenue > 0 || d.orders > 0);
+ 
+      let effectiveMonthlyData;
       if (hasRealData) {
-        console.log('📊 Using real monthly data from backend');
-        setMonthlyData(apiMonthlyData);
+        effectiveMonthlyData = apiMonthlyData;
       } else {
-        // Only generate fallback if no data and we have totals
         const totalRevenue = res.data.monthly_revenue || 0;
         const totalOrders = res.data.total_orders || 0;
-        if (totalRevenue > 0 || totalOrders > 0) {
-          const fallbackData = generateMonthlyData(totalRevenue, totalOrders);
-          setMonthlyData(fallbackData);
-          console.log('📊 Using fallback monthly data based on totals');
-        } else {
-          setMonthlyData([]);
-          console.log('📊 No monthly data available');
-        }
+        effectiveMonthlyData =
+          totalRevenue > 0 || totalOrders > 0 ? generateMonthlyData(totalRevenue, totalOrders) : [];
       }
-      
+ 
+      const apiTrend = res.data.revenue_trend || null;
+      if (apiTrend && apiTrend.length > 0) {
+        setRevenueTrend(apiTrend.map((d) => ({ label: d.label, revenue: d.revenue || 0 })));
+      } else {
+        setRevenueTrend(effectiveMonthlyData.map((d) => ({ label: d.month, revenue: d.revenue || 0 })));
+      }
     } catch (error) {
       console.error('❌ Error fetching dashboard data:', error);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  }, []);
-
+  }, [dateRange, customFrom, customTo, revenuePeriod]);
+ 
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData]);
-
-  if (loading) {
+ 
+  if (loading && !stats) {
     return (
       <AdminLayout title="Dashboard">
         <div className="flex justify-center items-center h-64">
@@ -268,7 +448,7 @@ const AdminDashboard = () => {
       </AdminLayout>
     );
   }
-
+ 
   if (!stats) {
     return (
       <AdminLayout title="Dashboard">
@@ -279,7 +459,7 @@ const AdminDashboard = () => {
       </AdminLayout>
     );
   }
-
+ 
   const statCards = [
     { title: 'Total Revenue', value: `₹${stats?.monthly_revenue?.toLocaleString() || 0}`, icon: FiDollarSign, color: 'green' },
     { title: 'Total Orders', value: stats?.total_orders || 0, icon: FiShoppingCart, color: 'blue' },
@@ -290,7 +470,7 @@ const AdminDashboard = () => {
     { title: 'Out of Stock', value: stats?.out_of_stock || 0, icon: FiXCircle, color: 'red' },
     { title: "Today's Orders", value: stats?.today_orders || 0, icon: FiCalendar, color: 'blue' },
   ];
-
+ 
   const quickActions = [
     { icon: FiPlus, label: 'Add Product', link: '/admin/products', color: 'bg-black' },
     { icon: FiClipboard, label: 'Create Order', link: '/admin/orders', color: 'bg-red-300' },
@@ -298,35 +478,38 @@ const AdminDashboard = () => {
     { icon: FiPercent, label: 'Create Coupon', link: '/admin/discounts', color: 'bg-purple-500' },
     { icon: FiBarChart2, label: 'View Reports', link: '/admin/analytics', color: 'bg-rose-300' },
   ];
-
+ 
   const getStatusColor = (status) => {
     const colors = {
       delivered: 'bg-green-100 text-green-700',
-      pending: 'bg-yellow-100 text-yellow-700',
+      pending: 'bg-purple-100 text-purple-700',
       cancelled: 'bg-red-100 text-red-700',
-      processing: 'bg-blue-100 text-blue-700',
-      shipped: 'bg-purple-100 text-purple-700',
-      confirmed: 'bg-indigo-100 text-indigo-700',
+      confirmed: 'bg-blue-100 text-blue-700',
+      packed: 'bg-teal-100 text-teal-700',
+      shipped: 'bg-amber-100 text-amber-700',
     };
     return colors[status?.toLowerCase()] || 'bg-gray-100 text-gray-700';
   };
-
+ 
   const getStatusDotColor = (status) => {
     const colors = {
       delivered: 'bg-green-500',
-      pending: 'bg-yellow-500',
+      pending: 'bg-purple-500',
       cancelled: 'bg-red-500',
-      processing: 'bg-blue-500',
-      shipped: 'bg-purple-500',
-      confirmed: 'bg-indigo-500',
+      confirmed: 'bg-blue-500',
+      packed: 'bg-teal-500',
+      shipped: 'bg-amber-500',
     };
     return colors[status?.toLowerCase()] || 'bg-gray-500';
   };
-
-  const maxRevenue = monthlyData.length > 0 ? Math.max(...monthlyData.map(d => d.revenue), 100) : 100;
-  const totalRevenueFromChart = monthlyData.reduce((sum, d) => sum + d.revenue, 0);
-  const hasChartData = monthlyData.some(d => d.revenue > 0 || d.orders > 0);
-
+ 
+  const rangeButtons = [
+    { key: 'today', label: 'Today' },
+    { key: 'week', label: 'This Week' },
+    { key: 'month', label: 'This Month' },
+    { key: 'year', label: 'This Year' },
+  ];
+ 
   return (
     <AdminLayout title="Dashboard">
       <div className="space-y-6">
@@ -335,75 +518,108 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold">Welcome back, Admin! 👋</h2>
           <p className="text-gray-300 mt-1">Here's what's happening with your store today.</p>
         </div>
-
+ 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {statCards.map((stat, index) => (
             <StatCard key={index} {...stat} />
           ))}
         </div>
-
+ 
         {/* Charts Section - Revenue Bar Chart & Orders Donut Pie Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue Overview - Bar Chart */}
+          {/* Revenue Overview - Line/Area Chart */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Revenue Overview</h2>
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-green-600 flex items-center">
-                  <FiTrendingUp className="mr-1" size={14} />
-                  +12.5%
-                </span>
-                <span className="text-sm text-gray-500">Total: ₹{totalRevenueFromChart.toLocaleString()}</span>
+              <div className="relative">
+                <select
+                  value={revenuePeriod}
+                  onChange={(e) => setRevenuePeriod(e.target.value)}
+                  className="appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-1.5 text-sm text-gray-700 font-medium focus:ring-2 focus:ring-black cursor-pointer"
+                >
+                  <option value="week">This Week</option>
+                  <option value="month">This Month</option>
+                  <option value="year">This Year</option>
+                </select>
               </div>
             </div>
-            {hasChartData && monthlyData.length > 0 ? (
-              <>
-                <div className="h-48 flex items-end gap-2">
-                  {monthlyData.map((item, index) => {
-                    const height = (item.revenue / maxRevenue) * 100;
-                    return (
-                      <div key={index} className="flex-1 flex flex-col items-center group">
-                        <div 
-                          className="w-full bg-gradient-to-t from-green-500 to-green-300 rounded-t hover:opacity-80 transition cursor-pointer"
-                          style={{ height: `${Math.max(height * 0.8, 5)}%`, minHeight: '5px' }}
-                          title={`${item.month}: ₹${item.revenue}`}
-                        />
-                        <span className="text-[10px] text-gray-400 mt-1 text-center">
-                          {item.month}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex justify-between mt-2 text-xs text-gray-400">
-                  <span>₹0</span>
-                  <span>₹{maxRevenue.toLocaleString()}</span>
-                </div>
-              </>
-            ) : (
-              <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
-                No revenue data available from backend
-              </div>
-            )}
-          </div>
-
-          {/* Orders Overview - Donut Pie Chart */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Orders Overview</h2>
-              <span className="text-sm text-blue-600 flex items-center">
-                <FiPieChart className="mr-1" size={14} />
-                Status Distribution
+ 
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-sm text-green-600 flex items-center">
+                <FiTrendingUp className="mr-1" size={14} />
+                +12.5%
+              </span>
+              <span className="text-sm text-gray-500">
+                Total: ₹{revenueTrend.reduce((sum, d) => sum + d.revenue, 0).toLocaleString()}
               </span>
             </div>
-            <DonutPieChart 
-              data={orderStatusData} 
-              colors={['#F59E0B', '#3B82F6', '#8B5CF6', '#10B981', '#EF4444', '#6B7280']}
-            />
+ 
+            <RevenueLineChart data={revenueTrend} />
+          </div>
+ 
+          {/* Orders Overview - Donut Pie Chart */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                <FiPieChart className="mr-2 text-blue-600" size={16} />
+                Orders Overview
+              </h2>
+ 
+              {/* Date range filter */}
+              <div className="flex flex-wrap items-center gap-1 bg-gray-100 rounded-lg p-1 text-xs">
+                {rangeButtons.map((r) => (
+                  <button
+                    key={r.key}
+                    onClick={() => setDateRange(r.key)}
+                    className={`px-2.5 py-1 rounded-md font-medium transition ${
+                      dateRange === r.key ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setDateRange('custom')}
+                  className={`px-2.5 py-1 rounded-md font-medium transition ${
+                    dateRange === 'custom' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'
+                  }`}
+                >
+                  Custom
+                </button>
+                {dateRange !== 'all' && (
+                  <button
+                    onClick={() => setDateRange('all')}
+                    className="px-2.5 py-1 rounded-md font-medium text-gray-400 hover:text-gray-600 transition"
+                    title="Clear filter"
+                  >
+                    All
+                  </button>
+                )}
+              </div>
+            </div>
+ 
+            {dateRange === 'custom' && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                <input
+                  type="date"
+                  value={customFrom}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-black"
+                />
+                <input
+                  type="date"
+                  value={customTo}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-2 py-1 text-xs focus:ring-2 focus:ring-black"
+                />
+              </div>
+            )}
+ 
+            <DonutPieChart counts={statusCounts} />
           </div>
         </div>
-
+ 
         {/* Quick Actions */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
@@ -420,7 +636,7 @@ const AdminDashboard = () => {
             ))}
           </div>
         </div>
-
+ 
         {/* Three Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Orders */}
@@ -455,7 +671,7 @@ const AdminDashboard = () => {
               <p className="text-gray-500 text-sm text-center py-8">No recent orders</p>
             )}
           </div>
-
+ 
           {/* Top Selling Products */}
           <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-4">
@@ -492,7 +708,7 @@ const AdminDashboard = () => {
               <p className="text-gray-500 text-sm text-center py-8">No products data</p>
             )}
           </div>
-
+ 
           {/* Top Categories & Low Stock */}
           <div className="lg:col-span-1 space-y-6">
             {/* Top Categories */}
@@ -521,7 +737,7 @@ const AdminDashboard = () => {
                 <p className="text-gray-500 text-sm text-center py-4">No categories data</p>
               )}
             </div>
-
+ 
             {/* Low Stock Products */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
               <div className="flex justify-between items-center mb-4">
@@ -565,8 +781,7 @@ const AdminDashboard = () => {
     </AdminLayout>
   );
 };
-
-// Stat Card Component
+ 
 const StatCard = ({ title, value, icon: Icon, color }) => {
   const colors = {
     green: 'bg-green-50 text-green-600',
@@ -576,7 +791,7 @@ const StatCard = ({ title, value, icon: Icon, color }) => {
     yellow: 'bg-yellow-50 text-yellow-600',
     red: 'bg-red-50 text-red-600',
   };
-
+ 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
       <div className="flex items-center justify-between">
@@ -591,5 +806,5 @@ const StatCard = ({ title, value, icon: Icon, color }) => {
     </div>
   );
 };
-
+ 
 export default AdminDashboard;

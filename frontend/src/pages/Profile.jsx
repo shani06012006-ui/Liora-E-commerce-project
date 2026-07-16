@@ -1,4 +1,5 @@
-﻿﻿import { useState, useEffect, useRef } from 'react';
+﻿﻿// frontend/src/pages/Profile.jsx
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
@@ -6,7 +7,7 @@ import { setCredentials } from '../redux/authSlice';
 import toast from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
 import { PencilIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, UserCircleIcon, CheckBadgeIcon, CalendarIcon } from '@heroicons/react/24/outline';
- 
+
 const Profile = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -14,9 +15,9 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
- 
+
   const currentYear = new Date().getFullYear();
-  
+
   const [formData, setFormData] = useState({
     full_name: '',
     username: '',
@@ -25,45 +26,45 @@ const Profile = () => {
     bio: '',
     location: '',
   });
- 
+
   useEffect(() => {
     if (user) {
       setFormData({
         full_name: user.full_name || user.username || '',
-        username:  user.username  || '',
-        email:     user.email     || '',
-        phone:     user.phone     || '',
-        bio:       user.bio       || '',
-        location:  user.location  || '',
+        username: user.username || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        bio: user.bio || '',
+        location: user.location || '',
       });
     }
   }, [user]);
- 
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
- 
+
   const handleImageClick = () => {
     fileInputRef.current.click();
   };
- 
+
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
- 
+
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB');
       return;
     }
- 
+
     setLoading(true);
     const formDataPic = new FormData();
     formDataPic.append('profile_pic', file);
- 
+
     try {
       const res = await authAPI.updateProfilePicture(formDataPic);
-      dispatch(setCredentials({ 
-        user:   res.data, 
+      dispatch(setCredentials({
+        user: res.data,
         access: localStorage.getItem('access_token'),
       }));
       toast.success('Profile picture updated!');
@@ -73,30 +74,30 @@ const Profile = () => {
       setLoading(false);
     }
   };
- 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
       const updateData = {
         full_name: formData.full_name,
-        email:     formData.email,
-        phone:     formData.phone,
-        bio:       formData.bio,
-        location:  formData.location,
+        email: formData.email,
+        phone: formData.phone,
+        bio: formData.bio,
+        location: formData.location,
       };
- 
+
       const res = await authAPI.updateProfile(updateData);
- 
+
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...currentUser, ...res.data };
       localStorage.setItem('user', JSON.stringify(updatedUser));
- 
-      dispatch(setCredentials({ 
-        user:   updatedUser, 
+
+      dispatch(setCredentials({
+        user: updatedUser,
         access: localStorage.getItem('access_token'),
       }));
- 
+
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch {
@@ -105,7 +106,13 @@ const Profile = () => {
       setLoading(false);
     }
   };
- 
+
+  // ✅ Fixed: Use centralized getImageUrl for profile picture
+  const getProfileImage = (userData) => {
+    if (userData?.profile_pic_url) return userData.profile_pic_url;
+    return null;
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -118,7 +125,7 @@ const Profile = () => {
       </div>
     );
   }
- 
+
   // Personal Detail Tab
   const renderPersonalDetail = () => (
     <div className="space-y-6">
@@ -137,7 +144,7 @@ const Profile = () => {
           </button>
         )}
       </div>
- 
+
       {isEditing ? (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -145,7 +152,7 @@ const Profile = () => {
             <input type="text" name="full_name" value={formData.full_name} onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
           </div>
- 
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <div className="flex items-center gap-2">
@@ -154,7 +161,7 @@ const Profile = () => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
             </div>
           </div>
- 
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
             <div className="flex items-center gap-2">
@@ -163,7 +170,7 @@ const Profile = () => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
             </div>
           </div>
- 
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <div className="flex items-center gap-2">
@@ -173,14 +180,14 @@ const Profile = () => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
             </div>
           </div>
- 
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
             <textarea name="bio" value={formData.bio} onChange={handleChange} rows="3"
               placeholder="Tell us about yourself..."
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
           </div>
- 
+
           <div className="flex gap-3 pt-4">
             <button type="submit" disabled={loading}
               className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium">
@@ -233,32 +240,36 @@ const Profile = () => {
       )}
     </div>
   );
- 
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex gap-6 flex-col md:flex-row">
- 
+
           {/* Sidebar */}
           <div className="w-72">
             <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
           </div>
- 
+
           {/* Main Content */}
           <div className="flex-1">
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
- 
+
               {/* Profile Header */}
               <div className="bg-gradient-to-r from-gray-900 to-gray-700 px-6 py-8">
                 <div className="flex items-center gap-6 flex-wrap">
- 
+
                   {/* Profile Picture */}
                   <div className="relative group cursor-pointer" onClick={handleImageClick}>
                     <div className="w-24 h-24 rounded-full bg-white p-0.5">
                       <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center overflow-hidden">
-                        {user?.profile_pic_url ? (
-                          <img src={user.profile_pic_url} alt="Profile"
-                            className="w-full h-full rounded-full object-cover" />
+                        {getProfileImage(user) ? (
+                          <img
+                            src={getProfileImage(user)}
+                            alt="Profile"
+                            className="w-full h-full rounded-full object-cover"
+                            onError={(e) => { e.target.src = ''; }}
+                          />
                         ) : (
                           <UserCircleIcon className="w-14 h-14 text-gray-500" />
                         )}
@@ -275,7 +286,7 @@ const Profile = () => {
                     <input type="file" ref={fileInputRef} onChange={handleImageChange}
                       accept="image/*" className="hidden" />
                   </div>
- 
+
                   {/* User Info */}
                   <div>
                     <h1 className="text-2xl font-semibold text-white">{formData.full_name || user.username}</h1>
@@ -285,7 +296,6 @@ const Profile = () => {
                         <CheckBadgeIcon className="w-3 h-3" />
                         Verified Member
                       </span>
-                      {/* FIX: use pre-computed currentYear instead of Date.now() in JSX */}
                       <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
                         <CalendarIcon className="w-3 h-3" />
                         Joined {user.date_joined ? new Date(user.date_joined).getFullYear() : currentYear}
@@ -294,12 +304,12 @@ const Profile = () => {
                   </div>
                 </div>
               </div>
- 
+
               {/* Tab Content */}
               <div className="p-6">
                 {renderPersonalDetail()}
               </div>
- 
+
             </div>
           </div>
         </div>
@@ -307,5 +317,5 @@ const Profile = () => {
     </div>
   );
 };
- 
+
 export default Profile;

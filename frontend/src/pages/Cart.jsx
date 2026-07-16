@@ -1,7 +1,8 @@
-﻿import { useEffect, useCallback } from 'react';
+﻿// frontend/src/pages/Cart.jsx
+import { useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import { cartAPI } from '../services/api';
+import { cartAPI, getImageUrl } from '../services/api';
 import { refreshCart } from '../redux/cartUtils';
 import toast from 'react-hot-toast';
 
@@ -30,12 +31,8 @@ const Cart = () => {
     } catch { toast.error('Failed to remove'); }
   };
 
-  const getProductImage = (product) => {
-    if (!product) return 'https://placehold.co/200x200/e0e0e0/2D2D2D?text=No+Image';
-    if (product.image_url) return product.image_url.replace('127.0.0.1', 'localhost');
-    if (product.image)     return `http://localhost:5174/media/${product.image}`;
-    return 'https://placehold.co/200x200/e0e0e0/2D2D2D?text=No+Image';
-  };
+  // ✅ Fixed: Use centralized getImageUrl
+  const getProductImage = (product) => getImageUrl(product);
 
   if (!localStorage.getItem('access_token')) {
     return (
@@ -84,9 +81,12 @@ const Cart = () => {
                   {/* Image */}
                   <Link to={`/product/${product?.id}`} className="flex-shrink-0">
                     <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-100 rounded-lg overflow-hidden">
-                      <img src={imageUrl} alt={product?.name || 'Product'}
+                      <img 
+                        src={imageUrl} 
+                        alt={product?.name || 'Product'}
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.target.src = 'https://placehold.co/200x200/e0e0e0/2D2D2D?text=No+Image'; }} />
+                        onError={(e) => { e.target.src = 'https://placehold.co/200x200/e0e0e0/2D2D2D?text=No+Image'; }} 
+                      />
                     </div>
                   </Link>
 

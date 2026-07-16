@@ -8,6 +8,8 @@ import { setCredentials } from '../redux/authSlice';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,56 +25,73 @@ const Login = () => {
     }
   }, [searchParams]);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!email || !password) {
-    toast.error('Email and password are required.');
-    return;
-  }
-  setLoading(true);
-  try {
-    const response = await authAPI.login({ email, password });
-    
-    const userData = response.data.user;
-    const accessToken = response.data.access;
-    const refreshToken = response.data.refresh;
-    
-    dispatch(setCredentials({
-      user: userData,
-      access: accessToken,
-    }));
-    
-    localStorage.setItem('access_token', accessToken);
-    if (refreshToken) {
-      localStorage.setItem('refresh_token', refreshToken);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email || !password) {
+      toast.error('Email and password are required.');
+      return;
     }
-    localStorage.setItem('user', JSON.stringify(userData));
-    
-    toast.success(`Welcome back, ${userData?.username || 'User'}!`);
-    
-    console.log('User data:', userData);
-    console.log('Is admin?', userData?.role === 'admin' || userData?.is_staff === true);
-    
-    if (userData?.role === 'admin' || userData?.is_staff === true) {
-      navigate('/admin', { replace: true });
-    } else {
-      navigate('/', { replace: true });
+    setLoading(true);
+    try {
+      const response = await authAPI.login({ email, password });
+      
+      const userData = response.data.user;
+      const accessToken = response.data.access;
+      const refreshToken = response.data.refresh;
+      
+      const fullUserData = {
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+        full_name: userData.full_name || userData.username,
+        role: userData.role || 'user',
+        is_staff: userData.is_staff || false,
+        is_active: userData.is_active || true,
+        is_blocked: userData.is_blocked || false,
+        phone: userData.phone || '',
+        address: userData.address || '',
+        profile_pic_url: userData.profile_pic_url || '',
+      };
+      
+      dispatch(setCredentials({
+        user: fullUserData,
+        access: accessToken,
+      }));
+      
+      localStorage.setItem('access_token', accessToken);
+      if (refreshToken) {
+        localStorage.setItem('refresh_token', refreshToken);
+      }
+      localStorage.setItem('user', JSON.stringify(fullUserData));
+      
+      console.log(' Logged in user:', fullUserData.username);
+      console.log(' User role:', fullUserData.role);
+      
+      toast.success(`Welcome back, ${fullUserData.full_name || fullUserData.username}!`);
+      
+      const isAdmin = fullUserData.role === 'admin' || fullUserData.is_staff === true;
+      
+      if (isAdmin) {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error(
+        error.response?.data?.error ||
+        error.response?.data?.detail ||
+        'Invalid email or password.'
+      );
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Login error:', error);
-    toast.error(
-      error.response?.data?.error ||
-      error.response?.data?.detail ||
-      'Invalid email or password.'
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post('http://localhost:5174/api/auth/google/', {
+      const res = await axios.post(`${API_URL}auth/google/`, {
         credential: credentialResponse.credential,
       });
       
@@ -97,7 +116,6 @@ const handleSubmit = async (e) => {
           : `Welcome back, ${userData?.username || 'User'}!`
       );
       
-      // Redirect based on user role
       if (userData?.role === 'admin' || userData?.is_staff === true) {
         navigate('/admin');
       } else {
@@ -116,8 +134,6 @@ const handleSubmit = async (e) => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4 py-12">
       <div className="w-full max-w-md">
-
-        {/* Header */}
         <div className="text-center mb-6 md:mb-8">
           <h1 className="text-3xl md:text-4xl font-serif font-light text-gray-900 tracking-wide mb-2">
             Liora
@@ -130,7 +146,6 @@ const handleSubmit = async (e) => {
             Login
           </h2>
 
-          {/* Google Login - Comment out if causing issues */}
           <div className="w-full flex justify-center mb-5 md:mb-6">
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
@@ -143,14 +158,12 @@ const handleSubmit = async (e) => {
             />
           </div>
 
-          {/* Divider */}
           <div className="flex items-center gap-3 mb-5 md:mb-6">
             <div className="flex-1 h-px bg-gray-200" />
             <span className="text-xs text-gray-400 uppercase tracking-wider">or</span>
             <div className="flex-1 h-px bg-gray-200" />
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>

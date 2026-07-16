@@ -1,7 +1,8 @@
-﻿import { useReducer, useEffect, useCallback } from 'react';
+﻿// frontend/src/pages/ProductDetail.jsx
+import { useReducer, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { productAPI, wishlistAPI, reviewAPI } from '../services/api';
+import { productAPI, wishlistAPI, reviewAPI, getImageUrl } from '../services/api';
 import { addToCartSafe } from '../redux/cartUtils';
 import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
@@ -118,10 +119,8 @@ const ProductDetail = () => {
     } finally { dispatch({ type: 'SET_SUBMITTING', payload: false }); }
   };
 
-  const getImageUrl = (p) => {
-    if (p?.image_url) return p.image_url;
-    if (p?.image)     return `http://localhost:5174${p.image}`;
-    return 'https://placehold.co/600x800/e0e0e0/2D2D2D?text=No+Image';
+  const getProductImage = (product) => {
+    return getImageUrl(product);
   };
 
   if (loading) return (
@@ -155,7 +154,12 @@ const ProductDetail = () => {
 
         {/* Product Image */}
         <div className="bg-gray-100 rounded-xl md:rounded-2xl overflow-hidden">
-          <img src={getImageUrl(product)} alt={product.name} className="w-full h-auto object-cover" />
+          <img 
+            src={getProductImage(product)} 
+            alt={product.name} 
+            className="w-full h-auto object-cover" 
+            onError={(e) => { e.target.src = 'https://placehold.co/600x800/e0e0e0/2D2D2D?text=No+Image'; }}
+          />
         </div>
 
         {/* Product Info */}

@@ -1,13 +1,16 @@
-﻿import { createSlice } from '@reduxjs/toolkit';
+﻿// frontend/src/redux/authSlice.js
+import { createSlice } from '@reduxjs/toolkit';
+
+const getUserFromStorage = () => {
+  try {
+    const stored = localStorage.getItem('user');
+    if (!stored || stored === 'undefined' || stored === 'null') return null;
+    return JSON.parse(stored);
+  } catch { return null; }
+};
 
 const initialState = {
-  user: (() => {
-    try {
-      const stored = localStorage.getItem('user');
-      if (!stored || stored === 'undefined') return null;
-      return JSON.parse(stored);
-    } catch { return null; }
-  })(),
+  user: getUserFromStorage(),
   token: localStorage.getItem('access_token') || null,
 };
 

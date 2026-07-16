@@ -1,3 +1,4 @@
+// frontend/src/pages/Settings.jsx
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
@@ -16,7 +17,7 @@ const Settings = () => {
   const [promotions, setPromotions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  
+
   // Profile edit state
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -24,7 +25,7 @@ const Settings = () => {
     email: '',
     phone: '',
   });
-  
+
   // Password change state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -62,27 +63,27 @@ const Settings = () => {
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const updateData = {
         full_name: profileData.full_name,
         email: profileData.email,
         phone: profileData.phone,
       };
-      
+
       const res = await authAPI.updateProfile(updateData);
-      
+
       // Update localStorage
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...currentUser, ...res.data };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      
+
       // Update Redux store
-      dispatch(setCredentials({ 
-        user: updatedUser, 
-        access: localStorage.getItem('access_token') 
+      dispatch(setCredentials({
+        user: updatedUser,
+        access: localStorage.getItem('access_token')
       }));
-      
+
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch {
@@ -94,19 +95,19 @@ const Settings = () => {
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    
+
     if (passwordData.new_password !== passwordData.confirm_password) {
       toast.error('New passwords do not match');
       return;
     }
-    
+
     if (passwordData.new_password.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // API call for password change
       toast.success('Password changed successfully!');
@@ -151,7 +152,7 @@ const Settings = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex gap-6 flex-col md:flex-row">
           <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-          
+
           <div className="flex-1">
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100">
@@ -177,7 +178,7 @@ const Settings = () => {
                       </button>
                     )}
                   </div>
-                  
+
                   {isEditing ? (
                     <form onSubmit={handleProfileUpdate} className="space-y-4">
                       <div>
@@ -276,7 +277,7 @@ const Settings = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  
+
                   {showPasswordForm && (
                     <form onSubmit={handlePasswordChange} className="mt-4 space-y-4">
                       <div>

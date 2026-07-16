@@ -1,8 +1,9 @@
-﻿import { useState, useEffect } from 'react';
+﻿// frontend/src/pages/Checkout.jsx
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
 import { orderAPI } from '../services/api';
+import { getImageUrl } from '../services/api';
 import { clearCart } from '../redux/cartSlice';
 import { CreditCardIcon, BanknotesIcon, WalletIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
@@ -16,9 +17,6 @@ const Checkout = () => {
   const { user }                    = useSelector((state) => state.auth);
   const navigate                    = useNavigate();
   const dispatch                    = useDispatch();
-
-  const token   = localStorage.getItem('access_token');
-  const headers = { Authorization: `Bearer ${token}` };
 
   const displayItems = isBuyNow
     ? [{ product_details: buyNowData.product, quantity: buyNowData.quantity, price: buyNowData.product?.price }]
@@ -121,12 +119,19 @@ const Checkout = () => {
     try {
       let response;
       if (isBuyNow) {
-        response = await axios.post('http://localhost:5174/api/buy-now/', {
-          product_id: buyNowData.product.id, quantity: buyNowData.quantity,
-          shipping_address: fullAddress, phone: formData.phone, payment_method: paymentMethod,
-        }, { headers });
+        response = await orderAPI.buyNow({
+          product_id: buyNowData.product.id,
+          quantity: buyNowData.quantity,
+          shipping_address: fullAddress,
+          phone: formData.phone,
+          payment_method: paymentMethod,
+        });
       } else {
-        response = await orderAPI.checkout({ shipping_address: fullAddress, phone: formData.phone, payment_method: paymentMethod });
+        response = await orderAPI.checkout({
+          shipping_address: fullAddress,
+          phone: formData.phone,
+          payment_method: paymentMethod,
+        });
         dispatch(clearCart());
       }
       toast.success('Order placed successfully!', { id: 'order' });
@@ -137,11 +142,7 @@ const Checkout = () => {
     }
   };
 
-  const getImageUrl = (product) => {
-    if (product?.image_url) return product.image_url;
-    if (product?.image)     return `http://localhost:5174${product.image}`;
-    return 'https://placehold.co/60x60/e0e0e0/2D2D2D?text=No';
-  };
+  const getProductImage = (product) => getImageUrl(product);
 
   const shippingCharge = total >= 999 ? 0 : 99;
   const finalTotal     = total + shippingCharge;
@@ -159,13 +160,12 @@ const Checkout = () => {
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
       <h1 className="text-2xl md:text-3xl font-serif text-gray-800 mb-6 md:mb-8">Checkout</h1>
 
-      {/* Mobile: show order summary on top */}
       <div className="lg:hidden bg-white rounded-xl shadow-sm p-4 mb-6">
         <h2 className="text-base font-semibold text-gray-800 mb-3">Your Order ({displayItems.length} items)</h2>
         <div className="space-y-2 mb-3">
           {displayItems.map((item, idx) => (
             <div key={idx} className="flex gap-3 items-center">
-              <img src={getImageUrl(item.product_details)} alt={item.product_details?.name}
+              <img src={getProductImage(item.product_details)} alt={item.product_details?.name}
                 className="w-12 h-12 object-cover rounded" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-800 truncate">{item.product_details?.name}</p>
@@ -188,11 +188,7 @@ const Checkout = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-
-        {/* Left */}
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
-
-          {/* Saved Addresses */}
           {addresses.length > 0 && !showAddressForm && (
             <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
               <div className="flex justify-between items-center mb-4">
@@ -223,7 +219,6 @@ const Checkout = () => {
             </div>
           )}
 
-          {/* Address Form */}
           {(showAddressForm || addresses.length === 0) && (
             <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
               <div className="flex justify-between items-center mb-4">
@@ -269,7 +264,6 @@ const Checkout = () => {
             </div>
           )}
 
-          {/* Payment */}
           <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
             <h2 className="text-base md:text-xl font-semibold text-gray-800 mb-4">Payment Method</h2>
             <div className="space-y-2 md:space-y-3">
@@ -296,7 +290,6 @@ const Checkout = () => {
             </div>
           </div>
 
-          {/* Mobile Place Order button */}
           <div className="lg:hidden">
             <button onClick={handleSubmit} disabled={loading}
               className={`w-full py-3.5 rounded-lg transition font-medium ${
@@ -307,14 +300,13 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* Right — desktop only */}
         <div className="hidden lg:block lg:col-span-1">
           <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Order</h2>
             <div className="max-h-80 overflow-y-auto space-y-3 mb-4">
               {displayItems.map((item, idx) => (
                 <div key={idx} className="flex gap-3 pb-3 border-b">
-                  <img src={getImageUrl(item.product_details)} alt={item.product_details?.name}
+                  <img src={getProductImage(item.product_details)} alt={item.product_details?.name}
                     className="w-16 h-16 object-cover rounded" />
                   <div className="flex-1">
                     <p className="font-medium text-gray-800 text-sm">{item.product_details?.name}</p>

@@ -1,11 +1,12 @@
+// frontend/src/pages/BestSellers.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { productAPI } from '../services/api';
+import { productAPI, getImageUrl } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
 import toast from 'react-hot-toast';
-import {addToWishlistUtil, removeFromWishlistUtil } from "../redux/wishlistUtils";
- 
+import { addToWishlistUtil, removeFromWishlistUtil } from "../redux/wishlistUtils";
+
 /* ─── Font loader ─── */
 const FontLoader = () => (
   <style>{`
@@ -137,32 +138,31 @@ const FontLoader = () => (
     }
   `}</style>
 );
- 
-const getImageUrl = (product) => {
-  if (!product) return null;
-  if (product.image_url) return product.image_url;
-  if (product.image) {
-    if (product.image.startsWith('http') || product.image.startsWith('/') || product.image.startsWith('data:'))
-      return product.image;
-    return `http://localhost:5174${product.image}`;
-  }
-  return null;
-};
- 
+
+// ✅ Fixed: Use centralized getImageUrl
+const getProductImage = (product) => getImageUrl(product);
+
 const starStr = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
- 
+
 /* ─── PRODUCT CARD ─── */
 const ProductCard = ({ product, onAddToCart, onToggleWishlist, isInWishlist, isAdding }) => {
-  const src = getImageUrl(product);
+  const src = getProductImage(product);
   return (
     <div className="bs-pcard animate-scale">
       <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
         <div className="bs-pimg">
           <div className="bs-pimg-inner">
-            {src ? <img src={src} alt={product.name} /> : <span style={{ fontSize: '8px', color: '#ccc' }}>Image</span>}
+            {src ? (
+              <img 
+                src={src} 
+                alt={product.name}
+                onError={(e) => { e.target.src = 'https://placehold.co/400x500/f5f5f5/999999?text=No+Image'; }}
+              />
+            ) : (
+              <span style={{ fontSize: '8px', color: '#ccc' }}>Image</span>
+            )}
           </div>
           {product.discount > 0 && <span className="bs-pbadge">{product.discount}% OFF</span>}
-          {/* Wishlist toggle */}
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleWishlist(product.id); }}
             className="bs-pheart"
@@ -185,13 +185,21 @@ const ProductCard = ({ product, onAddToCart, onToggleWishlist, isInWishlist, isA
     </div>
   );
 };
- 
+
 const RatedItem = ({ product, rank }) => {
-  const src = getImageUrl(product);
+  const src = getProductImage(product);
   return (
     <div className="bs-r-item">
       <span className="bs-r-num">{rank < 10 ? `0${rank}` : rank}</span>
-      <div className="bs-r-img">{src && <img src={src} alt={product.name} />}</div>
+      <div className="bs-r-img">
+        {src && (
+          <img 
+            src={src} 
+            alt={product.name}
+            onError={(e) => { e.target.src = 'https://placehold.co/55x65/f5f5f5/999999?text=No+Image'; }}
+          />
+        )}
+      </div>
       <div className="bs-r-info">
         <div className="bs-r-name">{product.name}</div>
         <div className="bs-r-stars">{starStr(product.rating || 5)}</div>
@@ -201,19 +209,19 @@ const RatedItem = ({ product, rank }) => {
     </div>
   );
 };
- 
+
 /* ─── MAIN ─── */
 const BestSellers = () => {
   const dispatch  = useDispatch();
   const navigate  = useNavigate();
-  const [products,     setProducts]     = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [email,        setEmail]        = useState('');
-  const [subscribed,   setSubscribed]   = useState(false);
-  const [wishlist,     setWishlist]     = useState(new Set());
-  const [,  setWishlistIds]  = useState({});
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [wishlist, setWishlist] = useState(new Set());
+  const [, setWishlistIds] = useState({});
   const [addingToCart, setAddingToCart] = useState(null);
- 
+
   const fetchProducts = async () => {
     try {
       const res = await productAPI.getAll({ best_sellers: true, limit: 20 });
@@ -224,7 +232,7 @@ const BestSellers = () => {
       setLoading(false);
     }
   };
- 
+
   const fetchWishlist = async () => {
     const token = localStorage.getItem('access_token');
     if (!token) { setWishlist(new Set()); setWishlistIds({}); return; }
@@ -244,12 +252,12 @@ const BestSellers = () => {
       console.error('Error fetching wishlist:', error);
     }
   };
- 
+
   useEffect(() => {
     fetchProducts();
     fetchWishlist();
   }, []);
- 
+
   const addToCart = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) { toast.error('Please login to add to cart'); navigate('/Login'); return; }
@@ -265,65 +273,49 @@ const BestSellers = () => {
       setAddingToCart(null);
     }
   };
- 
 
-const toggleWishlist = async (
-  productId,
-  isInWishlist,
-  wishlistId
-) => {
-
-  if (isInWishlist) {
-
-    const result = await removeFromWishlistUtil(wishlistId);
-
-    if (result.success) {
-      toast.success("Removed from wishlist");
-      fetchWishlist();
+  const toggleWishlist = async (productId, isInWishlist, wishlistId) => {
+    if (isInWishlist) {
+      const result = await removeFromWishlistUtil(wishlistId);
+      if (result.success) {
+        toast.success("Removed from wishlist");
+        fetchWishlist();
+      } else {
+        toast.error(result.message);
+      }
     } else {
-      toast.error(result.message);
+      const result = await addToWishlistUtil(productId, navigate);
+      if (result.success) {
+        toast.success("Added to wishlist");
+        fetchWishlist();
+      } else {
+        toast.error(result.message);
+      }
     }
+  };
 
-  } else {
-
-    const result = await addToWishlistUtil(
-      productId,
-      navigate
-    );
-
-    if (result.success) {
-      toast.success("Added to wishlist");
-      fetchWishlist();
-    } else {
-      toast.error(result.message);
-    }
-
-  }
-
-};
- 
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (email) { setSubscribed(true); setEmail(''); setTimeout(() => setSubscribed(false), 3000); }
   };
- 
+
   const fallback = [
     { id: 1, name: 'DENIM JACKET',  price: 2499, original_price: 3499, discount: 28, rating: 5, image: 'https://i.pinimg.com/1200x/27/ea/c2/27eac2b4e982614e9dfc988f8d45cacd.jpg' },
     { id: 2, name: 'TOM BOY',       price: 5999, original_price: 8999, discount: 33, rating: 5, image: 'https://i.pinimg.com/736x/ea/84/f4/ea84f4b1bc02cdad15fb1b54c01a8cb2.jpg' },
     { id: 3, name: 'CASUAL DRESS',  price: 1299, original_price: 1999, discount: 35, rating: 5, image: 'https://i.pinimg.com/736x/30/ab/a4/30aba4e8ebd4e8fba0fa2d0f5ff121c3.jpg' },
     { id: 4, name: 'PARTY GOWN',    price: 3299, original_price: 4999, discount: 34, rating: 4, image: 'https://i.pinimg.com/736x/cb/f4/9c/cbf49c8a9181ccd495201a2eb28be1bd.jpg' },
   ];
- 
-  const p          = products.length > 0 ? products : fallback;
-  const mostLoved  = p.slice(0, 4);
-  const topRated   = p.slice(0, 4);
- 
+
+  const p = products.length > 0 ? products : fallback;
+  const mostLoved = p.slice(0, 4);
+  const topRated = p.slice(0, 4);
+
   if (loading) return (
     <div style={{ minHeight: '100vh', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ width: 32, height: 32, border: '2px solid #111', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
- 
+
   return (
     <>
       <FontLoader />
@@ -353,7 +345,7 @@ const toggleWishlist = async (
             </div>
           </div>
         </div>
- 
+
         {/* Stats */}
         <div className="bs-stats">
           {[{ num: '4.9', label: 'Avg Rating', delay: 'delay-1' }, { num: '12k+', label: 'Happy Customers', delay: 'delay-2' }, { num: '280+', label: 'Bestselling Styles', delay: 'delay-3' }, { num: '98%', label: 'Would Recommend', delay: 'delay-4' }].map((stat, i) => (
@@ -363,7 +355,7 @@ const toggleWishlist = async (
             </div>
           ))}
         </div>
- 
+
         {/* About */}
         <div className="bs-about">
           <div className="bs-about-l animate-slideLeft">
@@ -386,7 +378,7 @@ const toggleWishlist = async (
             </div>
           </div>
         </div>
- 
+
         {/* Most Loved */}
         <div className="bs-loved">
           <div className="bs-section-hdr">
@@ -406,7 +398,7 @@ const toggleWishlist = async (
             ))}
           </div>
         </div>
- 
+
         {/* Top Rated */}
         <div className="bs-rated">
           <div className="bs-rated-list">
@@ -428,7 +420,7 @@ const toggleWishlist = async (
             ))}
           </div>
         </div>
- 
+
         {/* Features */}
         <div className="bs-feats">
           {[{ title: 'Fast Delivery', desc: 'Quick & safe, 48 hours', icon: <>
@@ -440,7 +432,7 @@ const toggleWishlist = async (
             </div>
           ))}
         </div>
- 
+
         {/* Newsletter */}
         <div className="bs-nl">
           <div className="bs-nl-title">Subscribe to Liora</div>
@@ -454,7 +446,7 @@ const toggleWishlist = async (
             </form>
           )}
         </div>
- 
+
         {/* Footer */}
         <div className="bs-footer">
           <div className="bs-footer-logo">LIORA</div>

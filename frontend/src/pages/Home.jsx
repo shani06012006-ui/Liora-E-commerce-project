@@ -1,6 +1,7 @@
+// frontend/src/pages/Home.jsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { productAPI } from '../services/api';
+import { productAPI, getImageUrl } from '../services/api';
 import { TruckIcon, ArrowPathIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const Hero = () => (
@@ -226,14 +227,7 @@ const FeaturesSection = () => {
 
 
 const ProductSection = ({ title, subtitle, link, products }) => {
-  const getImageUrl = (product) => {
-    if (product.image && (product.image.startsWith('http://') || product.image.startsWith('https://'))) {
-      return product.image;
-    }
-    if (product?.image_url) return product.image_url;
-    if (product?.image)     return `http://localhost:5174${product.image}`;
-    return 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=Product';
-  };
+  const getProductImage = (product) => getImageUrl(product);
 
   return (
     <div className="py-12 md:py-16 bg-white">
@@ -251,16 +245,16 @@ const ProductSection = ({ title, subtitle, link, products }) => {
           </Link>
         </div>
 
-        {/* Mobile: 2 col, Desktop: 4 col */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {products.map((product) => (
             <div key={product.id} className="group">
               <Link to={`/product/${product.id}`}>
                 <div className="relative overflow-hidden bg-gray-100 aspect-[3/4]">
                   <img
-                    src={getImageUrl(product)}
+                    src={getProductImage(product)}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(e) => { e.target.src = 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=Product'; }}
                   />
                   {product.discount > 0 && (
                     <span className="absolute top-2 left-2 bg-black text-white px-1.5 py-0.5 text-[8px] md:text-[9px] tracking-wide">

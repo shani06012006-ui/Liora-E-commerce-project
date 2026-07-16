@@ -1,8 +1,9 @@
+// frontend/src/components/Navbar.jsx
 import { useReducer, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  ShoppingBagIcon, UserIcon, MagnifyingGlassIcon,
+  ShoppingBagIcon, MagnifyingGlassIcon,
   HeartIcon, XMarkIcon, Bars3Icon,
 } from '@heroicons/react/24/outline';
 import { cartAPI, wishlistAPI } from '../services/api';
@@ -35,9 +36,11 @@ const Navbar = () => {
   const location       = useLocation();
   const [searchParams] = useSearchParams();
 
+  // ✅ Get user from Redux store (not hardcoded)
   const { user: reduxUser } = useSelector((state) => state.auth);
   const { items }           = useSelector((state) => state.cart);
 
+  // ✅ Always use Redux user, fallback to localStorage only if Redux is empty
   const currentUser = reduxUser ?? (() => {
     const stored = localStorage.getItem('user');
     if (!stored || stored === 'undefined' || stored === 'null') return null;
@@ -104,7 +107,7 @@ const Navbar = () => {
 
   useEffect(() => {
     uiDispatch({ type: 'SET_SEARCH_TERM', payload: searchParams.get('search') || '' });
-  }, [location.pathname, location.search , searchParams]);
+  }, [location.pathname, location.search, searchParams]);
 
   const onLogout = () => {
     uiDispatch({ type: 'LOGOUT' });
@@ -130,6 +133,19 @@ const Navbar = () => {
   };
 
   const closeMobile = () => uiDispatch({ type: 'SET_MOBILE_MENU', payload: false });
+
+  // ✅ Get user's display name - FIXED
+  const getUserDisplayName = () => {
+    if (!currentUser) return 'Guest';
+    return currentUser.full_name || currentUser.username || 'User';
+  };
+
+  // ✅ Get user's initial for avatar
+  const getUserInitial = () => {
+    if (!currentUser) return 'U';
+    const name = currentUser.full_name || currentUser.username || 'User';
+    return name.charAt(0).toUpperCase();
+  };
 
   const navLinks = [
     { to: '/new-arrivals', label: 'New Arrivals', className: 'text-gray-600 hover:text-gray-900' },
@@ -205,15 +221,19 @@ const Navbar = () => {
                 </>
               )}
 
-              {/* User / Login */}
+              {/* User / Login - ✅ FIXED to show actual username */}
               {currentUser ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => uiDispatch({ type: 'SET_DROPDOWN', payload: !isDropdownOpen })}
                     className="flex items-center space-x-1 focus:outline-none"
                   >
-                    <UserIcon className="h-5 w-5 text-gray-600" />
-                    <span className="text-xs text-gray-600 hidden md:inline">{currentUser.username}</span>
+                    <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center">
+                      <span className="text-xs font-medium text-gray-700">{getUserInitial()}</span>
+                    </div>
+                    <span className="text-xs text-gray-600 hidden md:block max-w-[80px] truncate">
+                      {getUserDisplayName()}
+                    </span>
                     <svg className={`h-3 w-3 text-gray-600 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
                       fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -298,6 +318,19 @@ const Navbar = () => {
                 <XMarkIcon className="h-6 w-6 text-gray-500" />
               </button>
             </div>
+
+            {/* Mobile user info */}
+            {currentUser && (
+              <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
+                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-gray-700">{getUserInitial()}</span>
+                </div>
+                <div>
+                  <p className="font-medium text-gray-800">{getUserDisplayName()}</p>
+                  <p className="text-xs text-gray-500">{currentUser.email}</p>
+                </div>
+              </div>
+            )}
 
             <div className="flex-1 px-6 py-6 space-y-1 overflow-y-auto">
               {navLinks.map(({ to, label, className }) => (

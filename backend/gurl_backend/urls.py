@@ -1,3 +1,4 @@
+# backend/gurl_backend/urls.py
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -9,10 +10,26 @@ from accounts.views import ( RegisterView, LoginView, UserProfileView, VerifyOTP
 from products.views import ( ProductViewSet, AdminProductListView, AdminProductDetailView, 
                              AdminCategoryListView, AdminCategoryDetailView, 
                              AdminDashboardStatsView )
-from orders.views import CartView, CheckoutView, OrderHistoryView, AdminOrderListView, AdminOrderDetailView , BuyNowView
+from orders.views import CartView, CheckoutView, OrderHistoryView, AdminOrderListView, AdminOrderDetailView, BuyNowView
 from wishlist.views import WishlistViewSet
 from reviews.views import ReviewListView, AdminReviewListView, AdminReviewDetailView
 from shipping.views import ShippingViewSet
+
+# Import analytics views
+from admin_analytics.views import (
+    AdminAnalyticsSalesView,
+    AdminAnalyticsRevenueView,
+    AdminAnalyticsCustomersView,
+    AdminAnalyticsProductsView
+)
+
+# Import payments views
+from admin_payments.views import (
+    AdminPaymentMethodsView,
+    AdminPaymentMethodToggleView,
+    AdminTransactionsView,
+    AdminRefundsView
+)
 
 router = DefaultRouter()
 router.register('products', ProductViewSet, basename='product')
@@ -21,6 +38,7 @@ router.register('shipping', ShippingViewSet, basename='shipping')
 
 urlpatterns = [
     # Auth
+    path('api/', include('accounts.urls')),
     path('api/register/', RegisterView.as_view(), name='register'),
     path('api/verify-otp/', VerifyOTPView.as_view(), name='verify-otp'),
     path('api/resend-otp/', ResendOTPView.as_view(), name='resend-otp'),
@@ -35,7 +53,7 @@ urlpatterns = [
     path('api/orders/', OrderHistoryView.as_view(), name='orders'),
     path('api/buy-now/', BuyNowView.as_view(), name='buy-now'),
 
-    # Admin APIs
+    # Admin APIs - Core
     path('api/admin/dashboard/stats/', AdminDashboardStatsView.as_view(), name='admin-dashboard-stats'),
     path('api/admin/users/', AdminUserListView.as_view(), name='admin-users'),
     path('api/admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
@@ -47,6 +65,19 @@ urlpatterns = [
     path('api/admin/categories/<int:category_id>/', AdminCategoryDetailView.as_view(), name='admin-category-detail'),
     path('api/admin/reviews/', AdminReviewListView.as_view(), name='admin-reviews'),
     path('api/admin/reviews/<int:review_id>/', AdminReviewDetailView.as_view(), name='admin-review-detail'),
+
+    # Admin Analytics URLs
+    path('api/admin/analytics/sales/', AdminAnalyticsSalesView.as_view(), name='admin-analytics-sales'),
+    path('api/admin/analytics/revenue/', AdminAnalyticsRevenueView.as_view(), name='admin-analytics-revenue'),
+    path('api/admin/analytics/customers/', AdminAnalyticsCustomersView.as_view(), name='admin-analytics-customers'),
+    path('api/admin/analytics/products/', AdminAnalyticsProductsView.as_view(), name='admin-analytics-products'),
+
+    # Admin Payments URLs
+    path('api/admin/payments/methods/', AdminPaymentMethodsView.as_view(), name='admin-payment-methods'),
+    path('api/admin/payments/methods/<int:method_id>/', AdminPaymentMethodsView.as_view(), name='admin-payment-method-detail'),
+    path('api/admin/payments/methods/<int:method_id>/toggle/', AdminPaymentMethodToggleView.as_view(), name='admin-payment-method-toggle'),
+    path('api/admin/payments/transactions/', AdminTransactionsView.as_view(), name='admin-transactions'),
+    path('api/admin/payments/refunds/', AdminRefundsView.as_view(), name='admin-refunds'),
 
     # Token & Reviews
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

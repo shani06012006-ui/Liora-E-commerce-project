@@ -1,18 +1,19 @@
+// frontend/src/pages/Wishlist.jsx
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { HeartIcon, TrashIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outline';
-import { wishlistAPI, cartAPI } from '../services/api';
+import { wishlistAPI, cartAPI, getImageUrl } from '../services/api';
 import { refreshCart } from '../redux/cartUtils';
 import toast from 'react-hot-toast';
- 
+
 const Wishlist = () => {
   const navigate        = useNavigate();
   const dispatch        = useDispatch();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading,       setLoading]       = useState(true);
   const [addingToCart,  setAddingToCart]  = useState(null);
- 
+
   const fetchWishlist = async () => {
     try {
       const res = await wishlistAPI.getWishlist();
@@ -22,11 +23,11 @@ const Wishlist = () => {
     }
     setLoading(false);
   };
- 
+
   useEffect(() => {
     fetchWishlist();
   }, []);
- 
+
   const removeFromWishlist = async (id) => {
     try {
       await wishlistAPI.removeFromWishlist(id);
@@ -37,17 +38,17 @@ const Wishlist = () => {
       toast.error('Failed to remove');
     }
   };
- 
+
   const addToCart = async (productId, wishlistId) => {
     setAddingToCart(productId);
     try {
       await cartAPI.addToCart({ product_id: productId, quantity: 1 });
       await refreshCart(dispatch);
- 
+
       await wishlistAPI.removeFromWishlist(wishlistId);
       setWishlistItems(wishlistItems.filter(item => item.id !== wishlistId));
       window.dispatchEvent(new Event('wishlistUpdated'));
- 
+
       toast.success('Moved to cart!');
     } catch {
       toast.error('Failed to add to cart');
@@ -55,30 +56,27 @@ const Wishlist = () => {
       setAddingToCart(null);
     }
   };
- 
+
   const buyNow = (productId, wishlistId) => {
-  const token = localStorage.getItem('access_token');
-  if (!token) {
-    toast.error('Please login to buy');
-    navigate('/Login');
-    return;
-  }
-  const item = wishlistItems.find(i => i.id === wishlistId);
-  navigate('/checkout', {
-    state: {
-      buyNow: true,
-      product: item?.product_details,
-      quantity: 1,
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      toast.error('Please login to buy');
+      navigate('/Login');
+      return;
     }
-  });
-};
- 
-  const getImageUrl = (product) => {
-    if (product?.image_url) return product.image_url;
-    if (product?.image)     return `http://localhost:5174${product.image}`;
-    return 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=No+Image';
+    const item = wishlistItems.find(i => i.id === wishlistId);
+    navigate('/checkout', {
+      state: {
+        buyNow: true,
+        product: item?.product_details,
+        quantity: 1,
+      }
+    });
   };
- 
+
+  // ✅ Fixed: Use centralized getImageUrl
+  const getProductImage = (product) => getImageUrl(product);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -86,7 +84,7 @@ const Wishlist = () => {
       </div>
     );
   }
- 
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Header */}
@@ -95,7 +93,7 @@ const Wishlist = () => {
         <h1 className="text-3xl font-serif text-gray-900">My Wishlist</h1>
         <span className="text-sm text-gray-500">({wishlistItems.length} items)</span>
       </div>
- 
+
       {wishlistItems.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
           <HeartIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -116,21 +114,22 @@ const Wishlist = () => {
             <div className="col-span-2 text-center">Discount</div>
             <div className="col-span-3 text-right">Actions</div>
           </div>
- 
+
           {/* Wishlist Items */}
           <div className="divide-y divide-gray-100">
             {wishlistItems.map((item) => (
               <div key={item.id} className="p-6 hover:bg-gray-50 transition">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
- 
+
                   {/* Product Image & Name */}
                   <div className="md:col-span-5">
                     <div className="flex gap-4">
                       <Link to={`/product/${item.product_details.id}`} className="flex-shrink-0">
                         <img
-                          src={getImageUrl(item.product_details)}
+                          src={getProductImage(item.product_details)}
                           alt={item.product_details.name}
                           className="w-20 h-24 object-cover rounded-lg bg-gray-100"
+                          onError={(e) => { e.target.src = 'https://placehold.co/400x500/e0e0e0/2D2D2D?text=No+Image'; }}
                         />
                       </Link>
                       <div className="flex flex-col justify-center">
@@ -159,7 +158,7 @@ const Wishlist = () => {
                       </div>
                     </div>
                   </div>
- 
+
                   {/* Price - Desktop */}
                   <div className="hidden md:block md:col-span-2 text-center">
                     <p className="font-medium text-gray-900">₹{item.product_details.price}</p>
@@ -169,7 +168,7 @@ const Wishlist = () => {
                       </p>
                     )}
                   </div>
- 
+
                   {/* Discount - Desktop */}
                   <div className="hidden md:block md:col-span-2 text-center">
                     {item.product_details.discount > 0 ? (
@@ -180,7 +179,7 @@ const Wishlist = () => {
                       <span className="text-gray-400 text-sm">—</span>
                     )}
                   </div>
- 
+
                   {/* Actions */}
                   <div className="md:col-span-3 flex items-center justify-end gap-2">
                     <button
@@ -206,7 +205,7 @@ const Wishlist = () => {
                       <TrashIcon className="w-4 h-4" />
                     </button>
                   </div>
- 
+
                 </div>
               </div>
             ))}
@@ -216,5 +215,5 @@ const Wishlist = () => {
     </div>
   );
 };
- 
+
 export default Wishlist;

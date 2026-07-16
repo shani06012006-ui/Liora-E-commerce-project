@@ -1,6 +1,7 @@
+// frontend/src/pages/Sale.jsx
 import { useReducer, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { productAPI, wishlistAPI } from '../services/api';
+import { productAPI, wishlistAPI, getImageUrl } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
 import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
@@ -132,14 +133,11 @@ const Sale = () => {
     });
   };
 
-  const getImageUrl = (product) => {
-    if (product?.image_url) return product.image_url;
-    if (product?.image)     return `http://localhost:5174${product.image}`;
-    return 'https://placehold.co/400x500/f5f5f5/999999?text=Image';
-  };
+  // ✅ Fixed: Use centralized getImageUrl
+  const getProductImage = (product) => getImageUrl(product);
 
-  const categories  = [
-    { value: 'all',   label: 'ALL SALE'    },
+  const categories = [
+    { value: 'all', label: 'ALL SALE' },
   ];
   const sortOptions = [
     { value: 'discount',   label: 'BIGGEST DISCOUNT'   },
@@ -179,7 +177,6 @@ const Sale = () => {
         </div>
 
         <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-20 text-center text-white z-10">
-          {/* Badge */}
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 md:px-4 py-1 rounded-full mb-3 md:mb-4">
             <FireIcon className="w-3.5 h-3.5 md:w-4 md:h-4" />
             <span className="text-[10px] md:text-xs uppercase tracking-wider">Limited Time Offer</span>
@@ -187,7 +184,6 @@ const Sale = () => {
 
           <h1 className="text-5xl md:text-8xl font-light tracking-wide mb-3 md:mb-4">SALE</h1>
 
-          {/* Subtitle */}
           <p className="text-lg md:text-2xl font-light mb-1 md:mb-2">
             UP TO <span className="font-bold text-3xl md:text-4xl">50% OFF</span>
           </p>
@@ -195,7 +191,6 @@ const Sale = () => {
             Don't miss out on our biggest sale of the season!
           </p>
 
-          {/* Countdown Timer */}
           <div className="flex flex-wrap justify-center gap-2 md:gap-4 mt-5 md:mt-8">
             {[
               { value: timeLeft.days,    label: 'Days'  },
@@ -213,7 +208,6 @@ const Sale = () => {
         </div>
       </div>
 
-      {/* ── Filter Bar ── */}
       <div className="sticky top-16 z-40 bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
           <div className="flex justify-between items-center gap-3 flex-wrap">
@@ -241,12 +235,10 @@ const Sale = () => {
         </div>
       </div>
 
-      {/* Product count */}
       <div className="max-w-7xl mx-auto px-4 pt-4 md:pt-6">
         <p className="text-xs md:text-sm text-gray-400">{displayProducts.length} products on sale</p>
       </div>
 
-      {/* ── Products Grid ── */}
       <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 md:gap-x-6 gap-y-8 md:gap-y-10">
           {displayProducts.map((product) => {
@@ -257,14 +249,16 @@ const Sale = () => {
 
             return (
               <div key={product.id} className="group">
-                {/* Image */}
                 <div className="relative overflow-hidden bg-gray-100 mb-3">
                   <Link to={`/product/${product.id}`}>
-                    <img src={getImageUrl(product)} alt={product.name}
-                      className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105" />
+                    <img
+                      src={getProductImage(product)}
+                      alt={product.name}
+                      className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105"
+                      onError={(e) => { e.target.src = 'https://placehold.co/400x500/f5f5f5/999999?text=Image'; }}
+                    />
                   </Link>
 
-                  {/* Badges */}
                   <div className="absolute top-2 left-2 flex flex-col gap-1">
                     <span className="bg-gray-900 text-white text-[9px] md:text-[10px] px-1.5 md:px-2 py-0.5 md:py-1 font-bold tracking-wide">
                       -{discountPercent}%
@@ -276,17 +270,15 @@ const Sale = () => {
                     )}
                   </div>
 
-                  {/* Wishlist */}
                   <button
                     onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
                     className="absolute top-2 right-2 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition z-10">
                     {isInWishlist
                       ? <HeartSolidIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500" />
-                      : <HeartIcon      className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600" />}
+                      : <HeartIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600" />}
                   </button>
                 </div>
 
-                {/* Info */}
                 <div className="text-center">
                   <Link to={`/product/${product.id}`}>
                     <h3 className="text-gray-800 text-xs md:text-sm font-medium tracking-wide mb-1 hover:text-gray-500 transition line-clamp-1">
@@ -300,7 +292,6 @@ const Sale = () => {
                     </span>
                   </div>
 
-                  {/* Buttons */}
                   <div className="flex gap-1.5 md:gap-2">
                     <button onClick={() => addToCart(product.id)} disabled={isAdding}
                       className="flex-1 bg-gray-900 text-white py-1.5 md:py-2 text-[10px] md:text-[11px] font-medium tracking-wide uppercase hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-1">
@@ -322,7 +313,6 @@ const Sale = () => {
         </div>
       </div>
 
-      {/* Empty state */}
       {displayProducts.length === 0 && !loading && (
         <div className="text-center py-16 md:py-20">
           <div className="text-5xl mb-4">🛍️</div>
@@ -334,13 +324,12 @@ const Sale = () => {
         </div>
       )}
 
-      {/* ── Shipping Info ── */}
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <div className="bg-gray-50 rounded-xl p-4 md:p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6">
             {[
-              [TruckIcon,       'Free shipping on orders above ₹999'],
-              [ArrowPathIcon,   '7-day easy returns'],
+              [TruckIcon, 'Free shipping on orders above ₹999'],
+              [ArrowPathIcon, '7-day easy returns'],
               [ShieldCheckIcon, 'Secure payments'],
             ].map(([Icon, text]) => (
               <div key={text} className="flex items-center gap-3 text-sm text-gray-600">
@@ -352,7 +341,6 @@ const Sale = () => {
         </div>
       </div>
 
-      {/* ── Newsletter ── */}
       <div className="border-t border-gray-200 py-12 md:py-16 bg-gray-50">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <p className="text-xs uppercase tracking-[0.3em] text-gray-500 mb-3">SALE ALERTS</p>

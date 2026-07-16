@@ -2,13 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { adminAPI } from '../services/api';
  
-/**
- * Loads a settings section on mount and exposes a save() function
- * that PATCHes only the changed fields back to the server.
- *
- * Usage:
- *   const { data, setData, loading, saving, save } = useSettingsSection('shipping');
- */
 export function useSettingsSection(section) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);

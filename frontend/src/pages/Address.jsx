@@ -1,14 +1,14 @@
-import { useState, useEffect , useCallback} from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+// frontend/src/pages/Address.jsx
+import { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
-import { setCredentials } from '../redux/authSlice';
 import toast from 'react-hot-toast';
-import { MapPinIcon, PlusIcon, PencilIcon, TrashIcon, HomeIcon, BuildingOfficeIcon, XMarkIcon} from '@heroicons/react/24/outline';
+import { MapPinIcon, PlusIcon, PencilIcon, TrashIcon, HomeIcon, BuildingOfficeIcon, XMarkIcon, CheckIcon } from '@heroicons/react/24/outline';
 import Sidebar from '../components/Sidebar';
 
 const Address = () => {
   const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState('address');
   const [addresses, setAddresses] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -29,49 +29,45 @@ const Address = () => {
     is_default: false,
   });
 
-const loadAddresses = useCallback(() => {
-  if (!user) return;
-
-  const savedAddresses = [];
-
-  if (user.address && user.address.trim() !== "") {
-    const parts = user.address.split(",");
-
-    savedAddresses.push({
-      id: 1,
-      full_name: user.full_name || user.username,
-      phone: user.phone,
-      address_line1: parts[0] || "",
-      city: parts[1]?.trim() || "",
-      state: parts[2]?.split("-")[0]?.trim() || "",
-      pincode: parts[2]?.split("-")[1]?.trim() || "",
-      landmark: "",
-      address_type: "home",
-      is_default: true,
-    });
-  }
-
-  const savedAddressesList = localStorage.getItem("user_addresses");
-
-  if (savedAddressesList) {
-    const parsed = JSON.parse(savedAddressesList);
-    savedAddresses.push(...parsed);
-  }
-
-  setAddresses(savedAddresses);
-}, [user]);
+  const loadAddresses = useCallback(async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const res = await authAPI.getAddresses();
+      setAddresses(res.data || []);
+    } catch (error) {
+      console.error('Error loading addresses:', error);
+      toast.error('Failed to load addresses');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     loadAddresses();
   }, [loadAddresses]);
 
-  const saveAddressesToStorage = (updatedAddresses) => {
-    const nonDefaultAddresses = updatedAddresses.filter(addr => !addr.is_default);
-    localStorage.setItem('user_addresses', JSON.stringify(nonDefaultAddresses));
-  };
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const resetForm = () => {
+    setFormData({
+      id: null,
+      full_name: user?.full_name || '',
+      phone: user?.phone || '',
+      address_line1: '',
+      address_line2: '',
+      city: '',
+      state: '',
+      pincode: '',
+      landmark: '',
+      address_type: 'home',
+      is_default: false,
+    });
+    setEditingAddress(null);
+    setShowAddForm(false);
   };
 
   const handleEditAddress = (address) => {
@@ -92,166 +88,67 @@ const loadAddresses = useCallback(() => {
     setShowAddForm(true);
   };
 
+  const handleAddAddress = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      await authAPI.createAddress(formData);
+      toast.success('Address added successfully!');
+      await loadAddresses();
+      resetForm();
+    } catch (error) {
+      console.error('Error adding address:', error);
+      toast.error(error.response?.data?.error || 'Failed to add address');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUpdateAddress = async (e) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const updatedAddresses = addresses.map(addr => 
-        addr.id === formData.id ? { ...formData, id: addr.id } : addr
-      );
-      
-      if (formData.is_default) {
-        const fullAddress = `${formData.address_line1}, ${formData.city}, ${formData.state} - ${formData.pincode}`;
-        const updateData = {
-          address: fullAddress,
-          phone: formData.phone,
-          full_name: formData.full_name,
-        };
-        await authAPI.updateProfile(updateData);
-        dispatch(setCredentials({ 
-          user: { ...user, ...updateData }, 
-          access: localStorage.getItem('access_token') 
-        }));
-      }
-      
-      setAddresses(updatedAddresses);
-      saveAddressesToStorage(updatedAddresses);
-      
+      await authAPI.updateAddress(formData.id, formData);
       toast.success('Address updated successfully!');
-      setShowAddForm(false);
-      setEditingAddress(null);
+      await loadAddresses();
       resetForm();
-    } catch {
-      toast.error('Failed to update address');
+    } catch (error) {
+      console.error('Error updating address:', error);
+      toast.error(error.response?.data?.error || 'Failed to update address');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleAddAddress = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    const newAddress = {
-      id: crypto.randomUUID(),
-      ...formData,
-    };
-    
-    try {
-      if (formData.is_default) {
-        const fullAddress = `${formData.address_line1}, ${formData.city}, ${formData.state} - ${formData.pincode}`;
-        const updateData = {
-          address: fullAddress,
-          phone: formData.phone,
-          full_name: formData.full_name,
-        };
-        await authAPI.updateProfile(updateData);
-        dispatch(setCredentials({ 
-          user: { ...user, ...updateData }, 
-          access: localStorage.getItem('access_token') 
-        }));
-        
-        const updatedAddresses = addresses.map(addr => ({ ...addr, is_default: false }));
-        updatedAddresses.push(newAddress);
-        setAddresses(updatedAddresses);
-      } else {
-        const updatedAddresses = [...addresses, newAddress];
-        setAddresses(updatedAddresses);
-        saveAddressesToStorage(updatedAddresses);
-      }
-      
-      toast.success('Address added successfully!');
-      setShowAddForm(false);
-      resetForm();
-    } catch{
-      toast.error('Failed to add address');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      id: null,
-      full_name: '',
-      phone: '',
-      address_line1: '',
-      address_line2: '',
-      city: '',
-      state: '',
-      pincode: '',
-      landmark: '',
-      address_type: 'home',
-      is_default: false,
-    });
-    setEditingAddress(null);
   };
 
   const handleDeleteAddress = async (id) => {
-    const addressToDelete = addresses.find(addr => addr.id === id);
+    if (!window.confirm('Are you sure you want to delete this address?')) return;
     
-    if (!addressToDelete) return;
-    
-    if (addressToDelete.is_default) {
-      const confirmDelete = window.confirm(
-        'This is your default address. Deleting it will remove it from your profile. Are you sure?'
-      );
-      
-      if (!confirmDelete) return;
-      
-      try {
-        const updateData = {
-          address: '',
-          phone: user?.phone || '',
-          full_name: user?.full_name || '',
-        };
-        await authAPI.updateProfile(updateData);
-        dispatch(setCredentials({ 
-          user: { ...user, ...updateData }, 
-          access: localStorage.getItem('access_token') 
-        }));
-        
-        toast.success('Default address removed successfully!');
-      } catch {
-        toast.error('Failed to remove default address');
-        return;
-      }
+    setLoading(true);
+    try {
+      await authAPI.deleteAddress(id);
+      toast.success('Address deleted successfully!');
+      await loadAddresses();
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete address');
+    } finally {
+      setLoading(false);
     }
-    
-    const updatedAddresses = addresses.filter(addr => addr.id !== id);
-    setAddresses(updatedAddresses);
-    saveAddressesToStorage(updatedAddresses);
-    toast.success('Address removed');
   };
 
   const handleSetDefault = async (id) => {
-    const addressToSet = addresses.find(addr => addr.id === id);
-    if (!addressToSet) return;
-    
-    const fullAddress = `${addressToSet.address_line1}, ${addressToSet.city}, ${addressToSet.state} - ${addressToSet.pincode}`;
-    
+    setLoading(true);
     try {
-      const updateData = {
-        address: fullAddress,
-        phone: addressToSet.phone,
-        full_name: addressToSet.full_name,
-      };
-      await authAPI.updateProfile(updateData);
-      dispatch(setCredentials({ 
-        user: { ...user, ...updateData }, 
-        access: localStorage.getItem('access_token') 
-      }));
-      
-      const updatedAddresses = addresses.map(addr => ({
-        ...addr,
-        is_default: addr.id === id
-      }));
-      setAddresses(updatedAddresses);
-      saveAddressesToStorage(updatedAddresses.filter(addr => !addr.is_default));
-      toast.success('Default address updated');
-    } catch {
-      toast.error('Failed to update default address');
+      await authAPI.setDefaultAddress(id);
+      toast.success('Default address updated!');
+      await loadAddresses();
+    } catch (error) {
+      console.error('Error setting default address:', error);
+      toast.error('Failed to set default address');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -270,6 +167,19 @@ const loadAddresses = useCallback(() => {
       default: return 'Other';
     }
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-gray-500">Please login to view addresses</p>
+          <Link to="/Login" className="inline-block mt-4 px-6 py-2 bg-gray-900 text-white text-sm uppercase tracking-wide hover:bg-gray-800 transition">
+            Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -300,18 +210,14 @@ const loadAddresses = useCallback(() => {
               </div>
 
               {/* Add/Edit Address Form */}
-              {(showAddForm || editingAddress) && (
+              {showAddForm && (
                 <div className="p-6 border-b border-gray-100 bg-gray-50">
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-900">
                       {editingAddress ? 'Edit Address' : 'Add New Address'}
                     </h3>
                     <button
-                      onClick={() => {
-                        setShowAddForm(false);
-                        setEditingAddress(null);
-                        resetForm();
-                      }}
+                      onClick={resetForm}
                       className="text-gray-400 hover:text-gray-600"
                     >
                       <XMarkIcon className="w-5 h-5" />
@@ -451,11 +357,7 @@ const loadAddresses = useCallback(() => {
                       </button>
                       <button 
                         type="button" 
-                        onClick={() => {
-                          setShowAddForm(false);
-                          setEditingAddress(null);
-                          resetForm();
-                        }}
+                        onClick={resetForm}
                         className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
                       >
                         Cancel
@@ -467,7 +369,11 @@ const loadAddresses = useCallback(() => {
 
               {/* Addresses Grid View */}
               <div className="p-6">
-                {addresses.length === 0 ? (
+                {loading && addresses.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto" />
+                  </div>
+                ) : addresses.length === 0 ? (
                   <div className="text-center py-12">
                     <MapPinIcon className="w-16 h-16 text-gray-300 mx-auto mb-3" />
                     <p className="text-gray-500">No addresses added yet</p>
@@ -527,8 +433,9 @@ const loadAddresses = useCallback(() => {
                         {!address.is_default && (
                           <button
                             onClick={() => handleSetDefault(address.id)}
-                            className="mt-3 text-xs text-gray-600 hover:text-gray-900 font-medium"
+                            className="mt-3 text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1"
                           >
+                            <CheckIcon className="w-3 h-3" />
                             Set as Default
                           </button>
                         )}

@@ -38,8 +38,10 @@ import AdminCategories from './pages/admin/AdminCategories';
 import AdminReviews from './pages/admin/AdminReviews';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminLogin from './pages/admin/AdminLogin';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminPayments from './pages/admin/AdminPayments';
 
-// Resuable layout
+// Reusable layout
 const MainLayout = ({ children }) => (
   <div className="min-h-screen flex flex-col bg-gray-50">
     <Navbar />
@@ -62,16 +64,31 @@ const ProfileLayout = ({ children }) => (
 
 const AppContent = () => {
   const { user, token } = useSelector((state) => state.auth);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    const storedToken = localStorage.getItem('access_token');
-    const storedUser = localStorage.getItem('user');
-    return !!(storedToken && storedUser && storedUser !== 'undefined');
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('access_token');
     const storedUser = localStorage.getItem('user');
-    setIsAuthenticated(!!(storedToken && storedUser && storedUser !== 'undefined'));
+    
+    const hasReduxAuth = !!token && user;
+    const hasStorageAuth = !!(storedToken && storedUser && storedUser !== 'undefined' && storedUser !== 'null');
+    
+    const authStatus = hasReduxAuth || hasStorageAuth;
+    setIsAuthenticated(authStatus);
+    
+    console.log('🔐 AppContent - isAuthenticated:', authStatus);
+    console.log('🔐 AppContent - Redux user:', user?.username || 'None');
+    console.log('🔐 AppContent - Storage user:', storedUser ? JSON.parse(storedUser)?.username : 'None');
+    
+    if (!hasReduxAuth && hasStorageAuth) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        console.log('🔄 Syncing user from localStorage:', parsedUser.username);
+
+      } catch (e) {
+        console.error('Error parsing stored user:', e);
+      }
+    }
   }, [user, token]);
 
   return (
@@ -82,7 +99,7 @@ const AppContent = () => {
       <Route path="/Login" element={!isAuthenticated ? <MainLayout><Login /></MainLayout> : <Navigate to="/" />} />
       <Route path="/register" element={!isAuthenticated ? <MainLayout><Register /></MainLayout> : <Navigate to="/" />} />
 
-      {/* Admin Routes - UPDATED */}
+      {/* Admin Routes */}
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
       <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
@@ -92,6 +109,20 @@ const AppContent = () => {
       <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
       <Route path="/admin/reviews" element={<AdminRoute><AdminReviews /></AdminRoute>} />
       <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
+      
+      {/* Analytics Routes */}
+      <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
+      <Route path="/admin/analytics/sales" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
+      <Route path="/admin/analytics/revenue" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
+      <Route path="/admin/analytics/customers" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
+      <Route path="/admin/analytics/products" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
+      
+      {/* Payments Routes */}
+      <Route path="/admin/payments" element={<AdminRoute><AdminPayments /></AdminRoute>} />
+      <Route path="/admin/payments/methods" element={<AdminRoute><AdminPayments /></AdminRoute>} />
+      <Route path="/admin/payments/transactions" element={<AdminRoute><AdminPayments /></AdminRoute>} />
+      <Route path="/admin/payments/refunds" element={<AdminRoute><AdminPayments /></AdminRoute>} />
+
       {/* Other routes */}
       <Route path="/new-arrivals" element={<MainLayout><NewArrivals /></MainLayout>} />
       <Route path="/new-arrivals/:subcategory" element={<MainLayout><NewArrivals /></MainLayout>} />

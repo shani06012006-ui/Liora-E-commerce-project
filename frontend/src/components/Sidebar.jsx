@@ -1,13 +1,26 @@
+// frontend/src/components/Sidebar.jsx
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { handleLogout } from '../redux/authUtils';
 import { UserIcon, HeartIcon, ShoppingBagIcon, MapPinIcon, ShieldCheckIcon, DocumentTextIcon, QuestionMarkCircleIcon, ArrowRightOnRectangleIcon, BellIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
- 
+
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
- 
+
+  
+  const getUserDisplayName = () => {
+    if (!user) return 'Guest';
+    return user.full_name || user.username || 'User';
+  };
+
+  const getUserInitial = () => {
+    if (!user) return 'U';
+    const name = user.full_name || user.username || 'User';
+    return name.charAt(0).toUpperCase();
+  };
+
   const menuItems = [
     { id: 'personal',       name: 'Personal Detail',    icon: UserIcon,                 path: '/profile'        },
     { id: 'favourites',     name: 'My Favourite',       icon: HeartIcon,                path: '/wishlist'       },
@@ -19,16 +32,16 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     { id: 'help',           name: 'Help & Support',     icon: QuestionMarkCircleIcon,   path: '/help'           },
     { id: 'settings',       name: 'Settings',           icon: Cog6ToothIcon,            path: '/settings'       },
   ];
- 
+
   const onLogout = () => {
     handleLogout(dispatch, navigate);
   };
- 
+
   const handleNavigation = (path, id) => {
     setActiveTab(id);
     navigate(path);
   };
- 
+
   return (
     <div className="w-72 bg-white rounded-2xl shadow-sm p-4">
       <div className="text-center mb-6 pb-4 border-b border-gray-100">
@@ -37,14 +50,14 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
             <img src={user.profile_pic_url} alt="Profile" className="w-full h-full object-cover" />
           ) : (
             <span className="text-3xl text-white font-medium">
-              {user?.username?.charAt(0).toUpperCase() || 'U'}
+              {getUserInitial()}
             </span>
           )}
         </div>
-        <h3 className="font-semibold text-gray-800">{user?.full_name || user?.username}</h3>
-        <p className="text-xs text-gray-400 mt-1">{user?.email}</p>
+        <h3 className="font-semibold text-gray-800">{getUserDisplayName()}</h3>
+        <p className="text-xs text-gray-400 mt-1">{user?.email || ''}</p>
       </div>
- 
+
       {/* Menu Items */}
       <div className="space-y-1">
         {menuItems.map((item) => (
@@ -62,10 +75,10 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           </button>
         ))}
       </div>
- 
+
       {/* Divider */}
       <div className="my-4 border-t border-gray-100"></div>
- 
+
       {/* Logout */}
       <button
         onClick={onLogout}
@@ -77,5 +90,5 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     </div>
   );
 };
- 
+
 export default Sidebar;

@@ -1,6 +1,7 @@
+// frontend/src/pages/Collections.jsx
 import { useReducer, useEffect, useCallback } from 'react';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { productAPI, cartAPI, wishlistAPI } from '../services/api';
+import { productAPI, cartAPI, wishlistAPI, getImageUrl } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
 import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
@@ -103,11 +104,8 @@ const Collections = () => {
     navigate('/checkout', { state: { buyNow: true, product: products.find(p => p.id === productId), quantity: 1 } });
   };
 
-  const getImageUrl = (product) => {
-    if (product?.image_url) return product.image_url;
-    if (product?.image)     return `http://localhost:8000${product.image}`;
-    return 'https://placehold.co/400x500/f5f5f5/999999?text=No+Image';
-  };
+  // ✅ Fixed: Use imported getImageUrl
+  const getProductImage = (product) => getImageUrl(product);
 
   const categories = [
     { name: 'ALL',       path: '/Collections',           active: !style },
@@ -156,7 +154,7 @@ const Collections = () => {
         </div>
       </div>
 
-      {/* Category Filter — horizontally scrollable on mobile */}
+      {/* Category Filter */}
       <div className="border-b border-gray-200 bg-white sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-6 md:gap-8 py-3 md:py-4 overflow-x-auto scrollbar-hide">
@@ -196,8 +194,12 @@ const Collections = () => {
                 <div key={product.id} className="group">
                   <div className="relative overflow-hidden bg-gray-100 mb-3">
                     <Link to={`/product/${product.id}`}>
-                      <img src={getImageUrl(product)} alt={product.name}
-                        className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105" />
+                      <img 
+                        src={getProductImage(product)} 
+                        alt={product.name}
+                        className="w-full aspect-[3/4] object-cover transition-transform duration-700 group-hover:scale-105"
+                        onError={(e) => { e.target.src = 'https://placehold.co/400x500/f5f5f5/999999?text=No+Image'; }}
+                      />
                     </Link>
 
                     <button
@@ -205,7 +207,7 @@ const Collections = () => {
                       className="absolute top-2 right-2 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition z-10">
                       {isInWishlist
                         ? <HeartSolidIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500" />
-                        : <HeartIcon      className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600" />}
+                        : <HeartIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600" />}
                     </button>
 
                     {product.discount > 0 && (
@@ -249,6 +251,7 @@ const Collections = () => {
           </div>
         )}
       </div>
+
       {/* Newsletter */}
       <div className="border-t border-gray-200 mt-8 md:mt-12 py-12 md:py-16 bg-white">
         <div className="max-w-2xl mx-auto px-4 text-center">

@@ -1,6 +1,7 @@
-﻿import { useReducer, useEffect, useCallback } from 'react';
+﻿// frontend/src/pages/Orders.jsx
+import { useReducer, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { orderAPI, productAPI } from '../services/api';
+import { orderAPI, productAPI, getImageUrl } from '../services/api';
 import { ClockIcon, CheckCircleIcon, TruckIcon, ShoppingBagIcon, XCircleIcon, MapPinIcon, PhoneIcon, EyeIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 
 const reducer = (state, action) => {
@@ -47,9 +48,10 @@ const Orders = () => {
     cancelled: { icon: XCircleIcon,     color: 'text-red-600',    bg: 'text-red-700 bg-red-100'       },
   };
 
+  // ✅ Fixed: Use centralized getImageUrl
   const getProductImage = (productId) => {
     const image = productImages[productId];
-    if (image) return image.startsWith('http') ? image : `http://localhost:5174${image}`;
+    if (image) return getImageUrl({ image_url: image, image: image });
     return 'https://placehold.co/60x60/e0e0e0/2D2D2D?text=No+Image';
   };
 
@@ -97,14 +99,16 @@ const Orders = () => {
             return (
               <div key={order.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
 
-                {/* Header */}
                 <div className="bg-gray-50 px-4 md:px-6 py-3 md:py-4 border-b">
                   <div className="flex items-center gap-3 md:gap-4">
                     {firstImage && (
                       <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
-                        <img src={firstImage} alt="product"
+                        <img 
+                          src={firstImage} 
+                          alt="product"
                           className="w-full h-full object-cover"
-                          onError={(e) => { e.target.src = 'https://placehold.co/60x60'; }} />
+                          onError={(e) => { e.target.src = 'https://placehold.co/60x60'; }} 
+                        />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -124,7 +128,6 @@ const Orders = () => {
                   </div>
                 </div>
 
-                {/* Status + toggle */}
                 <div className="px-4 md:px-6 py-3 border-b flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -145,7 +148,6 @@ const Orders = () => {
                   </button>
                 </div>
 
-                {/* Expanded items */}
                 {isExpanded && (
                   <div className="p-4 md:p-6 border-b">
                     <h3 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">Order Items</h3>
@@ -153,9 +155,12 @@ const Orders = () => {
                       {order.items.map((item) => (
                         <div key={item.id} className="flex items-center gap-3 py-2 border-b last:border-0">
                           <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                            <img src={getProductImage(item.product)} alt={item.product_name}
+                            <img 
+                              src={getProductImage(item.product)} 
+                              alt={item.product_name}
                               className="w-full h-full object-cover"
-                              onError={(e) => { e.target.src = 'https://placehold.co/60x60'; }} />
+                              onError={(e) => { e.target.src = 'https://placehold.co/60x60'; }} 
+                            />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-gray-900 text-sm truncate">{item.product_name}</p>
@@ -172,7 +177,6 @@ const Orders = () => {
                   </div>
                 )}
 
-                {/* Shipping */}
                 <div className="p-4 md:p-6 bg-gray-50">
                   <h3 className="font-semibold text-gray-900 mb-3 text-sm md:text-base">Shipping Info</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">

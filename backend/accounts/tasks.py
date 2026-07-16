@@ -1,24 +1,39 @@
+# backend/accounts/tasks.py
 from celery import shared_task
 from django.core.mail import send_mail
 from django.conf import settings
-
-
+import logging
+ 
+logger = logging.getLogger(__name__)
+ 
+ 
 @shared_task(bind=True, max_retries=3)
 def send_otp_email(self, email, otp_code, username):
-    subject = "Your OTP Verification Code - L I O R A Ecommerce Website"
-    message = (
-        f"Hi {username},\n\n"
-        f"Your OTP code is: {otp_code}\n\n"
-        f"This code will expire in 5 minutes.\n\n"
-        f"Thanks,\nLiora Team"
-    )
+    """Send OTP email using Celery"""
+    print(f"📨 SENDING OTP TO EXACTLY THIS ADDRESS: '{email}'")  # TEMP DEBUG LINE — remove once confirmed working
     try:
+        subject = "🔐 Your Liora OTP Code"
+        message = f"""Hi {username or 'User'},
+ 
+Your OTP code is: {otp_code}
+ 
+This code will expire in 5 minutes.
+ 
+If you didn't request this, please ignore this email.
+ 
+Thanks,
+Liora Team"""
+ 
         send_mail(
-            subject,
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
             fail_silently=False,
         )
-    except Exception as exc:
-        raise self.retry(exc=exc, countdown=10)
+        logger.info(f" OTP email sent to {email}")
+        return {"success": True, "email": email}
+ 
+    except Exception as e:
+        logger.error(f"❌ Failed to send OTP to {email}: {str(e)}")
+        raise self.retry(exc=e, countdown=60)

@@ -1,13 +1,12 @@
+// frontend/src/pages/NewArrivals.jsx
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { productAPI } from '../services/api';
+import { productAPI, getImageUrl } from '../services/api';
 import { ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const NewArrivals = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
-
 
   const fetchProducts = async () => {
     try {
@@ -19,15 +18,11 @@ const NewArrivals = () => {
     setLoading(false);
   };
 
-    useEffect(() => {
+  useEffect(() => {
     fetchProducts();
   }, []);
 
-  const getImageUrl = (product) => {
-    if (product?.image_url) return product.image_url;
-    if (product?.image) return `http://localhost:5174${product.image}`;
-    return 'https://placehold.co/600x700/f5f5f5/999999?text=Image';
-  };
+  const getProductImage = (product) => getImageUrl(product);
 
   const fallbackProducts = [
     { id: 1, name: 'TIMELESS SUITS', price: 4999, original_price: 6999, discount: 28, image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600&auto=format' },
@@ -61,13 +56,13 @@ const NewArrivals = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-     
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 items-center">
           <div className="relative overflow-hidden bg-gray-100 aspect-[4/5]">
             <img 
-              src={getImageUrl(displayProducts[0])} 
+              src={getProductImage(displayProducts[0])} 
               alt={displayProducts[0]?.name}
               className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              onError={(e) => { e.target.src = 'https://placehold.co/600x700/f5f5f5/999999?text=Image'; }}
             />
             {displayProducts[0]?.discount > 0 && (
               <span className="absolute top-4 left-4 bg-black text-white text-xs px-2 py-1">
@@ -116,9 +111,10 @@ const NewArrivals = () => {
           </div>
           <div className="order-1 md:order-2 relative overflow-hidden bg-gray-100 aspect-[4/5]">
             <img 
-              src={getImageUrl(displayProducts[1])} 
+              src={getProductImage(displayProducts[1])} 
               alt={displayProducts[1]?.name}
               className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              onError={(e) => { e.target.src = 'https://placehold.co/600x700/f5f5f5/999999?text=Image'; }}
             />
             {displayProducts[1]?.discount > 0 && (
               <span className="absolute top-4 left-4 bg-black text-white text-xs px-2 py-1">
@@ -131,9 +127,10 @@ const NewArrivals = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20 items-center">
           <div className="relative overflow-hidden bg-gray-100 aspect-[4/5]">
             <img 
-              src={getImageUrl(displayProducts[2])} 
+              src={getProductImage(displayProducts[2])} 
               alt={displayProducts[2]?.name}
               className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              onError={(e) => { e.target.src = 'https://placehold.co/600x700/f5f5f5/999999?text=Image'; }}
             />
             {displayProducts[2]?.discount > 0 && (
               <span className="absolute top-4 left-4 bg-black text-white text-xs px-2 py-1">
@@ -182,9 +179,10 @@ const NewArrivals = () => {
           </div>
           <div className="order-1 md:order-2 relative overflow-hidden bg-gray-100 aspect-[4/5]">
             <img 
-              src={getImageUrl(displayProducts[3])} 
+              src={getProductImage(displayProducts[3])} 
               alt={displayProducts[3]?.name}
               className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+              onError={(e) => { e.target.src = 'https://placehold.co/600x700/f5f5f5/999999?text=Image'; }}
             />
             {displayProducts[3]?.discount > 0 && (
               <span className="absolute top-4 left-4 bg-black text-white text-xs px-2 py-1">
