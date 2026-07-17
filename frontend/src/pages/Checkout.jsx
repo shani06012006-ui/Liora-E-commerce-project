@@ -1,22 +1,38 @@
 ﻿// frontend/src/pages/Checkout.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { orderAPI } from '../services/api';
+import { orderAPI, authAPI } from '../services/api';
 import { getImageUrl } from '../services/api';
 import { clearCart } from '../redux/cartSlice';
 import { CreditCardIcon, BanknotesIcon, WalletIcon } from '@heroicons/react/24/outline';
+import { getTokens, getCurrentUser } from '../utils/storage';
 import toast from 'react-hot-toast';
 
 const Checkout = () => {
-  const location   = useLocation();
+  const location = useLocation();
   const buyNowData = location.state;
-  const isBuyNow   = buyNowData?.buyNow === true;
+  const isBuyNow = buyNowData?.buyNow === true;
 
   const { items, total: cartTotal } = useSelector((state) => state.cart);
-  const { user }                    = useSelector((state) => state.auth);
-  const navigate                    = useNavigate();
-  const dispatch                    = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  //Check authentication - wrapped in useCallback
+  const isUserAuthenticated = useCallback(() => {
+    const { accessToken } = getTokens();
+    const currentUser = getCurrentUser() || user;
+    return !!(accessToken && currentUser);
+  }, [user]); //Added user as dependency
+
+  //Redirect if not authenticated
+  useEffect(() => {
+    if (!isUserAuthenticated()) {
+      navigate('/Login');
+      return;
+    }
+  }, [isUserAuthenticated, navigate]);
 
   const displayItems = isBuyNow
     ? [{ product_details: buyNowData.product, quantity: buyNowData.quantity, price: buyNowData.product?.price }]
@@ -26,77 +42,111 @@ const Checkout = () => {
     ? buyNowData.product?.price * buyNowData.quantity
     : cartTotal;
 
-  const [addresses,       setAddresses]       = useState([]);
+  const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
-  const [loading,         setLoading]         = useState(false);
-  const [orderPlaced,     setOrderPlaced]     = useState(false);
-  const [paymentMethod,   setPaymentMethod]   = useState('cod');
+  const [loading, setLoading] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('cod');
 
   const [formData, setFormData] = useState({
-    full_name: user?.full_name || '', phone: user?.phone || '',
-    address_line1: '', address_line2: '', city: '', state: '', pincode: '',
+    full_name: user?.full_name || '',
+    phone: user?.phone || '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    pincode: '',
   });
 
   const paymentMethods = [
-    { id: 'cod',  name: 'Cash on Delivery',    icon: BanknotesIcon,  description: 'Pay when you receive the order' },
-    { id: 'card', name: 'Credit / Debit Card', icon: CreditCardIcon, description: 'Visa, Mastercard, RuPay'        },
-    { id: 'upi',  name: 'UPI / Wallet',        icon: WalletIcon,     description: 'Google Pay, PhonePe, Paytm'    },
+    { id: 'cod', name: 'Cash on Delivery', icon: BanknotesIcon, description: 'Pay when you receive the order' },
+    { id: 'card', name: 'Credit / Debit Card', icon: CreditCardIcon, description: 'Visa, Mastercard, RuPay' },
+    { id: 'upi', name: 'UPI / Wallet', icon: WalletIcon, description: 'Google Pay, PhonePe, Paytm' },
   ];
 
+  //Check if cart is empty
   useEffect(() => {
-    if (!isBuyNow && items.length === 0 && !orderPlaced) navigate('/cart');
+    if (!isBuyNow && items.length === 0 && !orderPlaced) {
+      navigate('/cart');
+    }
   }, [items, navigate, orderPlaced, isBuyNow]);
 
+  //Load addresses from API
   useEffect(() => {
-    const savedAddresses = localStorage.getItem('user_addresses');
-    let allAddresses = savedAddresses ? JSON.parse(savedAddresses) : [];
+    const loadAddresses = async () => {
+      try {
+        const res = await authAPI.getAddresses();
+        setAddresses(res.data || []);
+      } catch (error) {
+        console.error('Error loading addresses:', error);
+        const savedAddresses = localStorage.getItem('user_addresses');
+        if (savedAddresses) {
+          setAddresses(JSON.parse(savedAddresses));
+        }
+      }
+    };
+    loadAddresses();
+  }, []);
 
-    if (user?.address && user.address.trim() !== '') {
+  //Update when user changes
+  useEffect(() => {
+    if (user?.address && addresses.length === 0) {
       const parts = user.address.split(',');
       const profileAddress = {
-        id: 'profile', full_name: user.full_name || user.username, phone: user.phone,
-        address_line1: parts[0] || '', city: parts[1]?.trim() || '',
+        id: 'profile',
+        full_name: user.full_name || user.username,
+        phone: user.phone,
+        address_line1: parts[0] || '',
+        city: parts[1]?.trim() || '',
         state: parts[2]?.split('-')[0]?.trim() || '',
-        pincode: parts[2]?.split('-')[1]?.trim() || '', is_default: true,
+        pincode: parts[2]?.split('-')[1]?.trim() || '',
+        is_default: true,
       };
-      allAddresses = [profileAddress, ...allAddresses.filter(a => a.id !== 'profile')];
+      setAddresses(prev => [profileAddress, ...prev.filter(a => a.id !== 'profile')]);
     }
+  }, [user, addresses.length]);
 
-    setAddresses(allAddresses);
-    const defaultAddr = allAddresses.find(a => a.is_default) || allAddresses[0];
-    if (defaultAddr) {
+  //Set default address when addresses change
+  useEffect(() => {
+    if (addresses.length > 0 && !selectedAddress) {
+      const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
       setSelectedAddress(defaultAddr);
       setFormData({
-        full_name:     defaultAddr.full_name     || user?.full_name || '',
-        phone:         defaultAddr.phone         || user?.phone     || '',
+        full_name: defaultAddr.full_name || user?.full_name || '',
+        phone: defaultAddr.phone || user?.phone || '',
         address_line1: defaultAddr.address_line1 || '',
         address_line2: defaultAddr.address_line2 || '',
-        city:          defaultAddr.city          || '',
-        state:         defaultAddr.state         || '',
-        pincode:       defaultAddr.pincode       || '',
+        city: defaultAddr.city || '',
+        state: defaultAddr.state || '',
+        pincode: defaultAddr.pincode || '',
       });
     }
-  }, [user]);
+  }, [addresses, user, selectedAddress]);
 
-  const handleChange     = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  //Handle form input changes
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  //Handle address selection
   const handleAddrSelect = (address) => {
     setSelectedAddress(address);
     setFormData({
-      full_name:     address.full_name     || user?.full_name || '',
-      phone:         address.phone         || user?.phone     || '',
+      full_name: address.full_name || user?.full_name || '',
+      phone: address.phone || user?.phone || '',
       address_line1: address.address_line1 || '',
       address_line2: address.address_line2 || '',
-      city:          address.city          || '',
-      state:         address.state         || '',
-      pincode:       address.pincode       || '',
+      city: address.city || '',
+      state: address.state || '',
+      pincode: address.pincode || '',
     });
     setShowAddressForm(false);
   };
 
   const saveNewAddress = () => {
     const newAddress = { id: Date.now(), ...formData };
-    const updated    = [...addresses, newAddress];
+    const updated = [...addresses, newAddress];
     setAddresses(updated);
     localStorage.setItem('user_addresses', JSON.stringify(updated.filter(a => a.id !== 'profile')));
     setSelectedAddress(newAddress);
@@ -107,11 +157,16 @@ const Checkout = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.address_line1 || !formData.city || !formData.state || !formData.pincode) {
-      toast.error('Please fill complete address'); return;
+      toast.error('Please fill complete address');
+      return;
     }
-    if (!formData.phone) { toast.error('Please enter phone number'); return; }
+    if (!formData.phone) {
+      toast.error('Please enter phone number');
+      return;
+    }
 
-    setLoading(true); setOrderPlaced(true);
+    setLoading(true);
+    setOrderPlaced(true);
     toast.loading('Placing your order...', { id: 'order' });
 
     const fullAddress = `${formData.address_line1}, ${formData.address_line2 ? formData.address_line2 + ', ' : ''}${formData.city}, ${formData.state} - ${formData.pincode}`;
@@ -138,23 +193,26 @@ const Checkout = () => {
       setTimeout(() => navigate('/order-success', { state: { order: response.data } }), 1500);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to place order', { id: 'order' });
-      setLoading(false); setOrderPlaced(false);
+      setLoading(false);
+      setOrderPlaced(false);
     }
   };
 
   const getProductImage = (product) => getImageUrl(product);
 
   const shippingCharge = total >= 999 ? 0 : 99;
-  const finalTotal     = total + shippingCharge;
+  const finalTotal = total + shippingCharge;
 
-  if (orderPlaced && loading) return (
-    <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4" />
-        <p className="text-gray-600 text-sm">Processing your order...</p>
+  if (orderPlaced && loading) {
+    return (
+      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4" />
+          <p className="text-gray-600 text-sm">Processing your order...</p>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
@@ -231,7 +289,7 @@ const Checkout = () => {
               </div>
               <div className="space-y-3 md:space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                  {[['full_name','Full Name *','text'],['phone','Phone *','tel']].map(([name, label, type]) => (
+                  {[['full_name', 'Full Name *', 'text'], ['phone', 'Phone *', 'tel']].map(([name, label, type]) => (
                     <div key={name}>
                       <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">{label}</label>
                       <input type={type} name={name} value={formData[name]} onChange={handleChange}
@@ -239,7 +297,7 @@ const Checkout = () => {
                     </div>
                   ))}
                 </div>
-                {[['address_line1','Address Line 1 *','House number, building, street'],['address_line2','Address Line 2 (Optional)','Apartment, suite']].map(([name, label, placeholder]) => (
+                {[['address_line1', 'Address Line 1 *', 'House number, building, street'], ['address_line2', 'Address Line 2 (Optional)', 'Apartment, suite']].map(([name, label, placeholder]) => (
                   <div key={name}>
                     <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">{label}</label>
                     <input type="text" name={name} value={formData[name]} onChange={handleChange}
@@ -248,7 +306,7 @@ const Checkout = () => {
                   </div>
                 ))}
                 <div className="grid grid-cols-3 gap-2 md:gap-4">
-                  {[['city','City'],['state','State'],['pincode','Pincode']].map(([name, label]) => (
+                  {[['city', 'City'], ['state', 'State'], ['pincode', 'Pincode']].map(([name, label]) => (
                     <div key={name}>
                       <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">{label} *</label>
                       <input type="text" name={name} value={formData[name]} onChange={handleChange}

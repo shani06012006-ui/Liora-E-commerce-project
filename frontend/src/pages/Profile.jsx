@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
+import { getTokens, getCurrentUser } from '../utils/storage';
 import toast from 'react-hot-toast';
 import Sidebar from '../components/Sidebar';
 import { PencilIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, UserCircleIcon, CheckBadgeIcon, CalendarIcon } from '@heroicons/react/24/outline';
@@ -26,6 +27,13 @@ const Profile = () => {
     bio: '',
     location: '',
   });
+
+  // ✅ Check if user is authenticated
+  const isUserAuthenticated = () => {
+    const { accessToken } = getTokens();
+    const currentUser = getCurrentUser() || user;
+    return !!(accessToken && currentUser);
+  };
 
   useEffect(() => {
     if (user) {
@@ -63,9 +71,10 @@ const Profile = () => {
 
     try {
       const res = await authAPI.updateProfilePicture(formDataPic);
+      const { accessToken } = getTokens();
       dispatch(setCredentials({
         user: res.data,
-        access: localStorage.getItem('access_token'),
+        access: accessToken,
       }));
       toast.success('Profile picture updated!');
     } catch {
@@ -88,14 +97,17 @@ const Profile = () => {
       };
 
       const res = await authAPI.updateProfile(updateData);
+      const { accessToken } = getTokens();
 
+      // ✅ Update both localStorage and sessionStorage
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...currentUser, ...res.data };
       localStorage.setItem('user', JSON.stringify(updatedUser));
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
 
       dispatch(setCredentials({
         user: updatedUser,
-        access: localStorage.getItem('access_token'),
+        access: accessToken,
       }));
 
       toast.success('Profile updated successfully!');
@@ -107,13 +119,13 @@ const Profile = () => {
     }
   };
 
-  // ✅ Fixed: Use centralized getImageUrl for profile picture
   const getProfileImage = (userData) => {
     if (userData?.profile_pic_url) return userData.profile_pic_url;
     return null;
   };
 
-  if (!user) {
+
+  if (!isUserAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -125,6 +137,7 @@ const Profile = () => {
       </div>
     );
   }
+
 
   // Personal Detail Tab
   const renderPersonalDetail = () => (

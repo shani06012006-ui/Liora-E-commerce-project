@@ -59,8 +59,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'gurl_backend.middleware.KeepAdminSessionMiddleware',  
-
+    'gurl_backend.middleware.KeepAdminSessionMiddleware', 
+    'accounts.middleware.BlockedUserMiddleware',
+     
 ]
 
 ROOT_URLCONF = 'gurl_backend.urls'

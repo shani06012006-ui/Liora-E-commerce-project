@@ -46,12 +46,11 @@ const AdminUsers = () => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // Stats - FIXED: Use useMemo for thirtyDaysAgo as well
   const thirtyDaysAgo = useMemo(() => {
     const date = new Date();
     date.setDate(date.getDate() - 30);
     return date;
-  }, []); // Empty dependency array means this only runs once
+  }, []);
 
   const stats = useMemo(() => {
     const newCustomers = users.filter((u) => new Date(u.created_at) > thirtyDaysAgo);
@@ -105,6 +104,7 @@ const AdminUsers = () => {
   const formatDate = (value) =>
     value ? new Date(value).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
+  // ✅ Toggle block/unblock user
   const toggleBlock = async (userId, isBlocked) => {
     try {
       await adminAPI.toggleUserBlock(userId, isBlocked);
@@ -115,14 +115,22 @@ const AdminUsers = () => {
     }
   };
 
+  // ✅ Delete user - with confirmation
   const deleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this customer?')) return;
+    if (!window.confirm('⚠️ Are you sure you want to permanently delete this customer?\n\nThis action cannot be undone. All user data including orders, addresses, and wishlist will be permanently removed.')) {
+      return;
+    }
+    
+    setLoading(true);
     try {
-      await adminAPI.deleteUser(userId);
-      toast.success('Customer deleted successfully');
-      fetchUsers();
-    } catch {
-      toast.error('Failed to delete customer');
+      const response = await adminAPI.deleteUser(userId);
+      toast.success(response.data?.message || 'Customer deleted successfully');
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error(error.response?.data?.error || 'Failed to delete customer');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -267,7 +275,7 @@ const AdminUsers = () => {
                           <td className="px-6 py-4 text-sm text-gray-600">{formatDate(user.last_order_date)}</td>
                           <td className="px-6 py-4">
                             <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(user.is_blocked)}`}>
-                              {user.is_blocked ? 'Inactive' : 'Active'}
+                              {user.is_blocked ? 'Blocked' : 'Active'}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
@@ -429,7 +437,7 @@ const AdminUsers = () => {
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-sm text-gray-500">Status</p>
                   <span className={`inline-block px-3 py-1 text-sm font-medium rounded-full mt-1 ${getStatusColor(selectedUser.is_blocked)}`}>
-                    {selectedUser.is_blocked ? 'Inactive' : 'Active'}
+                    {selectedUser.is_blocked ? 'Blocked' : 'Active'}
                   </span>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-3">

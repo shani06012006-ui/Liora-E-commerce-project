@@ -1,9 +1,11 @@
 ﻿// frontend/src/App.jsx
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useSelector, useDispatch } from 'react-redux';
 import { Toaster } from 'react-hot-toast';
 import { store } from './redux/store';
+import { syncFromTab } from './redux/authSlice';
+import { setupTabSync, getCurrentUser, getTokens, isAuthenticated as checkAuth } from './utils/storage';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Footer from './components/Footer';
@@ -64,32 +66,40 @@ const ProfileLayout = ({ children }) => (
 
 const AppContent = () => {
   const { user, token } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('access_token');
-    const storedUser = localStorage.getItem('user');
-    
-    const hasReduxAuth = !!token && user;
-    const hasStorageAuth = !!(storedToken && storedUser && storedUser !== 'undefined' && storedUser !== 'null');
-    
-    const authStatus = hasReduxAuth || hasStorageAuth;
+    const authStatus = checkAuth();
     setIsAuthenticated(authStatus);
     
-    console.log('🔐 AppContent - isAuthenticated:', authStatus);
-    console.log('🔐 AppContent - Redux user:', user?.username || 'None');
-    console.log('🔐 AppContent - Storage user:', storedUser ? JSON.parse(storedUser)?.username : 'None');
-    
-    if (!hasReduxAuth && hasStorageAuth) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        console.log('🔄 Syncing user from localStorage:', parsedUser.username);
-
-      } catch (e) {
-        console.error('Error parsing stored user:', e);
-      }
-    }
+    console.log('AppContent - isAuthenticated:', authStatus);
+    console.log('AppContent - Current user:', getCurrentUser()?.username || 'None');
+    console.log('AppContent - Redux user:', user?.username || 'None');
   }, [user, token]);
+
+  useEffect(() => {
+    const cleanup = setupTabSync(() => {
+
+      const syncedUser = getCurrentUser();
+      const { accessToken } = getTokens();
+      
+      if (syncedUser && accessToken) {
+        console.log('Syncing from another tab:', syncedUser.username);
+        dispatch(syncFromTab({
+          user: syncedUser,
+          token: accessToken,
+        }));
+        setIsAuthenticated(true);
+      } else {
+        // Another tab logged out
+        console.log('Another tab logged out');
+        setIsAuthenticated(false);
+      }
+    });
+
+    return cleanup;
+  }, [dispatch]);
 
   return (
     <Routes>

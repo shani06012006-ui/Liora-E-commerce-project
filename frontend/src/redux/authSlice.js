@@ -1,17 +1,20 @@
 ﻿// frontend/src/redux/authSlice.js
 import { createSlice } from '@reduxjs/toolkit';
+import { getUser, getTokens, clearSession, setUser, setTokens } from '../utils/storage';
 
 const getUserFromStorage = () => {
-  try {
-    const stored = localStorage.getItem('user');
-    if (!stored || stored === 'undefined' || stored === 'null') return null;
-    return JSON.parse(stored);
-  } catch { return null; }
+  return getUser();
+};
+
+const getTokenFromStorage = () => {
+  const { accessToken } = getTokens();
+  return accessToken || null;
 };
 
 const initialState = {
   user: getUserFromStorage(),
-  token: localStorage.getItem('access_token') || null,
+  token: getTokenFromStorage(),
+  tabId: sessionStorage.getItem('tab_id') || `tab_${Date.now()}`,
 };
 
 const authSlice = createSlice({
@@ -19,21 +22,42 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user, access } = action.payload;
+      const { user, access, refresh } = action.payload;
+      
+      console.log(' setCredentials - User:', user?.username);
+      console.log(' setCredentials - Tab:', state.tabId);
+      
       state.user = user;
       state.token = access;
-      localStorage.setItem('access_token', access);
-      localStorage.setItem('user', JSON.stringify(user));
+      
+      setUser(user);
+      setTokens(access, refresh);
+      
+      localStorage.setItem('last_user', JSON.stringify(user));
+      localStorage.setItem('last_token', access);
     },
     logout: (state) => {
+      console.log('🚪 Logout - Tab:', state.tabId);
       state.user = null;
       state.token = null;
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      localStorage.removeItem('user');
+      clearSession();
+    },
+    updateUser: (state, action) => {
+      state.user = { ...state.user, ...action.payload };
+      setUser(state.user);
+    },
+    syncFromTab: (state, action) => {
+      // Sync from another tab
+      const { user, token } = action.payload;
+      if (user && token) {
+        state.user = user;
+        state.token = token;
+        setUser(user);
+        setTokens(token, null);
+      }
     },
   },
 });
 
-export const { setCredentials, logout } = authSlice.actions;
+export const { setCredentials, logout, updateUser, syncFromTab } = authSlice.actions;
 export default authSlice.reducer;

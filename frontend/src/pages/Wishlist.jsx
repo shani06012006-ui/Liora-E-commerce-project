@@ -5,28 +5,46 @@ import { useDispatch } from 'react-redux';
 import { HeartIcon, TrashIcon, ShoppingBagIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { wishlistAPI, cartAPI, getImageUrl } from '../services/api';
 import { refreshCart } from '../redux/cartUtils';
+import { getTokens, getCurrentUser } from '../utils/storage';
 import toast from 'react-hot-toast';
 
 const Wishlist = () => {
-  const navigate        = useNavigate();
-  const dispatch        = useDispatch();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [addingToCart,  setAddingToCart]  = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [addingToCart, setAddingToCart] = useState(null);
 
+  // ✅ Check if user is authenticated
+  const isUserAuthenticated = () => {
+    const { accessToken } = getTokens();
+    const currentUser = getCurrentUser();
+    return !!(accessToken && currentUser);
+  };
+
+  // ✅ Fetch wishlist items
   const fetchWishlist = async () => {
     try {
       const res = await wishlistAPI.getWishlist();
-      setWishlistItems(res.data);
+      setWishlistItems(res.data || []);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error fetching wishlist:', error);
+      if (error.response?.status === 401) {
+        navigate('/Login');
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
+  // ✅ Single useEffect for authentication and data fetching
   useEffect(() => {
+    if (!isUserAuthenticated()) {
+      navigate('/Login');
+      return;
+    }
     fetchWishlist();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const removeFromWishlist = async (id) => {
     try {
@@ -57,9 +75,10 @@ const Wishlist = () => {
     }
   };
 
+  // ✅ Fixed: Use getTokens() instead of localStorage
   const buyNow = (productId, wishlistId) => {
-    const token = localStorage.getItem('access_token');
-    if (!token) {
+    const { accessToken } = getTokens();
+    if (!accessToken) {
       toast.error('Please login to buy');
       navigate('/Login');
       return;

@@ -1,30 +1,21 @@
-﻿from django.contrib import admin
+﻿# backend/accounts/admin.py
+from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User
+from .models import User, OTPVerification, Address
 
+@admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'phone', 'role', 'is_blocked', 'created_at')
-    list_filter = ('role', 'is_blocked', 'is_active', 'created_at')
-    list_editable = ('is_blocked',)
-    search_fields = ('username', 'email', 'phone')
-    list_per_page = 20
+    list_display = ('username', 'email', 'full_name', 'role', 'is_active', 'is_blocked', 'is_deleted')
+    list_filter = ('role', 'is_active', 'is_blocked', 'is_deleted')
+    search_fields = ('username', 'email', 'full_name', 'phone')
+    ordering = ('-date_joined',)
     
     fieldsets = UserAdmin.fieldsets + (
-        ('Personal Information', {
-            'fields': ('phone', 'address', 'full_name', 'profile_pic')
-        }),
-        ('Account Status', {
-            'fields': ('role', 'is_blocked'),
-            'classes': ('wide',),
-        }),
-    )
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        ('Personal Information', {
-            'fields': ('phone', 'address', 'full_name')
-        }),
-        ('Account Type', {
-            'fields': ('role',),
+        ('Custom Fields', {
+            'fields': ('role', 'phone', 'address', 'is_blocked', 'is_deleted', 
+                      'full_name', 'bio', 'location', 'profile_pic'),
         }),
     )
 
-admin.site.register(User, CustomUserAdmin)
+admin.site.register(OTPVerification)
+admin.site.register(Address)

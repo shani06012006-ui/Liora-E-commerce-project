@@ -3,7 +3,7 @@ from django.urls import path
 from .views import (
     RegisterView, LoginView, UserProfileView, VerifyOTPView, 
     ResendOTPView, GoogleLoginView, AdminUserListView, AdminUserDetailView,
-    AddressListView, AddressDetailView, SetDefaultAddressView
+    AddressListView, AddressDetailView, SetDefaultAddressView , AdminUserCreateView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -25,5 +25,7 @@ urlpatterns = [
     
     # Admin User URLs
     path("admin/users/", AdminUserListView.as_view(), name="admin-users"),
+    path("admin/users/create/", AdminUserCreateView.as_view(), name="admin-user-create"),
     path("admin/users/<int:user_id>/", AdminUserDetailView.as_view(), name="admin-user-detail"),
+
 ]

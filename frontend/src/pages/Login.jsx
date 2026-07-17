@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { GoogleLogin } from '@react-oauth/google';
 import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
+import { setTokens, setUser, getTabId } from '../utils/storage';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
@@ -21,7 +22,12 @@ const Login = () => {
 
   useEffect(() => {
     if (searchParams.get('blocked') === 'true') {
-      toast.error('Your account has been blocked by the administrator.');
+      toast.error('Your account has been blocked by the administrator. Please contact support.', {
+        duration: 5000,
+      });
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
     }
   }, [searchParams]);
 
@@ -38,6 +44,12 @@ const Login = () => {
       const userData = response.data.user;
       const accessToken = response.data.access;
       const refreshToken = response.data.refresh;
+      
+      if (userData.is_blocked === true) {
+        toast.error('Your account has been blocked by the administrator. Please contact support.');
+        setLoading(false);
+        return;
+      }
       
       const fullUserData = {
         id: userData.id,
@@ -56,16 +68,20 @@ const Login = () => {
       dispatch(setCredentials({
         user: fullUserData,
         access: accessToken,
+        refresh: refreshToken,
       }));
       
-      localStorage.setItem('access_token', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('refresh_token', refreshToken);
-      }
-      localStorage.setItem('user', JSON.stringify(fullUserData));
+      setUser(fullUserData);
+      setTokens(accessToken, refreshToken);
       
-      console.log(' Logged in user:', fullUserData.username);
-      console.log(' User role:', fullUserData.role);
+      const tabId = getTabId();
+      console.log('Login - Tab ID:', tabId);
+      
+      localStorage.setItem('last_user', JSON.stringify(fullUserData));
+      localStorage.setItem('last_token', accessToken);
+      
+      console.log('Logged in user:', fullUserData.username);
+      console.log('User role:', fullUserData.role);
       
       toast.success(`Welcome back, ${fullUserData.full_name || fullUserData.username}!`);
       
@@ -78,16 +94,20 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error(
-        error.response?.data?.error ||
-        error.response?.data?.detail ||
-        'Invalid email or password.'
-      );
+      
+      if (error.response?.data?.error?.includes('blocked')) {
+        toast.error('Your account has been blocked by the administrator. Please contact support.');
+      } else {
+        toast.error(
+          error.response?.data?.error ||
+          error.response?.data?.detail ||
+          'Invalid email or password.'
+        );
+      }
     } finally {
       setLoading(false);
     }
   };
-
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
@@ -99,27 +119,52 @@ const Login = () => {
       const accessToken = res.data.access;
       const refreshToken = res.data.refresh;
       
+      const fullUserData = {
+        id: userData.id,
+        username: userData.username,
+        email: userData.email,
+        full_name: userData.full_name || userData.username,
+        role: userData.role || 'user',
+        is_staff: userData.is_staff || false,
+        is_active: userData.is_active || true,
+        is_blocked: userData.is_blocked || false,
+        phone: userData.phone || '',
+        address: userData.address || '',
+        profile_pic_url: userData.profile_pic_url || '',
+      };
+      
+      if (fullUserData.is_blocked === true) {
+        toast.error('Your account has been blocked by the administrator. Please contact support.');
+        return;
+      }
+      
       dispatch(setCredentials({
-        user: userData,
+        user: fullUserData,
         access: accessToken,
+        refresh: refreshToken,
       }));
       
-      localStorage.setItem('access_token', accessToken);
-      if (refreshToken) {
-        localStorage.setItem('refresh_token', refreshToken);
-      }
-      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(fullUserData);
+      setTokens(accessToken, refreshToken);
+      
+      const tabId = getTabId();
+      console.log('🔐 Google Login - Tab ID:', tabId);
+      
+      localStorage.setItem('last_user', JSON.stringify(fullUserData));
+      localStorage.setItem('last_token', accessToken);
       
       toast.success(
         res.data.created
-          ? `Welcome to Liora, ${userData?.username || 'User'}!`
-          : `Welcome back, ${userData?.username || 'User'}!`
+          ? `Welcome to Liora, ${fullUserData.full_name || fullUserData.username}!`
+          : `Welcome back, ${fullUserData.full_name || fullUserData.username}!`
       );
       
-      if (userData?.role === 'admin' || userData?.is_staff === true) {
-        navigate('/admin');
+      const isAdmin = fullUserData.role === 'admin' || fullUserData.is_staff === true;
+      
+      if (isAdmin) {
+        navigate('/admin/dashboard', { replace: true });
       } else {
-        navigate('/');
+        navigate('/', { replace: true });
       }
     } catch (error) {
       console.error('Google login error:', error);

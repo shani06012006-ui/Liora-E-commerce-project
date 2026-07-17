@@ -2,9 +2,13 @@
 import { useReducer, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { getCurrentUser, getTokens } from '../utils/storage';
 import {
-  ShoppingBagIcon, MagnifyingGlassIcon,
-  HeartIcon, XMarkIcon, Bars3Icon,
+  ShoppingBagIcon,
+  MagnifyingGlassIcon,
+  HeartIcon,
+  XMarkIcon,
+  Bars3Icon,
 } from '@heroicons/react/24/outline';
 import { cartAPI, wishlistAPI } from '../services/api';
 import { setCart } from '../redux/cartSlice';
@@ -31,21 +35,15 @@ const initialUI = {
 };
 
 const Navbar = () => {
-  const reduxDispatch  = useDispatch();
-  const navigate       = useNavigate();
-  const location       = useLocation();
+  const reduxDispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  // ✅ Get user from Redux store (not hardcoded)
   const { user: reduxUser } = useSelector((state) => state.auth);
-  const { items }           = useSelector((state) => state.cart);
+  const { items } = useSelector((state) => state.cart);
 
-  // ✅ Always use Redux user, fallback to localStorage only if Redux is empty
-  const currentUser = reduxUser ?? (() => {
-    const stored = localStorage.getItem('user');
-    if (!stored || stored === 'undefined' || stored === 'null') return null;
-    try { return JSON.parse(stored); } catch { return null; }
-  })();
+  const currentUser = reduxUser || getCurrentUser();
 
   const cartCount = items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
 
@@ -57,7 +55,8 @@ const Navbar = () => {
   const debounceRef  = useRef(null);
 
   const fetchCartCount = useCallback(async () => {
-    if (!localStorage.getItem('access_token')) return;
+    const { accessToken } = getTokens();
+    if (!accessToken) return;
     try {
       const res = await cartAPI.getCart();
       reduxDispatch(setCart(res.data));
@@ -65,7 +64,8 @@ const Navbar = () => {
   }, [reduxDispatch]);
 
   const fetchWishlistCount = useCallback(async () => {
-    if (!localStorage.getItem('access_token')) return;
+    const { accessToken } = getTokens();
+    if (!accessToken) return;
     try {
       const res = await wishlistAPI.getWishlist();
       uiDispatch({ type: 'SET_WISHLIST_COUNT', payload: res.data.length });
@@ -73,16 +73,17 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    if (!localStorage.getItem('access_token')) return;
+    const { accessToken } = getTokens();
+    if (!accessToken) return;
     fetchCartCount();
     fetchWishlistCount();
   }, [reduxUser, fetchCartCount, fetchWishlistCount]);
 
   useEffect(() => {
-    window.addEventListener('cartUpdated',     fetchCartCount);
+    window.addEventListener('cartUpdated', fetchCartCount);
     window.addEventListener('wishlistUpdated', fetchWishlistCount);
     return () => {
-      window.removeEventListener('cartUpdated',     fetchCartCount);
+      window.removeEventListener('cartUpdated', fetchCartCount);
       window.removeEventListener('wishlistUpdated', fetchWishlistCount);
     };
   }, [fetchCartCount, fetchWishlistCount]);
@@ -134,13 +135,11 @@ const Navbar = () => {
 
   const closeMobile = () => uiDispatch({ type: 'SET_MOBILE_MENU', payload: false });
 
-  // ✅ Get user's display name - FIXED
   const getUserDisplayName = () => {
     if (!currentUser) return 'Guest';
     return currentUser.full_name || currentUser.username || 'User';
   };
 
-  // ✅ Get user's initial for avatar
   const getUserInitial = () => {
     if (!currentUser) return 'U';
     const name = currentUser.full_name || currentUser.username || 'User';
@@ -221,7 +220,7 @@ const Navbar = () => {
                 </>
               )}
 
-              {/* User / Login - ✅ FIXED to show actual username */}
+              {/* User / Login - ✅ Shows actual username */}
               {currentUser ? (
                 <div className="relative" ref={dropdownRef}>
                   <button

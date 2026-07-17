@@ -11,6 +11,7 @@ from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer
 from .models import Address
 from .models import OTPVerification
 from .tasks import send_otp_email 
+from .permissions import IsNotBlocked
 
 try:
     from google.oauth2 import id_token
@@ -25,7 +26,7 @@ User = get_user_model()
 
 class AddressListView(APIView):
     """Get all addresses for the current user"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated , IsNotBlocked]
 
     def get(self, request):
         addresses = Address.objects.filter(user=request.user)
@@ -35,7 +36,7 @@ class AddressListView(APIView):
 
 class AddressDetailView(APIView):
     """Create, update, or delete a specific address"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated , IsNotBlocked]
 
     def get_object(self, address_id, user):
         try:
@@ -75,7 +76,6 @@ class AddressDetailView(APIView):
         if not address:
             return Response({"error": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
         
-        # If deleting the default address, set another address as default
         if address.is_default:
             next_address = Address.objects.filter(user=request.user).exclude(id=address_id).first()
             if next_address:
@@ -88,7 +88,7 @@ class AddressDetailView(APIView):
 
 class SetDefaultAddressView(APIView):
     """Set a specific address as default"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated , IsNotBlocked]
 
     def post(self, request, address_id):
         address = Address.objects.filter(id=address_id, user=request.user).first()
@@ -112,13 +112,48 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
+            email = serializer.validated_data.get('email')
+            username = serializer.validated_data.get('username')
+            
+            existing_user = User.objects.filter(email=email).first()
+            
+            if existing_user:
+                if existing_user.is_active and not existing_user.is_deleted:
+                    return Response(
+                        {"error": "An account with this email already exists. Please login."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                elif existing_user.is_deleted:
+                    existing_user.is_deleted = False
+                    existing_user.is_active = False
+                    existing_user.username = username
+                    existing_user.full_name = serializer.validated_data.get('full_name', '')
+                    existing_user.phone = serializer.validated_data.get('phone', '')
+                    existing_user.set_password(serializer.validated_data['password'])
+                    existing_user.save()
+                    
+                    otp_code = OTPVerification.generate_otp()
+                    OTPVerification.objects.create(user=existing_user, otp_code=otp_code)
+                    send_otp_email.delay(existing_user.email, otp_code, existing_user.username)
+                    
+                    return Response(
+                        {"message": "Account reactivated. OTP sent to your email."},
+                        status=status.HTTP_201_CREATED,
+                    )
+                else:
+                    otp_code = OTPVerification.generate_otp()
+                    OTPVerification.objects.create(user=existing_user, otp_code=otp_code)
+                    send_otp_email.delay(existing_user.email, otp_code, existing_user.username)
+                    
+                    return Response(
+                        {"message": "OTP resent to your email. Please verify."},
+                        status=status.HTTP_201_CREATED,
+                    )
+            
             user = serializer.save()
-            print(f"NEW USER REGISTERED WITH EMAIL: '{user.email}'")
             otp_code = OTPVerification.generate_otp()
             OTPVerification.objects.create(user=user, otp_code=otp_code)
-            
             send_otp_email.delay(user.email, otp_code, user.username)
-            print(f" OTP task queued for {user.email}")
             
             return Response(
                 {"message": "Registered successfully. OTP sent to your email."},
@@ -163,12 +198,25 @@ class LoginView(APIView):
                 {"error": "Email and password are required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        
         try:
             user_obj = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response(
                 {"error": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        if hasattr(user_obj, 'is_deleted') and user_obj.is_deleted:
+            return Response(
+                {"error": "This account has been deactivated. Please register again."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if hasattr(user_obj, 'is_blocked') and user_obj.is_blocked:
+            return Response(
+                {"error": "Your account has been blocked by the administrator. Please contact support."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         if not user_obj.is_active:
@@ -182,12 +230,6 @@ class LoginView(APIView):
             return Response(
                 {"error": "Invalid credentials."},
                 status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        if hasattr(user, 'is_blocked') and user.is_blocked:
-            return Response(
-                {"error": "Your account has been blocked by the administrator."},
-                status=status.HTTP_403_FORBIDDEN,
             )
 
         refresh = RefreshToken.for_user(user)
@@ -287,7 +329,7 @@ class GoogleLoginView(APIView):
 
 
 class UserProfileView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated , IsNotBlocked]
 
     def get(self, request):
         serializer = UserSerializer(request.user)
@@ -358,12 +400,14 @@ class VerifyOTPView(APIView):
             "id": user.id,
             "username": user.username,
             "email": user.email,
+            "full_name": getattr(user, 'full_name', user.username),
+            "role": getattr(user, 'role', 'user'),
             "is_staff": user.is_staff,
             "is_active": user.is_active,
-            "role": getattr(user, 'role', 'user'),
             "is_blocked": getattr(user, 'is_blocked', False),
-            "full_name": getattr(user, 'full_name', ''),
             "phone": getattr(user, 'phone', ''),
+            "address": getattr(user, 'address', ''),
+            "profile_pic_url": getattr(user, 'profile_pic', None) and user.profile_pic.url or '',
         }
 
         return Response(
@@ -377,20 +421,20 @@ class VerifyOTPView(APIView):
         )
 
 
-
 class AdminUserListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated , IsNotBlocked]
 
     def get(self, request):
         if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+        
         users = User.objects.all().order_by('-date_joined')
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
 
 class AdminUserDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated , IsNotBlocked]
 
     def get_object(self, user_id):
         try:
@@ -407,19 +451,15 @@ class AdminUserDetailView(APIView):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-          from orders.models import Order
-
-          orders = Order.objects.filter(user=user, status="delivered")
-          total_orders = orders.count()
-          total_spent = (
-             orders.aggregate(total=models.Sum("total_amount"))["total"] or 0
-             )
-          last_order = orders.order_by("-created_at").first()
-
+            from orders.models import Order
+            orders = Order.objects.filter(user=user, status='delivered')
+            total_orders = orders.count()
+            total_spent = orders.aggregate(total=models.Sum('total_amount'))['total'] or 0
+            last_order = orders.order_by('-created_at').first()
         except Exception:
-           total_orders = 0
-           total_spent = 0
-           last_order = None
+            total_orders = 0
+            total_spent = 0
+            last_order = None
 
         serializer = UserSerializer(user)
         data = serializer.data
@@ -437,13 +477,23 @@ class AdminUserDetailView(APIView):
         if not user:
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Handle is_blocked separately
         if 'is_blocked' in request.data:
             user.is_blocked = request.data['is_blocked']
             user.save()
             return Response({
                 "message": f"User {'blocked' if user.is_blocked else 'unblocked'}",
                 "is_blocked": user.is_blocked
+            })
+
+        if 'is_deleted' in request.data:
+            user.is_deleted = request.data['is_deleted']
+            if not user.is_deleted:
+                user.is_active = True
+            user.save()
+            return Response({
+                "message": f"User {'deactivated' if user.is_deleted else 'reactivated'}",
+                "is_deleted": user.is_deleted,
+                "is_active": user.is_active
             })
 
         serializer = UserSerializer(user, data=request.data, partial=True)
@@ -453,15 +503,79 @@ class AdminUserDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, user_id):
+        """Hard delete user - completely remove from database"""
+        try:
+            if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
+                return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
+            
+            user = self.get_object(user_id)
+            if not user:
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            
+            # Prevent admin from deleting themselves
+            if user.id == request.user.id:
+                return Response({"error": "Cannot delete your own account."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                # Delete addresses
+                from accounts.models import Address
+                Address.objects.filter(user=user).delete()
+                
+                # Delete orders and order items (cascade will handle)
+                from orders.models import Order, Cart
+                Order.objects.filter(user=user).delete()
+                Cart.objects.filter(user=user).delete()
+                
+                # Delete wishlist items
+                from wishlist.models import Wishlist
+                Wishlist.objects.filter(user=user).delete()
+                
+                OTPVerification.objects.filter(user=user).delete()
+                
+            except Exception as e:
+                print(f"Error deleting related data: {e}")
+            
+            username = user.username
+            email = user.email
+            user.delete()
+            
+            return Response({
+                "message": f"User '{username}' ({email}) deleted successfully.",
+                "deleted": True
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+
+class AdminUserCreateView(APIView):
+    permission_classes = [IsAuthenticated , IsNotBlocked]
+
+    def post(self, request):
         if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
             return Response({"error": "Access denied."}, status=status.HTTP_403_FORBIDDEN)
         
-        user = self.get_object(user_id)
-        if not user:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        data = request.data
+        email = data.get('email')
+        username = data.get('username')
         
-        if user.id == request.user.id:
-            return Response({"error": "Cannot delete your own account."}, status=status.HTTP_400_BAD_REQUEST)
+        # Check if user already exists
+        if User.objects.filter(email=email).exists():
+            return Response({"error": "A user with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(username=username).exists():
+            return Response({"error": "A user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
         
-        user.delete()
-        return Response({"message": "User deleted successfully."}, status=status.HTTP_200_OK)
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=data.get('password'),
+            full_name=data.get('full_name', ''),
+            phone=data.get('phone', ''),
+            role=data.get('role', 'user'),
+            is_active=True,
+        )
+        
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)        
+        

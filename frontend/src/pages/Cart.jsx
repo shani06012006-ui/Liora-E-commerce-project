@@ -4,12 +4,14 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { cartAPI, getImageUrl } from '../services/api';
 import { refreshCart } from '../redux/cartUtils';
+import { getTokens, getCurrentUser } from '../utils/storage';
 import toast from 'react-hot-toast';
 
 const Cart = () => {
   const { items, total } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.auth);
   const dispatch         = useDispatch();
-  const navigate         = useNavigate();
+  const navigate         = useNavigate();  
 
   const fetchCart = useCallback(() => { refreshCart(dispatch); }, [dispatch]);
   useEffect(() => { fetchCart(); }, [fetchCart]);
@@ -31,8 +33,27 @@ const Cart = () => {
     } catch { toast.error('Failed to remove'); }
   };
 
-  // ✅ Fixed: Use centralized getImageUrl
+  //Fixed: Use centralized getImageUrl
   const getProductImage = (product) => getImageUrl(product);
+
+  const isUserAuthenticated = () => {
+    const { accessToken } = getTokens();
+    const currentUser = getCurrentUser() || user;
+    return !!(accessToken && currentUser);
+  };  
+
+  if (!isUserAuthenticated()) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 md:py-20 text-center">
+        <div className="text-5xl mb-4">...</div>
+        <h2 className="text-xl md:text-2xl font-serif text-gray-900 mb-3">Please Login to View Cart</h2>
+        <p className="text-gray-500 text-sm mb-6">You need to be logged in to see your cart items</p>
+        <Link to="/Login" className="inline-block bg-gray-900 text-white px-6 py-3 rounded-lg text-sm hover:bg-gray-800 transition">
+          Login Now
+        </Link>
+      </div>
+    );
+  }
 
   if (!localStorage.getItem('access_token')) {
     return (

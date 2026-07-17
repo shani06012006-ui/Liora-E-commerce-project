@@ -5,7 +5,6 @@ import random
 from django.utils import timezone
 from datetime import timedelta
 
-
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('user', 'User'),
@@ -13,8 +12,9 @@ class User(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     phone = models.CharField(max_length=15, blank=True)
-    address = models.TextField(blank=True)  # This will be the default address
+    address = models.TextField(blank=True)
     is_blocked = models.BooleanField(default=False)
+    is_deleted = models.BooleanField(default=False)  # ✅ ADD THIS FIELD
     created_at = models.DateTimeField(auto_now_add=True)
     full_name = models.CharField(max_length=100, blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
@@ -52,6 +52,23 @@ class User(AbstractUser):
         return self.username
 
 
+class OTPVerification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otp")
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=5)
+
+    @staticmethod
+    def generate_otp():
+        return str(random.randint(100000, 999999))
+
+    def __str__(self):
+        return f"{self.user.username} - {self.otp_code}"
+
+
 class Address(models.Model):
     """User-specific addresses"""
     ADDRESS_TYPES = [
@@ -84,20 +101,3 @@ class Address(models.Model):
         if self.is_default:
             Address.objects.filter(user=self.user, is_default=True).exclude(pk=self.pk).update(is_default=False)
         super().save(*args, **kwargs)
-
-
-class OTPVerification(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otp")
-    otp_code = models.CharField(max_length=6)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_verified = models.BooleanField(default=False)
-
-    def is_expired(self):
-        return timezone.now() > self.created_at + timedelta(minutes=5)
-
-    @staticmethod
-    def generate_otp():
-        return str(random.randint(100000, 999999))
-
-    def __str__(self):
-        return f"{self.user.username} - {self.otp_code}"
