@@ -186,6 +186,11 @@ export const adminAPI = {
   deletePaymentMethod: (id) => del(`/admin/payments/methods/${id}/`),
   getTransactions: (params) => get("/admin/payments/transactions/", params),
   getRefunds: (params) => get("/admin/payments/refunds/", params),
+  getNotifications: () => get("/admin/notifications/"),
+  markNotificationRead: (id) => patch(`/admin/notifications/${id}/`),
+  markAllNotificationsRead: () => post("/admin/notifications/mark-all-read/"),
+  deleteNotification: (id) => del(`/admin/notifications/${id}/`),  
+
 };
 
 export default API;

@@ -1,4 +1,5 @@
-﻿import { configureStore } from '@reduxjs/toolkit';
+﻿// frontend/src/redux/store.js
+import { configureStore } from '@reduxjs/toolkit';
 import cartReducer from './cartSlice';
 import authReducer from './authSlice';
 
@@ -7,4 +8,10 @@ export const store = configureStore({
     cart: cartReducer,
     auth: authReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
+
+export default store;

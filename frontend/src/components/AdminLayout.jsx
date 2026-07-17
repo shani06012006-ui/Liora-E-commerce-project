@@ -1,8 +1,9 @@
 // frontend/src/components/AdminLayout.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { FiMenu, FiSearch, FiBell, FiChevronDown, FiChevronRight, FiHome, FiShoppingCart, FiBox, FiUsers, FiStar, FiSettings, FiHeadphones, FiLogOut, FiBarChart2, FiCreditCard } from 'react-icons/fi';
+import { FiMenu, FiSearch, FiChevronDown, FiChevronRight, FiHome, FiShoppingCart, FiBox, FiUsers, FiStar, FiSettings, FiHeadphones, FiLogOut, FiBarChart2, FiCreditCard } from 'react-icons/fi';
+import NotificationBell from './NotificationBell';
 import './AdminLayout.css';
 
 const analyticsSubItems = [
@@ -36,22 +37,15 @@ const AdminLayout = ({ title, subtitle, children }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-
-  // ✅ Get user from Redux
   const { user } = useSelector((state) => state.auth);
 
-  // ✅ Use actual user data
   const admin = {
     name: user?.full_name || user?.username || 'Admin',
     role: user?.role === 'admin' || user?.is_staff ? 'Super Admin' : 'Admin',
     avatarUrl: user?.profile_pic_url || null,
   };
 
-  // ✅ Log to verify
-  console.log('🔍 AdminLayout - Current user:', admin.name);
-  console.log('🔍 AdminLayout - User role:', admin.role);
-
-  const notificationCount = 3;
+  // ✅ Removed unused notificationCount
 
   const [openGroups, setOpenGroups] = useState(() => {
     const initial = {};
@@ -64,6 +58,18 @@ const AdminLayout = ({ title, subtitle, children }) => {
     });
     return initial;
   });
+
+  useEffect(() => {
+    const newOpenGroups = {};
+    navItems.forEach((item) => {
+      if (item.children) {
+        newOpenGroups[item.label] =
+          item.path === location.pathname ||
+          item.children.some((c) => c.path === location.pathname);
+      }
+    });
+    setOpenGroups(prev => ({ ...prev, ...newOpenGroups }));
+  }, [location.pathname]);
 
   const toggleGroup = (label) => {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -170,12 +176,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
               <input type="text" placeholder="Search anything..." />
             </div>
 
-            <button className="header-icon-btn" aria-label="Notifications">
-              <FiBell size={20} />
-              {notificationCount > 0 && (
-                <span className="header-badge">{notificationCount}</span>
-              )}
-            </button>
+            <NotificationBell />
 
             <div className="header-user" onClick={() => setUserMenuOpen((o) => !o)}>
               <div className="header-avatar">
