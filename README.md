@@ -2,8 +2,6 @@
 
 A complete full-stack e-commerce platform for women's fashion built with **React** and **Django REST Framework**.
 
-## 📋 Features
-
 ### User Features
 - 🔐 **Authentication** - Register, Login, Logout with JWT tokens
 - 👤 **Profile Management** - Update personal info, upload profile picture
@@ -20,7 +18,7 @@ A complete full-stack e-commerce platform for women's fashion built with **React
 - 👥 **User Management** - View all users, block/unblock accounts
 - 📝 **Order Management** - Update order status (pending → confirmed → shipped → delivered)
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stacks
 
 ### Frontend
 - React 18
@@ -39,3 +37,7 @@ A complete full-stack e-commerce platform for women's fashion built with **React
 - Django CORS Headers
 - Pillow (Image processing)
 
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to fork this repository, create a feature branch, and submit a pull request.
