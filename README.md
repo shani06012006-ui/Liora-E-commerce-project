@@ -1,4 +1,4 @@
-# GURL - Women's Fashion E-Commerce Website
+# LIORA - Women's Fashion E-Commerce Website
 
 A complete full-stack e-commerce platform for women's fashion built with **React** and **Django REST Framework**.
 
