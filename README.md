@@ -1,10 +1,6 @@
-# 👗 GURL - Women's Fashion E-Commerce Website
+# GURL - Women's Fashion E-Commerce Website
 
 A complete full-stack e-commerce platform for women's fashion built with **React** and **Django REST Framework**.
-
-## 🚀 Live Demo
-
-[Add your demo video link here]
 
 ## 📋 Features
 
@@ -43,4 +39,3 @@ A complete full-stack e-commerce platform for women's fashion built with **React
 - Django CORS Headers
 - Pillow (Image processing)
 
-## 📁 Project Structure
