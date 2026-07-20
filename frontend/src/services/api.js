@@ -91,12 +91,12 @@ API.interceptors.response.use(
 );
  
 const get = (url, params) => API.get(url, { params });
-const post = (url, data) => API.post(url, data);
+const post = (url, data, config = {}) => API.post(url, data, config);
 const put = (url, data, config = {}) => API.put(url, data, config);
-const patch = (url, data) => API.patch(url, data);
+const patch = (url, data, config = {}) => API.patch(url, data, config);
 const del = (url) => API.delete(url);
+const isFormData = (data) => typeof FormData !== 'undefined' && data instanceof FormData;
  
-// ✅ AUTH APIs - All use the same API instance
 export const authAPI = {
   register: (data) => post("/register/", data),
   login: (data) => post("/Login/", data),
@@ -116,7 +116,7 @@ export const authAPI = {
   setDefaultAddress: (id) => post(`/addresses/${id}/set-default/`),
 };
  
-// ✅ PRODUCT APIs
+// PRODUCT APIs
 export const productAPI = {
   getAll: (params) => get("/products/", params),
   getById: (id) => get(`/products/${id}/`),
@@ -124,7 +124,7 @@ export const productAPI = {
   search: (search) => get("/products/", { search }),
 };
  
-// ✅ CART APIs
+// CART APIs
 export const cartAPI = {
   getCart: () => get("/cart/"),
   addToCart: (data) => post("/cart/", data),
@@ -132,7 +132,7 @@ export const cartAPI = {
   removeItem: (id) => del(`/cart/${id}/`),
 };
  
-// ✅ ORDER APIs
+// ORDER APIs
 export const orderAPI = {
   checkout: (data) => post("/checkout/", data),
   getOrders: () => get("/orders/"),
@@ -158,8 +158,10 @@ export const reviewAPI = {
 export const adminAPI = {
   getDashboardStats: (params) => get("/admin/dashboard/stats/", params),
   getProducts: () => get("/admin/products/"),
-  createProduct: (data) => post("/admin/products/", data),
-  updateProduct: (id, data) => patch(`/admin/products/${id}/`, data),
+  createProduct: (data) =>
+    post("/admin/products/", data, isFormData(data) ? { headers: { "Content-Type": "multipart/form-data" } } : {}),
+  updateProduct: (id, data) =>
+    patch(`/admin/products/${id}/`, data, isFormData(data) ? { headers: { "Content-Type": "multipart/form-data" } } : {}),
   deleteProduct: (id) => del(`/admin/products/${id}/`),
   getCategories: () => get("/admin/categories/"),
   createCategory: (data) => post("/admin/categories/", data),

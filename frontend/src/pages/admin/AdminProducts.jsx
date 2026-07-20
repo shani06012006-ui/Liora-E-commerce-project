@@ -8,9 +8,26 @@ import {
   FiDownload, FiCheckSquare, FiSquare
 } from 'react-icons/fi';
  
+// Must match backend Product.CATEGORY_CHOICES exactly (products/models.py)
+const CATEGORY_OPTIONS = [
+  { value: 'collections', label: 'Collections' },
+  { value: 'casual', label: 'Casual Wear' },
+  { value: 'party', label: 'Party Wear' },
+  { value: 'office', label: 'Office Wear' },
+  { value: 'aesthetic', label: 'Aesthetic' },
+];
+ 
+// Must match backend Product.STYLE_CHOICES exactly (products/models.py)
+const STYLE_OPTIONS = [
+  { value: 'casual', label: 'Casual' },
+  { value: 'party', label: 'Party' },
+  { value: 'office', label: 'Office' },
+  { value: 'aesthetic', label: 'Aesthetic' },
+];
+ 
 const EMPTY_FORM = {
   name: '', description: '', price: '', original_price: '',
-  stock: '', category: '', style: '', discount: '',
+  stock: '', category: 'collections', style: '', discount: '',
   is_new_arrival: false, is_best_seller: false, is_on_sale: false, image_url: '',
 };
  
@@ -20,6 +37,8 @@ const AdminProducts = () => {
   const [showForm, setShowForm] = useState(false);
   const [editProduct, setEdit] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8);
@@ -59,6 +78,8 @@ const AdminProducts = () => {
     const handleOpenAdd = () => {
       setEdit(null);
       setForm(EMPTY_FORM);
+      setImageFile(null);
+      setImagePreview('');
       setShowForm(true);
     };
     document.addEventListener('openAddProductModal', handleOpenAdd);
@@ -69,23 +90,54 @@ const AdminProducts = () => {
   const openEdit = (product) => {
     setEdit(product);
     setForm({ ...EMPTY_FORM, ...product });
+    setImageFile(null);
+    setImagePreview(getImageUrl(product));
     setShowForm(true);
+  };
+ 
+  const handleImageFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      let payload = form;
+ 
+      // If an image file was chosen, send multipart/form-data so the
+      // backend's ImageField (products/models.py -> image) receives it.
+      if (imageFile) {
+        const fd = new FormData();
+        Object.entries(form).forEach(([key, value]) => {
+          if (value === null || value === undefined) return;
+          fd.append(key, value);
+        });
+        fd.append('image', imageFile);
+        payload = fd;
+      }
+ 
       if (editProduct) {
-        await adminAPI.updateProduct(editProduct.id, form);
+        await adminAPI.updateProduct(editProduct.id, payload);
         toast.success('Product updated!');
       } else {
-        await adminAPI.createProduct(form);
+        await adminAPI.createProduct(payload);
         toast.success('Product created!');
       }
       setShowForm(false);
+      setImageFile(null);
+      setImagePreview('');
       fetchProducts();
-    } catch {
-      toast.error('Failed to save product');
+    } catch (err) {
+      const backendError = err?.response?.data;
+      const firstError = backendError && typeof backendError === 'object'
+        ? Object.values(backendError)[0]
+        : null;
+      toast.error(
+        (Array.isArray(firstError) ? firstError[0] : firstError) || 'Failed to save product'
+      );
     }
   };
  
@@ -167,6 +219,9 @@ const AdminProducts = () => {
     if (stock > 0) return { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Low Stock', dot: 'bg-yellow-500' };
     return { bg: 'bg-red-100', text: 'text-red-700', label: 'Out of Stock', dot: 'bg-red-500' };
   };
+ 
+  const getCategoryLabel = (value) =>
+    CATEGORY_OPTIONS.find((opt) => opt.value === value)?.label || value || '-';
  
   return (
     <AdminLayout title="Products">
@@ -346,7 +401,7 @@ const AdminProducts = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{product.category || '-'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{getCategoryLabel(product.category)}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">₹{product.price}</div>
                           {product.original_price && product.original_price > product.price && (
@@ -491,27 +546,106 @@ const AdminProducts = () => {
                 </button>
               </div>
               <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                    required
+                  />
+                </div>
+ 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                    required
+                  >
+                    {CATEGORY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+ 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Style <span className="text-gray-400 font-normal">(shown under Collections)</span>
+                  </label>
+                  <select
+                    value={form.style}
+                    onChange={(e) => setForm({ ...form, style: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                  >
+                    <option value="">— None —</option>
+                    {STYLE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+ 
                 {[
-                  ['name', 'Product Name', 'text', true],
-                  ['category', 'Category', 'text', false],
-                  ['style', 'Style', 'text', false],
-                  ['price', 'Price (₹)', 'number', false],
-                  ['original_price', 'Original Price (₹)', 'number', false],
-                  ['discount', 'Discount (%)', 'number', false],
-                  ['stock', 'Stock', 'number', false],
-                  ['image_url', 'Image URL', 'text', false],
-                ].map(([key, label, type, fullWidth]) => (
-                  <div key={key} className={fullWidth || key === 'image_url' ? 'col-span-2' : ''}>
+                  ['price', 'Price (₹)', 'number'],
+                  ['original_price', 'Original Price (₹)', 'number'],
+                  ['discount', 'Discount (%)', 'number'],
+                  ['stock', 'Stock', 'number'],
+                ].map(([key, label, type]) => (
+                  <div key={key}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
                     <input
                       type={type}
                       value={form[key]}
                       onChange={(e) => setForm({ ...form, [key]: type === 'number' ? Number(e.target.value) : e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
-                      required={['name', 'price', 'stock'].includes(key)}
+                      required={['price', 'stock'].includes(key)}
                     />
                   </div>
                 ))}
+ 
+                {/* Image: URL or file upload, either works, uploaded file wins if both set */}
+                <div className="col-span-2 border border-gray-200 rounded-lg p-4 space-y-3">
+                  <p className="text-sm font-medium text-gray-700">Product Image</p>
+ 
+                  <div className="flex items-start gap-4">
+                    <div className="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      {imagePreview ? (
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-xs text-gray-400">No image</span>
+                      )}
+                    </div>
+ 
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Image URL</label>
+                        <input
+                          type="text"
+                          placeholder="https://example.com/image.jpg"
+                          value={form.image_url}
+                          onChange={(e) => {
+                            setForm({ ...form, image_url: e.target.value });
+                            if (!imageFile) setImagePreview(e.target.value);
+                          }}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-500 mb-1">
+                          Or upload an image file
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageFileChange}
+                          className="w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-medium file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
  
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
