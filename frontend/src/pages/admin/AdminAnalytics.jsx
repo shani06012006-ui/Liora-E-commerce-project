@@ -112,21 +112,18 @@ const SalesReport = () => {
         <StatsCard 
           title="Total Sales" 
           value={`$${totalSales.toLocaleString()}`} 
-          change="+12.5%" 
           icon={FiDollarSign} 
           color="green" 
         />
         <StatsCard 
           title="Total Orders" 
           value={totalOrders.toLocaleString()} 
-          change="+8.3%" 
           icon={FiShoppingCart} 
           color="blue" 
         />
         <StatsCard 
           title="Avg Order Value" 
           value={`$${avgOrderValue.toFixed(2)}`} 
-          change="+4.2%" 
           icon={FiBarChart2} 
           color="purple" 
         />
@@ -248,10 +245,10 @@ const RevenueReport = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} change="+15.2%" icon={FiDollarSign} color="green" />
-        <StatsCard title="Total Profit" value={`$${totalProfit.toLocaleString()}`} change="+18.7%" icon={FiTrendingUp} color="blue" />
-        <StatsCard title="Total Cost" value={`$${totalCost.toLocaleString()}`} change="+10.3%" icon={FiPackage} color="yellow" />
-        <StatsCard title="Profit Margin" value={`${profitMargin.toFixed(1)}%`} change="+3.5%" icon={FiPieChart} color="purple" />
+        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={FiDollarSign} color="green" />
+        <StatsCard title="Total Profit" value={`$${totalProfit.toLocaleString()}`} icon={FiTrendingUp} color="blue" />
+        <StatsCard title="Total Cost" value={`$${totalCost.toLocaleString()}`} icon={FiPackage} color="yellow" />
+        <StatsCard title="Profit Margin" value={`${profitMargin.toFixed(1)}%`} icon={FiPieChart} color="purple" />
       </div>
  
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -371,10 +368,10 @@ const CustomerReport = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <StatsCard title="Total Customers" value={totalCustomers.toLocaleString()} change="+5.7%" icon={FiUsers} color="blue" />
-        <StatsCard title="Total Orders" value={totalOrders.toLocaleString()} change="+12.3%" icon={FiShoppingCart} color="green" />
-        <StatsCard title="Total Spent" value={`$${totalSpent.toLocaleString()}`} change="+14.1%" icon={FiDollarSign} color="purple" />
-        <StatsCard title="Avg Spent" value={`$${avgSpent.toFixed(2)}`} change="+7.9%" icon={FiBarChart2} color="indigo" />
+        <StatsCard title="Total Customers" value={totalCustomers.toLocaleString()} icon={FiUsers} color="blue" />
+        <StatsCard title="Total Orders" value={totalOrders.toLocaleString()} icon={FiShoppingCart} color="green" />
+        <StatsCard title="Total Spent" value={`$${totalSpent.toLocaleString()}`} icon={FiDollarSign} color="purple" />
+        <StatsCard title="Avg Spent" value={`$${avgSpent.toFixed(2)}`} icon={FiBarChart2} color="indigo" />
       </div>
  
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -511,9 +508,9 @@ const ProductPerformance = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} change="+18.5%" icon={FiDollarSign} color="green" />
-        <StatsCard title="Total Sales" value={totalSales.toLocaleString()} change="+10.2%" icon={FiShoppingCart} color="blue" />
-        <StatsCard title="Total Profit" value={`$${totalProfit.toLocaleString()}`} change="+16.7%" icon={FiTrendingUp} color="purple" />
+        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={FiDollarSign} color="green" />
+        <StatsCard title="Total Sales" value={totalSales.toLocaleString()}  icon={FiShoppingCart} color="blue" />
+        <StatsCard title="Total Profit" value={`$${totalProfit.toLocaleString()}`} icon={FiTrendingUp} color="purple" />
       </div>
  
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

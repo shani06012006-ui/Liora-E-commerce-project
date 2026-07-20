@@ -288,19 +288,6 @@ const AdminOrders = () => {
           </div>
         </div>
  
-        {/* Revenue Card */}
-        <div className="bg-gradient-to-r from-gray-900 to-gray-700 rounded-xl p-4 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm opacity-75">Total Revenue</p>
-              <p className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs opacity-75">{orders.length} orders</span>
-            </div>
-          </div>
-        </div>
- 
         {/* Search and Filter */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex flex-wrap items-center gap-4">

@@ -35,8 +35,10 @@ const AdminCategories = () => {
         await adminAPI.createCategory(form);
         toast.success('Category created!');
       }
+      await fetchCategories();
       setShowForm(false);
-      fetchCategories();
+      setEditCategory(null);
+      setForm({name: "" , description: "" ,});
     } catch {
       toast.error('Failed to save category');
     }
@@ -46,8 +48,8 @@ const AdminCategories = () => {
     if (!window.confirm('Delete this category?')) return;
     try {
       await adminAPI.deleteCategory(id);
+      await fetchCategories();
       toast.success('Category deleted');
-      fetchCategories();
     } catch {
       toast.error('Failed to delete category');
     }

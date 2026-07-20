@@ -43,9 +43,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
     role: user?.role === 'admin' || user?.is_staff ? 'Super Admin' : 'Admin',
     avatarUrl: user?.profile_pic_url || null,
   };
- 
-  // ✅ Removed unused notificationCount
- 
+  
   const [openGroups, setOpenGroups] = useState(() => {
     const initial = {};
     navItems.forEach((item) => {
