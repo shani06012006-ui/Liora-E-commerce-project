@@ -4,7 +4,7 @@ import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
 import { adminAPI } from '../../services/api';
 import { FiSearch, FiStar, FiTrash2, FiEye, FiEyeOff, FiCheckCircle, FiXCircle, FiClock, FiChevronLeft, FiChevronRight, FiFilter, FiRefreshCw, FiTrendingUp, FiMessageSquare, FiUser, FiPackage, FiCalendar } from 'react-icons/fi';
-
+ 
 const StarIcon = ({ className }) => (
   <svg 
     className={className} 
@@ -15,7 +15,7 @@ const StarIcon = ({ className }) => (
     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
   </svg>
 );
-
+ 
 const StatCard = ({ title, value, icon: Icon, color, change }) => {
   const colors = {
     blue: 'bg-blue-50 text-blue-600',
@@ -25,7 +25,7 @@ const StatCard = ({ title, value, icon: Icon, color, change }) => {
     red: 'bg-red-50 text-red-600',
     indigo: 'bg-indigo-50 text-indigo-600',
   };
-
+ 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
       <div className="flex items-center justify-between">
@@ -46,7 +46,7 @@ const StatCard = ({ title, value, icon: Icon, color, change }) => {
     </div>
   );
 };
-
+ 
 const AdminReviews = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +62,7 @@ const AdminReviews = () => {
   });
   const [selectedReview, setSelectedReview] = useState(null);
   const [showReviewDetail, setShowReviewDetail] = useState(false);
-
+ 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
@@ -76,11 +76,11 @@ const AdminReviews = () => {
       setLoading(false);
     }
   }, []);
-
+ 
   useEffect(() => {
     fetchReviews();
   }, [fetchReviews]);
-
+ 
   // Stats
   const stats = useMemo(() => {
     const total = reviews.length;
@@ -90,7 +90,7 @@ const AdminReviews = () => {
     const avgRating = reviews.length > 0 
       ? (reviews.reduce((sum, r) => sum + (r.rating || 0), 0) / reviews.length) 
       : 0;
-
+ 
     return {
       total,
       pending,
@@ -99,11 +99,11 @@ const AdminReviews = () => {
       avgRating: avgRating.toFixed(1),
     };
   }, [reviews]);
-
+ 
   // Filter reviews
   const filteredReviews = useMemo(() => {
     let result = [...reviews];
-
+ 
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -114,11 +114,11 @@ const AdminReviews = () => {
           (r.title || '').toLowerCase().includes(q)
       );
     }
-
+ 
     if (filters.rating !== 'all') {
       result = result.filter((r) => (r.rating || 0) === parseInt(filters.rating));
     }
-
+ 
     if (filters.status === 'approved') {
       result = result.filter((r) => r.is_approved && !r.is_hidden);
     } else if (filters.status === 'pending') {
@@ -126,13 +126,13 @@ const AdminReviews = () => {
     } else if (filters.status === 'hidden') {
       result = result.filter((r) => r.is_hidden);
     }
-
+ 
     if (filters.verified === 'verified') {
       result = result.filter((r) => r.is_verified_purchase);
     } else if (filters.verified === 'unverified') {
       result = result.filter((r) => !r.is_verified_purchase);
     }
-
+ 
     if (filters.dateRange !== 'all') {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -140,7 +140,7 @@ const AdminReviews = () => {
       weekAgo.setDate(weekAgo.getDate() - 7);
       const monthAgo = new Date(today);
       monthAgo.setDate(monthAgo.getDate() - 30);
-
+ 
       const cutoffs = {
         today: today,
         week: weekAgo,
@@ -151,23 +151,23 @@ const AdminReviews = () => {
         result = result.filter((r) => new Date(r.created_at) >= cutoff);
       }
     }
-
+ 
     result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
+ 
     return result;
   }, [reviews, search, filters]);
-
+ 
   // Pagination
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = filteredReviews.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.max(1, Math.ceil(filteredReviews.length / itemsPerPage));
-
+ 
   const updateFilter = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1);
   };
-
+ 
   const clearFilters = () => {
     setFilters({
       rating: 'all',
@@ -178,7 +178,7 @@ const AdminReviews = () => {
     setSearch('');
     setCurrentPage(1);
   };
-
+ 
   const toggleApprove = async (reviewId, isApproved) => {
     try {
       await adminAPI.updateReview(reviewId, { is_approved: !isApproved });
@@ -189,7 +189,7 @@ const AdminReviews = () => {
       console.error('Error updating review:', error);
     }
   };
-
+ 
   const toggleHide = async (reviewId, isHidden) => {
     try {
       await adminAPI.updateReview(reviewId, { is_hidden: !isHidden });
@@ -200,7 +200,7 @@ const AdminReviews = () => {
       console.error('Error updating review:', error);
     }
   };
-
+ 
   const deleteReview = async (reviewId) => {
     if (!window.confirm('Are you sure you want to delete this review?')) return;
     try {
@@ -212,7 +212,7 @@ const AdminReviews = () => {
       console.error('Error deleting review:', error);
     }
   };
-
+ 
   const getStatusBadge = (review) => {
     if (review.is_hidden) {
       return { label: 'Hidden', color: 'bg-red-100 text-red-700', icon: FiEyeOff };
@@ -222,7 +222,7 @@ const AdminReviews = () => {
     }
     return { label: 'Pending', color: 'bg-yellow-100 text-yellow-700', icon: FiClock };
   };
-
+ 
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <StarIcon 
@@ -231,7 +231,7 @@ const AdminReviews = () => {
       />
     ));
   };
-
+ 
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.rating !== 'all') count++;
@@ -241,7 +241,7 @@ const AdminReviews = () => {
     if (search) count++;
     return count;
   }, [filters, search]);
-
+ 
   return (
     <AdminLayout title="Reviews">
       <div className="p-6 space-y-6">
@@ -273,7 +273,7 @@ const AdminReviews = () => {
             </button>
           </div>
         </div>
-
+ 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard 
@@ -312,7 +312,7 @@ const AdminReviews = () => {
             change="+0.3" 
           />
         </div>
-
+ 
         {/* Search and Filters */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200">
@@ -342,7 +342,7 @@ const AdminReviews = () => {
               </div>
             </div>
           </div>
-
+ 
           {showFilters && (
             <div className="p-4 bg-gray-50 border-b border-gray-200">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -366,7 +366,7 @@ const AdminReviews = () => {
                     <option value="1">1 Star</option>
                   </select>
                 </div>
-
+ 
                 <div>
                   <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
                     <span className="flex items-center gap-1">
@@ -385,7 +385,7 @@ const AdminReviews = () => {
                     <option value="hidden">Hidden</option>
                   </select>
                 </div>
-
+ 
                 <div>
                   <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
                     <span className="flex items-center gap-1">
@@ -404,7 +404,7 @@ const AdminReviews = () => {
                     <option value="month">This Month</option>
                   </select>
                 </div>
-
+ 
                 <div>
                   <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
                     <span className="flex items-center gap-1">
@@ -426,7 +426,7 @@ const AdminReviews = () => {
             </div>
           )}
         </div>
-
+ 
         {/* Reviews Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
@@ -561,14 +561,14 @@ const AdminReviews = () => {
                   </tbody>
                 </table>
               </div>
-
+ 
               {/* Pagination */}
               {filteredReviews.length > 0 && (
                 <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <p className="text-sm text-gray-500">
                     Showing {indexOfFirst + 1} to {Math.min(indexOfLast, filteredReviews.length)} of {filteredReviews.length} reviews
                   </p>
-
+ 
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">Show</span>
@@ -587,7 +587,7 @@ const AdminReviews = () => {
                       </select>
                       <span className="text-sm text-gray-500">/ page</span>
                     </div>
-
+ 
                     <div className="flex items-center space-x-1">
                       <button
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -596,7 +596,7 @@ const AdminReviews = () => {
                       >
                         <FiChevronLeft size={18} />
                       </button>
-
+ 
                       {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         let pageNum;
                         if (totalPages <= 5) {
@@ -608,7 +608,7 @@ const AdminReviews = () => {
                         } else {
                           pageNum = currentPage - 2 + i;
                         }
-
+ 
                         return (
                           <button
                             key={i}
@@ -621,7 +621,7 @@ const AdminReviews = () => {
                           </button>
                         );
                       })}
-
+ 
                       {totalPages > 5 && currentPage < totalPages - 2 && (
                         <>
                           <span className="text-gray-400">...</span>
@@ -633,7 +633,7 @@ const AdminReviews = () => {
                           </button>
                         </>
                       )}
-
+ 
                       <button
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
@@ -649,7 +649,7 @@ const AdminReviews = () => {
           )}
         </div>
       </div>
-
+ 
       {/* Review Detail Modal */}
       {showReviewDetail && selectedReview && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -660,7 +660,7 @@ const AdminReviews = () => {
                 <FiXCircle size={24} className="text-gray-400" />
               </button>
             </div>
-
+ 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -674,7 +674,7 @@ const AdminReviews = () => {
                   {getStatusBadge(selectedReview).label}
                 </span>
               </div>
-
+ 
               <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
                 <div>
                   <p className="text-sm text-gray-500">Customer</p>
@@ -703,14 +703,14 @@ const AdminReviews = () => {
                   </span>
                 </div>
               </div>
-
+ 
               <div>
                 <p className="text-sm text-gray-500 mb-2">Review Comment</p>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <p className="text-gray-800 whitespace-pre-wrap">{selectedReview.comment || 'No comment'}</p>
                 </div>
               </div>
-
+ 
               <div className="border-t pt-4 flex flex-wrap gap-3">
                 {!selectedReview.is_approved && !selectedReview.is_hidden && (
                   <button
@@ -760,5 +760,5 @@ const AdminReviews = () => {
     </AdminLayout>
   );
 };
-
+ 
 export default AdminReviews;

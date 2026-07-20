@@ -4,7 +4,7 @@ import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
 import { adminAPI } from '../../services/api';
 import { FiSearch, FiEye, FiTrash2, FiChevronLeft, FiChevronRight, FiXCircle, FiPrinter, FiRefreshCw, FiShoppingBag, FiDownload } from 'react-icons/fi';
-
+ 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showOrderDetail, setShowOrderDetail] = useState(false);
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
-
+ 
   const statusOptions = [
     { value: 'pending', label: 'Pending', color: 'bg-yellow-100 text-yellow-700' },
     { value: 'confirmed', label: 'Confirmed', color: 'bg-blue-100 text-blue-700' },
@@ -24,12 +24,12 @@ const AdminOrders = () => {
     { value: 'delivered', label: 'Delivered', color: 'bg-green-100 text-green-700' },
     { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-700' },
   ];
-
+ 
   const getStatusColor = (status) => {
     const found = statusOptions.find(s => s.value === status);
     return found ? found.color : 'bg-gray-100 text-gray-700';
   };
-
+ 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
@@ -46,11 +46,11 @@ const AdminOrders = () => {
       setLoading(false);
     }
   }, [search, statusFilter]);
-
+ 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
-
+ 
   const updateStatus = async (orderId, newStatus) => {
     setUpdatingOrderId(orderId);
     try {
@@ -66,7 +66,7 @@ const AdminOrders = () => {
       setUpdatingOrderId(null);
     }
   };
-
+ 
   const deleteOrder = async (orderId) => {
     if (!window.confirm('⚠️ Are you sure you want to delete this order?\n\nThis action cannot be undone.')) return;
     try {
@@ -78,7 +78,7 @@ const AdminOrders = () => {
       toast.error(error.response?.data?.error || 'Failed to delete order');
     }
   };
-
+ 
   const printInvoice = (order) => {
     const printWindow = window.open('', '_blank', 'width=800,height=600');
     if (!printWindow) {
@@ -94,7 +94,7 @@ const AdminOrders = () => {
       delivered: '#10B981',
       cancelled: '#EF4444',
     };
-
+ 
     printWindow.document.write(`
       <html>
         <head>
@@ -182,7 +182,7 @@ const AdminOrders = () => {
     printWindow.document.close();
     printWindow.print();
   };
-
+ 
   // Stats
   const stats = useMemo(() => {
     const total = orders.length;
@@ -192,10 +192,10 @@ const AdminOrders = () => {
     const delivered = orders.filter(o => o.status === 'delivered').length;
     const cancelled = orders.filter(o => o.status === 'cancelled').length;
     const totalRevenue = orders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-
+ 
     return { total, pending, confirmed, shipped, delivered, cancelled, totalRevenue };
   }, [orders]);
-
+ 
   // Pagination
   const filteredOrders = useMemo(() => {
     let result = [...orders];
@@ -209,12 +209,12 @@ const AdminOrders = () => {
     }
     return result;
   }, [orders, search]);
-
+ 
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = filteredOrders.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / itemsPerPage));
-
+ 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -222,7 +222,7 @@ const AdminOrders = () => {
       minimumFractionDigits: 2,
     }).format(amount || 0);
   };
-
+ 
   const formatDate = (value) => {
     if (!value) return '-';
     return new Date(value).toLocaleDateString('en-US', { 
@@ -231,7 +231,7 @@ const AdminOrders = () => {
       year: 'numeric' 
     });
   };
-
+ 
   if (loading) {
     return (
       <AdminLayout title="Orders">
@@ -241,7 +241,7 @@ const AdminOrders = () => {
       </AdminLayout>
     );
   }
-
+ 
   return (
     <AdminLayout title="Orders">
       <div className="p-6 space-y-6">
@@ -259,7 +259,7 @@ const AdminOrders = () => {
             Refresh
           </button>
         </div>
-
+ 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 text-center">
@@ -287,7 +287,7 @@ const AdminOrders = () => {
             <p className="text-xs text-gray-500">Cancelled</p>
           </div>
         </div>
-
+ 
         {/* Revenue Card */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-700 rounded-xl p-4 text-white">
           <div className="flex items-center justify-between">
@@ -300,7 +300,7 @@ const AdminOrders = () => {
             </div>
           </div>
         </div>
-
+ 
         {/* Search and Filter */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex flex-wrap items-center gap-4">
@@ -338,7 +338,7 @@ const AdminOrders = () => {
             </button>
           </div>
         </div>
-
+ 
         {/* Orders Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="overflow-x-auto">
@@ -445,14 +445,14 @@ const AdminOrders = () => {
               </tbody>
             </table>
           </div>
-
+ 
           {/* Pagination */}
           {filteredOrders.length > 0 && (
             <div className="px-6 py-4 border-t border-gray-200 flex flex-wrap items-center justify-between gap-4">
               <p className="text-sm text-gray-500">
                 Showing {indexOfFirst + 1} to {Math.min(indexOfLast, filteredOrders.length)} of {filteredOrders.length} orders
               </p>
-
+ 
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">Show</span>
@@ -470,7 +470,7 @@ const AdminOrders = () => {
                     <option value={50}>50</option>
                   </select>
                 </div>
-
+ 
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -486,7 +486,7 @@ const AdminOrders = () => {
                     else if (currentPage <= 3) pageNum = i + 1;
                     else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
                     else pageNum = currentPage - 2 + i;
-
+ 
                     return (
                       <button
                         key={i}
@@ -499,7 +499,7 @@ const AdminOrders = () => {
                       </button>
                     );
                   })}
-
+ 
                   {totalPages > 5 && currentPage < totalPages - 2 && (
                     <>
                       <span className="text-gray-400">...</span>
@@ -511,7 +511,7 @@ const AdminOrders = () => {
                       </button>
                     </>
                   )}
-
+ 
                   <button
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
@@ -525,7 +525,7 @@ const AdminOrders = () => {
           )}
         </div>
       </div>
-
+ 
       {/* Order Detail Modal */}
       {showOrderDetail && selectedOrder && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -538,7 +538,7 @@ const AdminOrders = () => {
                 <FiXCircle size={24} className="text-gray-400" />
               </button>
             </div>
-
+ 
             <div className="space-y-6">
               {/* Order Info */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-gray-50 rounded-lg p-4">
@@ -577,7 +577,7 @@ const AdminOrders = () => {
                   </span>
                 </div>
               </div>
-
+ 
               {/* Customer Info */}
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Customer Details</h4>
@@ -588,7 +588,7 @@ const AdminOrders = () => {
                   <p><span className="text-xs text-gray-500">Address:</span> {selectedOrder.shipping_address || 'N/A'}</p>
                 </div>
               </div>
-
+ 
               {/* Order Items */}
               <div>
                 <h4 className="font-semibold text-gray-900 mb-2">Order Items</h4>
@@ -608,7 +608,7 @@ const AdminOrders = () => {
                   <span>{formatCurrency(selectedOrder.total_amount)}</span>
                 </div>
               </div>
-
+ 
               {/* Actions */}
               <div className="border-t pt-4 flex flex-wrap gap-3">
                 <button
@@ -641,5 +641,5 @@ const AdminOrders = () => {
     </AdminLayout>
   );
 };
-
+ 
 export default AdminOrders;

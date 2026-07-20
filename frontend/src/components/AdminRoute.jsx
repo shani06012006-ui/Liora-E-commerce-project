@@ -2,7 +2,7 @@
 import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { getCurrentUser, getTokens } from '../utils/storage';
-
+ 
 const AdminRoute = ({ children }) => {
   const { user, token } = useSelector((state) => state.auth);
   
@@ -24,5 +24,5 @@ const AdminRoute = ({ children }) => {
   
   return children;
 };
-
+ 
 export default AdminRoute;

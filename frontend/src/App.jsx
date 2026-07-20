@@ -10,8 +10,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Sidebar from './components/Sidebar';
 import LoadingSpinner from './components/LoadingSpinner';
-import { NotificationProvider } from './context/NotificationProvider'; 
-
+ 
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
 const Login = lazy(() => import('./pages/Login'));
@@ -34,7 +33,7 @@ const Help = lazy(() => import('./pages/Help'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
 const Notifications = lazy(() => import('./pages/Notifications'));
-
+ 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
@@ -46,8 +45,7 @@ const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
-const AdminNotifications = lazy(() => import('./pages/admin/AdminNotificationsPage'));
-
+ 
 // Layouts
 const MainLayout = ({ children }) => (
   <div className="min-h-screen flex flex-col bg-gray-50">
@@ -60,7 +58,7 @@ const MainLayout = ({ children }) => (
     <Footer />
   </div>
 );
-
+ 
 const ProfileLayout = ({ children }) => (
   <div className="min-h-screen bg-gray-50">
     <Navbar />
@@ -79,7 +77,7 @@ const ProfileLayout = ({ children }) => (
     <Footer />
   </div>
 );
-
+ 
 // Route Guard
 const ProtectedRoute = ({ children, redirectTo = '/Login' }) => {
   const { user } = useSelector((state) => state.auth);
@@ -90,7 +88,7 @@ const ProtectedRoute = ({ children, redirectTo = '/Login' }) => {
     const currentUser = getCurrentUser() || user;
     return !!(accessToken && currentUser);
   };
-
+ 
   const authStatus = isAuthenticated();
   
   useEffect(() => {
@@ -98,14 +96,14 @@ const ProtectedRoute = ({ children, redirectTo = '/Login' }) => {
       sessionStorage.setItem('redirect_after_login', location.pathname);
     }
   }, [authStatus, location.pathname]);
-
+ 
   if (!authStatus) {
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
-
+ 
   return children;
 };
-
+ 
 // Admin Route Guard
 const AdminRoute = ({ children }) => {
   const { user } = useSelector((state) => state.auth);
@@ -115,26 +113,26 @@ const AdminRoute = ({ children }) => {
     const currentUser = getCurrentUser() || user;
     return currentUser && (currentUser.role === 'admin' || currentUser.is_staff === true);
   };
-
+ 
   const authStatus = () => {
     const { accessToken } = getTokens();
     const currentUser = getCurrentUser() || user;
     return !!(accessToken && currentUser);
   };
-
+ 
   if (!authStatus() || !isAdmin()) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
-
+ 
   return children;
 };
-
+ 
 const AppContent = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+ 
   useEffect(() => {
     const authStatus = checkAuth();
     setIsAuthenticated(authStatus);
@@ -152,7 +150,7 @@ const AppContent = () => {
     
     setIsLoading(false);
   }, [user, dispatch]);
-
+ 
   useEffect(() => {
     const cleanup = setupTabSync((data) => {
       if (data) {
@@ -165,14 +163,14 @@ const AppContent = () => {
         setIsAuthenticated(false);
       }
     });
-
+ 
     return cleanup;
   }, [dispatch]);
-
+ 
   if (isLoading) {
     return <LoadingSpinner />;
   }
-
+ 
   return (
     <Routes>
       {/* Public Routes */}
@@ -181,7 +179,7 @@ const AppContent = () => {
       <Route path="/verify-otp" element={<OTPVerify />} />
       <Route path="/Login" element={!isAuthenticated ? <MainLayout><Login /></MainLayout> : <Navigate to="/" replace />} />
       <Route path="/register" element={!isAuthenticated ? <MainLayout><Register /></MainLayout> : <Navigate to="/" replace />} />
-
+ 
       {/* Admin Routes */}
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -201,8 +199,7 @@ const AppContent = () => {
       <Route path="/admin/payments/methods" element={<AdminRoute><AdminPayments /></AdminRoute>} />
       <Route path="/admin/payments/transactions" element={<AdminRoute><AdminPayments /></AdminRoute>} />
       <Route path="/admin/payments/refunds" element={<AdminRoute><AdminPayments /></AdminRoute>} />
-      <Route path="/admin/notifications" element={<AdminRoute><AdminNotifications /></AdminRoute>} />
-
+ 
       {/* Protected Routes */}
       <Route path="/profile" element={<ProtectedRoute><ProfileLayout><Profile /></ProfileLayout></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><ProfileLayout><Settings /></ProfileLayout></ProtectedRoute>} />
@@ -213,7 +210,7 @@ const AppContent = () => {
       <Route path="/order-success" element={<ProtectedRoute><MainLayout><OrderSuccess /></MainLayout></ProtectedRoute>} />
       <Route path="/wishlist" element={<ProtectedRoute><MainLayout><Wishlist /></MainLayout></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><MainLayout><Notifications /></MainLayout></ProtectedRoute>} />
-
+ 
       {/* Public Product Routes */}
       <Route path="/product/:id" element={<MainLayout><ProductDetail /></MainLayout>} />
       <Route path="/collections" element={<MainLayout><Collections /></MainLayout>} />
@@ -229,13 +226,13 @@ const AppContent = () => {
       <Route path="/help" element={<MainLayout><Help /></MainLayout>} />
       <Route path="/terms" element={<MainLayout><Terms /></MainLayout>} />
       <Route path="/privacy" element={<MainLayout><Privacy /></MainLayout>} />
-
+ 
       {/* 404 */}
       <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
     </Routes>
   );
 };
-
+ 
 const NotFound = () => (
   <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
     <h1 className="text-6xl font-light text-gray-900 mb-4">404</h1>
@@ -245,18 +242,16 @@ const NotFound = () => (
     </Link>
   </div>
 );
-
+ 
 function App() {
   return (
     <Provider store={store}>
       <Router>
-        <NotificationProvider>
-          <Toaster position="top-right" />
-          <AppContent />
-        </NotificationProvider>
+        <Toaster position="top-right" />
+        <AppContent />
       </Router>
     </Provider>
   );
 }
-
+ 
 export default App;

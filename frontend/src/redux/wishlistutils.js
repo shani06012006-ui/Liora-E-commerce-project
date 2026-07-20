@@ -1,5 +1,5 @@
 import { wishlistAPI } from "../services/api";
-
+ 
 export const addToWishlistUtil = async (productId, navigate) => {
   const token = localStorage.getItem("access_token");
   if (!token) {
@@ -14,7 +14,7 @@ export const addToWishlistUtil = async (productId, navigate) => {
     return { success: false, message: "Failed to add to wishlist" };
   }
 };
-
+ 
 export const removeFromWishlistUtil = async (wishlistId) => {
   try {
     await wishlistAPI.removeFromWishlist(wishlistId);
@@ -24,7 +24,7 @@ export const removeFromWishlistUtil = async (wishlistId) => {
     return { success: false, message: "Failed to remove from wishlist" };
   }
 };
-
+ 
 export const toggleWishlistUtil = async ({
   productId,
   isInWishlist,

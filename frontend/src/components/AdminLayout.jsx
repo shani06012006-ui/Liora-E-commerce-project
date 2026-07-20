@@ -3,22 +3,21 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FiMenu, FiSearch, FiChevronDown, FiChevronRight, FiHome, FiShoppingCart, FiBox, FiUsers, FiStar, FiSettings, FiHeadphones, FiLogOut, FiBarChart2, FiCreditCard } from 'react-icons/fi';
-import NotificationBell from './NotificationBell';
 import './AdminLayout.css';
-
+ 
 const analyticsSubItems = [
   { label: 'Sales Report', path: '/admin/analytics/sales' },
   { label: 'Revenue Report', path: '/admin/analytics/revenue' },
   { label: 'Customer Report', path: '/admin/analytics/customers' },
   { label: 'Product Performance', path: '/admin/analytics/products' },
 ];
-
+ 
 const paymentsSubItems = [
   { label: 'Payment Methods', path: '/admin/payments/methods' },
   { label: 'Transactions', path: '/admin/payments/transactions' },
   { label: 'Refunds', path: '/admin/payments/refunds' },
 ];
-
+ 
 const navItems = [
   { label: 'Dashboard', icon: <FiHome />, path: '/admin/dashboard' },
   { label: 'Orders', icon: <FiShoppingCart />, path: '/admin/orders' },
@@ -32,21 +31,21 @@ const navItems = [
   { divider: true },
   { label: 'Settings', icon: <FiSettings />, path: '/admin/settings' },
 ];
-
+ 
 const AdminLayout = ({ title, subtitle, children }) => {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
-
+ 
   const admin = {
     name: user?.full_name || user?.username || 'Admin',
     role: user?.role === 'admin' || user?.is_staff ? 'Super Admin' : 'Admin',
     avatarUrl: user?.profile_pic_url || null,
   };
-
+ 
   // ✅ Removed unused notificationCount
-
+ 
   const [openGroups, setOpenGroups] = useState(() => {
     const initial = {};
     navItems.forEach((item) => {
@@ -58,7 +57,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
     });
     return initial;
   });
-
+ 
   useEffect(() => {
     const newOpenGroups = {};
     navItems.forEach((item) => {
@@ -70,16 +69,16 @@ const AdminLayout = ({ title, subtitle, children }) => {
     });
     setOpenGroups(prev => ({ ...prev, ...newOpenGroups }));
   }, [location.pathname]);
-
+ 
   const toggleGroup = (label) => {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
-
+ 
   const isActive = (path) => location.pathname === path;
   const isParentActive = (item) =>
     item.path === location.pathname ||
     (item.children && item.children.some((c) => c.path === location.pathname));
-
+ 
   return (
     <div className={`admin-shell ${collapsed ? 'sidebar-collapsed' : ''}`}>
       {/* SIDEBAR */}
@@ -90,11 +89,11 @@ const AdminLayout = ({ title, subtitle, children }) => {
             <span className="brand-sub">AESTHETIC FASHION</span>
           </div>
         </div>
-
+ 
         <nav className="sidebar-nav">
           {navItems.map((item, idx) => {
             if (item.divider) return <div className="sidebar-divider" key={`div-${idx}`} />;
-
+ 
             if (item.children) {
               const open = !!openGroups[item.label];
               return (
@@ -132,7 +131,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
                 </div>
               );
             }
-
+ 
             return (
               <Link
                 key={item.path}
@@ -145,7 +144,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
             );
           })}
         </nav>
-
+ 
         <div className="sidebar-footer">
           <div className="help-card">
             <span className="help-icon"><FiHeadphones size={18} /></span>
@@ -156,7 +155,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
           </div>
         </div>
       </aside>
-
+ 
       {/* MAIN */}
       <div className="admin-main">
         <header className="admin-header">
@@ -169,15 +168,13 @@ const AdminLayout = ({ title, subtitle, children }) => {
               {subtitle && <p className="header-subtitle">{subtitle}</p>}
             </div>
           </div>
-
+ 
           <div className="header-right">
             <div className="header-search">
               <FiSearch size={16} className="header-search-icon" />
               <input type="text" placeholder="Search anything..." />
             </div>
-
-            <NotificationBell />
-
+ 
             <div className="header-user" onClick={() => setUserMenuOpen((o) => !o)}>
               <div className="header-avatar">
                 {admin.avatarUrl ? (
@@ -191,7 +188,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
                 <span>{admin.role}</span>
               </div>
               <FiChevronDown size={14} />
-
+ 
               {userMenuOpen && (
                 <div className="header-user-menu">
                   <Link to="/admin/settings/profile">Admin Profile</Link>
@@ -204,11 +201,11 @@ const AdminLayout = ({ title, subtitle, children }) => {
             </div>
           </div>
         </header>
-
+ 
         <main className="admin-content">{children}</main>
       </div>
     </div>
   );
 };
-
+ 
 export default AdminLayout;

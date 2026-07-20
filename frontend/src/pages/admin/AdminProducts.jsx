@@ -7,13 +7,13 @@ import {
   FiGrid, FiList, FiPackage, FiBox, FiAlertTriangle, FiXCircle, FiTrendingUp,
   FiDownload, FiCheckSquare, FiSquare
 } from 'react-icons/fi';
-
+ 
 const EMPTY_FORM = {
   name: '', description: '', price: '', original_price: '',
   stock: '', category: '', style: '', discount: '',
   is_new_arrival: false, is_best_seller: false, is_on_sale: false, image_url: '',
 };
-
+ 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,7 @@ const AdminProducts = () => {
     lowStock: 0,
     outOfStock: 0
   });
-
+ 
   // Calculate stats from products
   const calculateStats = useCallback((productsData) => {
     const total = productsData.length;
@@ -42,7 +42,7 @@ const AdminProducts = () => {
     const outOfStock = productsData.filter(p => p.stock === 0).length;
     return { total, inStock, lowStock, outOfStock };
   }, []);
-
+ 
   const fetchProducts = useCallback(async () => {
   try {
     const res = await adminAPI.getProducts();
@@ -51,7 +51,7 @@ const AdminProducts = () => {
   } catch { toast.error('Failed to load products'); }
   finally { setLoading(false); }
   }, [calculateStats]);
-
+ 
   useEffect(() => { 
     fetchProducts();
     
@@ -64,14 +64,14 @@ const AdminProducts = () => {
     document.addEventListener('openAddProductModal', handleOpenAdd);
     return () => document.removeEventListener('openAddProductModal', handleOpenAdd);
   }, [fetchProducts]);
-
-
+ 
+ 
   const openEdit = (product) => {
     setEdit(product);
     setForm({ ...EMPTY_FORM, ...product });
     setShowForm(true);
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -88,7 +88,7 @@ const AdminProducts = () => {
       toast.error('Failed to save product');
     }
   };
-
+ 
   const deleteProduct = async (id) => {
     if (!window.confirm('Delete this product?')) return;
     try {
@@ -99,13 +99,13 @@ const AdminProducts = () => {
       toast.error('Failed to delete product');
     }
   };
-
+ 
   const toggleSelect = (id) => {
     setSelectedProducts(prev => 
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
   };
-
+ 
   const toggleSelectAll = () => {
     if (selectedProducts.length === filtered.length) {
       setSelectedProducts([]);
@@ -113,7 +113,7 @@ const AdminProducts = () => {
       setSelectedProducts(filtered.map(p => p.id));
     }
   };
-
+ 
   const exportProducts = () => {
     const data = filtered.map(p => ({
       Name: p.name,
@@ -136,7 +136,7 @@ const AdminProducts = () => {
     a.download = 'products.csv';
     a.click();
   };
-
+ 
   // Filter products
   const filtered = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -147,27 +147,27 @@ const AdminProducts = () => {
       (selectedStatus === 'Out of Stock' && p.stock === 0);
     return matchesSearch && matchesCategory && matchesStatus;
   });
-
+ 
   // Get unique categories
   const getCategories = () => {
     const cats = ['All', ...new Set(products.map(p => p.category).filter(Boolean))];
     return cats;
   };
-
+ 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filtered.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
-
+ 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
+ 
   const getStatusColor = (stock) => {
     if (stock > 10) return { bg: 'bg-green-100', text: 'text-green-700', label: 'In Stock', dot: 'bg-green-500' };
     if (stock > 0) return { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Low Stock', dot: 'bg-yellow-500' };
     return { bg: 'bg-red-100', text: 'text-red-700', label: 'Out of Stock', dot: 'bg-red-500' };
   };
-
+ 
   return (
     <AdminLayout title="Products">
       <div className="space-y-6">
@@ -204,7 +204,7 @@ const AdminProducts = () => {
             trend="down"
           />
         </div>
-
+ 
         {/* Filters and Controls */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -269,7 +269,7 @@ const AdminProducts = () => {
             </div>
           </div>
         </div>
-
+ 
         {/* Bulk Actions */}
         {selectedProducts.length > 0 && (
           <div className="bg-black text-white rounded-lg p-3 flex items-center justify-between">
@@ -290,7 +290,7 @@ const AdminProducts = () => {
             </div>
           </div>
         )}
-
+ 
         {/* Products Table */}
         {loading ? (
           <div className="flex justify-center py-20">
@@ -391,7 +391,7 @@ const AdminProducts = () => {
                 </tbody>
               </table>
             </div>
-
+ 
             {/* Pagination */}
             <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex flex-wrap items-center justify-between gap-2">
               <div className="text-sm text-gray-600">
@@ -474,7 +474,7 @@ const AdminProducts = () => {
             </div>
           </div>
         )}
-
+ 
         {/* Product Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -512,7 +512,7 @@ const AdminProducts = () => {
                     />
                   </div>
                 ))}
-
+ 
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                   <textarea
@@ -522,7 +522,7 @@ const AdminProducts = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
                   />
                 </div>
-
+ 
                 <div className="col-span-2 flex gap-6 flex-wrap">
                   {[
                     ['is_new_arrival', 'New Arrival'],
@@ -540,7 +540,7 @@ const AdminProducts = () => {
                     </label>
                   ))}
                 </div>
-
+ 
                 <div className="col-span-2 flex gap-3 justify-end mt-2">
                   <button
                     type="button"
@@ -564,7 +564,7 @@ const AdminProducts = () => {
     </AdminLayout>
   );
 };
-
+ 
 // Stat Card Component
 const StatCard = ({ title, value, change, icon: Icon, color, trend = 'up' }) => {
   const colorClasses = {
@@ -573,18 +573,18 @@ const StatCard = ({ title, value, change, icon: Icon, color, trend = 'up' }) => 
     yellow: 'text-yellow-600 bg-yellow-50',
     red: 'text-red-600 bg-red-50'
   };
-
+ 
   const trendColors = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
     yellow: 'bg-yellow-50 text-yellow-600',
     red: 'bg-red-50 text-red-600'
   };
-
+ 
   const isPositive = trend === 'up' ? change.startsWith('+') : change.startsWith('-');
   const trendIcon = isPositive ? <FiTrendingUp className="inline mr-1" size={12} /> : 
     <FiTrendingUp className="inline mr-1 transform rotate-180" size={12} />;
-
+ 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
       <div className="flex items-center justify-between">
@@ -603,5 +603,5 @@ const StatCard = ({ title, value, change, icon: Icon, color, trend = 'up' }) => 
     </div>
   );
 };
-
+ 
 export default AdminProducts;

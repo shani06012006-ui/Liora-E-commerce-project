@@ -5,48 +5,48 @@ import { authAPI } from '../../services/api';
 import { setCredentials } from '../../redux/authSlice';
 import toast from 'react-hot-toast';
 import { FiLock, FiMail } from 'react-icons/fi';
-
+ 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
+ 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
+ 
   const clearSession = () => {
     ['access_token', 'refresh_token', 'user'].forEach((key) =>
       localStorage.removeItem(key)
     );
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error('Email and password are required.');
       return;
     }
-
+ 
     setLoading(true);
     try {
       const response = await authAPI.login({ email, password });
       const userData = response.data.user;
       const accessToken = response.data.access;
       const refreshToken = response.data.refresh;
-
+ 
       const isAdmin = userData?.role === 'admin' || userData?.is_staff === true;
-
+ 
       if (!isAdmin) {
         clearSession();
         toast.error('Access denied. Admin credentials required.');
         return;
       }
-
+ 
       dispatch(setCredentials({ user: userData, access: accessToken }));
       localStorage.setItem('access_token', accessToken);
       if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
       localStorage.setItem('user', JSON.stringify(userData));
-
+ 
       toast.success(`Welcome back, ${userData?.username || 'Admin'}!`);
       navigate('/admin/dashboard', { replace: true });
     } catch (error) {
@@ -60,7 +60,7 @@ const AdminLogin = () => {
       setLoading(false);
     }
   };
-
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
       <div className="w-full max-w-md">
@@ -71,7 +71,7 @@ const AdminLogin = () => {
           <h1 className="text-2xl font-semibold text-white">Liora Admin</h1>
           <p className="text-gray-400 text-sm mt-1">Restricted access — administrators only</p>
         </div>
-
+ 
         <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -89,7 +89,7 @@ const AdminLogin = () => {
                 />
               </div>
             </div>
-
+ 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
               <div className="relative">
@@ -105,7 +105,7 @@ const AdminLogin = () => {
                 />
               </div>
             </div>
-
+ 
             <button
               type="submit"
               disabled={loading}
@@ -115,7 +115,7 @@ const AdminLogin = () => {
             </button>
           </form>
         </div>
-
+ 
         <p className="text-center text-gray-500 text-xs mt-6">
           This area is restricted. Unauthorized access attempts are logged.
         </p>
@@ -123,5 +123,5 @@ const AdminLogin = () => {
     </div>
   );
 };
-
+ 
 export default AdminLogin;

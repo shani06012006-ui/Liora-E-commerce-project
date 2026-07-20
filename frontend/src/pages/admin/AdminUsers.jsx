@@ -17,7 +17,7 @@ import {
   FiChevronRight,
   FiXCircle,
 } from 'react-icons/fi';
-
+ 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetail, setShowUserDetail] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(8);
-
+ 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -41,23 +41,23 @@ const AdminUsers = () => {
       setLoading(false);
     }
   }, []);
-
+ 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-
+ 
   const thirtyDaysAgo = useMemo(() => {
     const date = new Date();
     date.setDate(date.getDate() - 30);
     return date;
   }, []);
-
+ 
   const stats = useMemo(() => {
     const newCustomers = users.filter((u) => new Date(u.created_at) > thirtyDaysAgo);
     const repeatCustomers = users.filter((u) => (u.orders_count || 0) > 1);
     const totalSpent = users.reduce((sum, u) => sum + (u.total_spent || 0), 0);
     const topCustomers = users.filter((u) => (u.total_spent || 0) > 1000);
-
+ 
     return {
       total: users.length,
       new: newCustomers.length,
@@ -66,11 +66,11 @@ const AdminUsers = () => {
       topCustomers: topCustomers.length,
     };
   }, [users, thirtyDaysAgo]);
-
+ 
   // Filter users
   const filteredUsers = useMemo(() => {
     let result = [...users];
-
+ 
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -81,29 +81,29 @@ const AdminUsers = () => {
           u.phone?.toLowerCase().includes(q)
       );
     }
-
+ 
     return result;
   }, [users, search]);
-
+ 
   // Pagination
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = filteredUsers.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.max(1, Math.ceil(filteredUsers.length / itemsPerPage));
-
+ 
   const getStatusColor = (isBlocked) => 
     isBlocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
-
+ 
   const formatCurrency = (amount) =>
     new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
     }).format(amount || 0);
-
+ 
   const formatDate = (value) =>
     value ? new Date(value).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
-
+ 
   // ✅ Toggle block/unblock user
   const toggleBlock = async (userId, isBlocked) => {
     try {
@@ -114,7 +114,7 @@ const AdminUsers = () => {
       toast.error('Failed to update customer');
     }
   };
-
+ 
   // ✅ Delete user - with confirmation
   const deleteUser = async (userId) => {
     if (!window.confirm('⚠️ Are you sure you want to permanently delete this customer?\n\nThis action cannot be undone. All user data including orders, addresses, and wishlist will be permanently removed.')) {
@@ -133,26 +133,26 @@ const AdminUsers = () => {
       setLoading(false);
     }
   };
-
+ 
   // Handle view user details
   const handleViewUser = (user) => {
     setSelectedUser(user);
     setShowUserDetail(true);
   };
-
+ 
   // Handle close modal
   const handleCloseModal = () => {
     setShowUserDetail(false);
     setSelectedUser(null);
   };
-
+ 
   const statCards = [
     { title: 'Total Customers', value: stats.total, icon: FiUsers, color: 'blue' },
     { title: 'New Customers (30d)', value: stats.new, icon: FiUserPlus, color: 'green' },
     { title: 'Repeat Customers', value: stats.repeat, icon: FiRepeat, color: 'purple' },
     { title: 'Total Spent', value: formatCurrency(stats.totalSpent), icon: FiDollarSign, color: 'orange' },
   ];
-
+ 
   return (
     <AdminLayout title="Customers">
       <div className="p-6 space-y-6">
@@ -163,7 +163,7 @@ const AdminUsers = () => {
             <p className="text-sm text-gray-500 mt-1">Manage your customer base</p>
           </div>
         </div>
-
+ 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {statCards.map((stat) => (
@@ -180,7 +180,7 @@ const AdminUsers = () => {
             </div>
           ))}
         </div>
-
+ 
         {/* Top Customers Banner */}
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
           <div className="flex items-center justify-between">
@@ -196,7 +196,7 @@ const AdminUsers = () => {
             <button className="text-sm text-blue-600 hover:underline font-medium">View all →</button>
           </div>
         </div>
-
+ 
         {/* Search */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200">
@@ -215,7 +215,7 @@ const AdminUsers = () => {
             </div>
           </div>
         </div>
-
+ 
         {/* Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           {loading ? (
@@ -311,14 +311,14 @@ const AdminUsers = () => {
                   </tbody>
                 </table>
               </div>
-
+ 
               {/* Pagination */}
               {filteredUsers.length > 0 && (
                 <div className="px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <p className="text-sm text-gray-500">
                     Showing {indexOfFirst + 1} to {Math.min(indexOfLast, filteredUsers.length)} of {filteredUsers.length} customers
                   </p>
-
+ 
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm text-gray-500">Show</span>
@@ -337,7 +337,7 @@ const AdminUsers = () => {
                       </select>
                       <span className="text-sm text-gray-500">/ page</span>
                     </div>
-
+ 
                     <div className="flex items-center space-x-1">
                       <button
                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -346,7 +346,7 @@ const AdminUsers = () => {
                       >
                         <FiChevronLeft size={18} />
                       </button>
-
+ 
                       {[...Array(Math.min(5, totalPages))].map((_, i) => {
                         let pageNum;
                         if (totalPages <= 5) {
@@ -358,7 +358,7 @@ const AdminUsers = () => {
                         } else {
                           pageNum = currentPage - 2 + i;
                         }
-
+ 
                         return (
                           <button
                             key={i}
@@ -371,7 +371,7 @@ const AdminUsers = () => {
                           </button>
                         );
                       })}
-
+ 
                       {totalPages > 5 && currentPage < totalPages - 2 && (
                         <>
                           <span className="text-gray-400">...</span>
@@ -383,7 +383,7 @@ const AdminUsers = () => {
                           </button>
                         </>
                       )}
-
+ 
                       <button
                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
@@ -399,7 +399,7 @@ const AdminUsers = () => {
           )}
         </div>
       </div>
-
+ 
       {/* User Detail Modal */}
       {showUserDetail && selectedUser && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -410,7 +410,7 @@ const AdminUsers = () => {
                 <FiXCircle size={24} className="text-gray-400" />
               </button>
             </div>
-
+ 
             <div className="space-y-6">
               <div className="flex items-center">
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
@@ -424,7 +424,7 @@ const AdminUsers = () => {
                   <p className="text-gray-500">{selectedUser.phone || 'No phone number'}</p>
                 </div>
               </div>
-
+ 
               <div className="grid grid-cols-2 gap-4 border-t pt-4">
                 <div className="bg-gray-50 rounded-lg p-3">
                   <p className="text-sm text-gray-500">Total Orders</p>
@@ -447,7 +447,7 @@ const AdminUsers = () => {
                   </p>
                 </div>
               </div>
-
+ 
               <div className="border-t pt-4">
                 <h4 className="font-semibold text-gray-900 mb-2">Shipping Address</h4>
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -456,7 +456,7 @@ const AdminUsers = () => {
                   </p>
                 </div>
               </div>
-
+ 
               <div className="border-t pt-4 flex flex-wrap gap-3">
                 <button
                   onClick={() => {
@@ -492,5 +492,5 @@ const AdminUsers = () => {
     </AdminLayout>
   );
 };
-
+ 
 export default AdminUsers;

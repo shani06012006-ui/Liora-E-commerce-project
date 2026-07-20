@@ -3,7 +3,7 @@ import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
 import { adminAPI } from '../../services/api';
 import { FiPlus, FiEdit, FiTrash2, FiSearch } from 'react-icons/fi';
-
+ 
 const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,7 +11,7 @@ const AdminCategories = () => {
   const [editCategory, setEditCategory] = useState(null);
   const [form, setForm] = useState({ name: '', description: '' });
   const [search, setSearch] = useState('');
-
+ 
   const fetchCategories = useCallback(async () => {
     try {
       const res = await adminAPI.getCategories();
@@ -22,9 +22,9 @@ const AdminCategories = () => {
       setLoading(false);
     }
   }, []);
-
+ 
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -41,7 +41,7 @@ const AdminCategories = () => {
       toast.error('Failed to save category');
     }
   };
-
+ 
   const deleteCategory = async (id) => {
     if (!window.confirm('Delete this category?')) return;
     try {
@@ -52,7 +52,7 @@ const AdminCategories = () => {
       toast.error('Failed to delete category');
     }
   };
-
+ 
   const filtered = categories.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.description?.toLowerCase().includes(search.toLowerCase())
@@ -182,10 +182,5 @@ const AdminCategories = () => {
     </AdminLayout>
   );
 };
-
+ 
 export default AdminCategories;
-
-
-
-
-

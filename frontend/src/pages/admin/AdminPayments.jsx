@@ -10,7 +10,7 @@ import {
   FiClock, FiAlertCircle, FiEye, FiPrinter, 
   FiPlus, FiEdit, FiTrash2, FiToggleLeft, FiToggleRight
 } from 'react-icons/fi';
-
+ 
 // Payment Methods Component
 const PaymentMethods = () => {
   const [methods, setMethods] = useState([]);
@@ -18,7 +18,7 @@ const PaymentMethods = () => {
   const [showForm, setShowForm] = useState(false);
   const [editMethod, setEditMethod] = useState(null);
   const [form, setForm] = useState({ name: '', type: '', is_active: true, config: {} });
-
+ 
   const fetchMethods = useCallback(async () => {
     setLoading(true);
     try {
@@ -30,9 +30,9 @@ const PaymentMethods = () => {
       setLoading(false);
     }
   }, []);
-
+ 
   useEffect(() => { fetchMethods(); }, [fetchMethods]);
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -49,7 +49,7 @@ const PaymentMethods = () => {
       toast.error('Failed to save payment method');
     }
   };
-
+ 
   const toggleMethod = async (id, isActive) => {
     try {
       await adminAPI.togglePaymentMethod(id, { is_active: !isActive });
@@ -59,7 +59,7 @@ const PaymentMethods = () => {
       toast.error('Failed to toggle payment method');
     }
   };
-
+ 
   const deleteMethod = async (id) => {
     if (!window.confirm('Delete this payment method?')) return;
     try {
@@ -70,9 +70,9 @@ const PaymentMethods = () => {
       toast.error('Failed to delete payment method');
     }
   };
-
+ 
   const methodTypes = ['credit_card', 'debit_card', 'paypal', 'stripe', 'razorpay', 'cod', 'bank_transfer', 'upi'];
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -80,7 +80,7 @@ const PaymentMethods = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -100,7 +100,7 @@ const PaymentMethods = () => {
           Add Method
         </button>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {methods.map((method) => (
           <div key={method.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 hover:shadow-md transition">
@@ -121,7 +121,7 @@ const PaymentMethods = () => {
                 {method.is_active ? <FiToggleRight size={24} className="text-green-600" /> : <FiToggleLeft size={24} />}
               </button>
             </div>
-
+ 
             <div className="mt-3 flex items-center justify-between">
               <span className={`px-2 py-1 text-xs font-medium rounded-full ${
                 method.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
@@ -150,7 +150,7 @@ const PaymentMethods = () => {
           </div>
         ))}
       </div>
-
+ 
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -218,7 +218,7 @@ const PaymentMethods = () => {
     </div>
   );
 };
-
+ 
 // Transactions Component
 const Transactions = () => {
   const [transactions, setTransactions] = useState([]);
@@ -230,7 +230,7 @@ const Transactions = () => {
   const [itemsPerPage] = useState(10);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
-
+ 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
     try {
@@ -247,9 +247,9 @@ const Transactions = () => {
       setLoading(false);
     }
   }, [search, statusFilter, typeFilter]);
-
+ 
   useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
-
+ 
   const filteredTransactions = useMemo(() => {
     let result = [...transactions];
     if (search) {
@@ -262,12 +262,12 @@ const Transactions = () => {
     }
     return result;
   }, [transactions, search]);
-
+ 
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = filteredTransactions.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage));
-
+ 
   const getStatusBadge = (status) => {
     const colors = {
       completed: 'bg-green-100 text-green-700',
@@ -285,9 +285,9 @@ const Transactions = () => {
     }[status] || FiAlertCircle;
     return { className: colors[status] || 'bg-gray-100 text-gray-700', Icon };
   };
-
+ 
   const formatCurrency = (amount) => `$${(amount || 0).toFixed(2)}`;
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -295,14 +295,14 @@ const Transactions = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-900">Transactions</h3>
         <p className="text-sm text-gray-500">View and manage all payment transactions</p>
       </div>
-
+ 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[200px]">
@@ -337,7 +337,7 @@ const Transactions = () => {
             <option value="refund">Refund</option>
           </select>
         </div>
-
+ 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -410,7 +410,7 @@ const Transactions = () => {
             </tbody>
           </table>
         </div>
-
+ 
         {filteredTransactions.length > 0 && (
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <p className="text-sm text-gray-500">
@@ -436,7 +436,7 @@ const Transactions = () => {
           </div>
         )}
       </div>
-
+ 
       {/* Transaction Detail Modal */}
       {showDetail && selectedTransaction && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
@@ -447,7 +447,7 @@ const Transactions = () => {
                 <FiXCircle size={24} className="text-gray-400" />
               </button>
             </div>
-
+ 
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
                 <div>
@@ -483,7 +483,7 @@ const Transactions = () => {
                   </p>
                 </div>
               </div>
-
+ 
               <div className="border-t pt-4 flex flex-wrap gap-3">
                 {selectedTransaction.status === 'pending' && (
                   <button className="px-4 py-2 bg-green-50 text-green-600 rounded-lg text-sm font-medium hover:bg-green-100">
@@ -506,7 +506,7 @@ const Transactions = () => {
     </div>
   );
 };
-
+ 
 // Refunds Component
 const Refunds = () => {
   const [refunds, setRefunds] = useState([]);
@@ -514,7 +514,7 @@ const Refunds = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-
+ 
   const fetchRefunds = useCallback(async () => {
     setLoading(true);
     try {
@@ -529,14 +529,14 @@ const Refunds = () => {
       setLoading(false);
     }
   }, [statusFilter]);
-
+ 
   useEffect(() => { fetchRefunds(); }, [fetchRefunds]);
-
+ 
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentItems = refunds.slice(indexOfFirst, indexOfLast);
   const totalPages = Math.max(1, Math.ceil(refunds.length / itemsPerPage));
-
+ 
   const getStatusBadge = (status) => {
     const colors = {
       completed: 'bg-green-100 text-green-700',
@@ -546,9 +546,9 @@ const Refunds = () => {
     };
     return colors[status] || 'bg-gray-100 text-gray-700';
   };
-
+ 
   const formatCurrency = (amount) => `$${(amount || 0).toFixed(2)}`;
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -556,7 +556,7 @@ const Refunds = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -576,7 +576,7 @@ const Refunds = () => {
           <option value="rejected">Rejected</option>
         </select>
       </div>
-
+ 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -639,7 +639,7 @@ const Refunds = () => {
             </tbody>
           </table>
         </div>
-
+ 
         {refunds.length > 0 && (
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <p className="text-sm text-gray-500">
@@ -668,25 +668,25 @@ const Refunds = () => {
     </div>
   );
 };
-
+ 
 // Main Payments Component
 const AdminPayments = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('methods');
-
+ 
   const tabs = [
     { id: 'methods', label: 'Payment Methods' },
     { id: 'transactions', label: 'Transactions' },
     { id: 'refunds', label: 'Refunds' },
   ];
-
+ 
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('transactions')) setActiveTab('transactions');
     else if (path.includes('refunds')) setActiveTab('refunds');
     else setActiveTab('methods');
   }, [location]);
-
+ 
   const renderContent = () => {
     switch (activeTab) {
       case 'methods': return <PaymentMethods />;
@@ -695,7 +695,7 @@ const AdminPayments = () => {
       default: return <PaymentMethods />;
     }
   };
-
+ 
   return (
     <AdminLayout title="Payments">
       <div className="space-y-6">
@@ -703,7 +703,7 @@ const AdminPayments = () => {
           <h1 className="text-2xl font-bold text-gray-900">Payments</h1>
           <p className="text-sm text-gray-500 mt-1">Manage payment methods, transactions, and refunds</p>
         </div>
-
+ 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="border-b border-gray-200">
             <div className="flex overflow-x-auto">
@@ -722,7 +722,7 @@ const AdminPayments = () => {
               ))}
             </div>
           </div>
-
+ 
           <div className="p-6">
             {renderContent()}
           </div>
@@ -731,5 +731,5 @@ const AdminPayments = () => {
     </AdminLayout>
   );
 };
-
+ 
 export default AdminPayments;

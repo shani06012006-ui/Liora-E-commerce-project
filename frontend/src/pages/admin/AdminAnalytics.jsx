@@ -9,7 +9,7 @@ import {
   FiUsers, FiPackage, FiDownload,
   FiPieChart, FiBarChart2, 
 } from 'react-icons/fi';
-
+ 
 // Stats Card Component
 const StatsCard = ({ title, value, change, icon: Icon, color }) => {
   const isPositive = change?.startsWith('+');
@@ -21,7 +21,7 @@ const StatsCard = ({ title, value, change, icon: Icon, color }) => {
     yellow: 'bg-yellow-50 text-yellow-600',
     indigo: 'bg-indigo-50 text-indigo-600',
   };
-
+ 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
       <div className="flex items-center justify-between">
@@ -42,14 +42,14 @@ const StatsCard = ({ title, value, change, icon: Icon, color }) => {
     </div>
   );
 };
-
+ 
 // Sales Report Component
 const SalesReport = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
   const [sortBy, setSortBy] = useState('date');
-
+ 
   const fetchSalesData = useCallback(async () => {
     setLoading(true);
     try {
@@ -62,11 +62,11 @@ const SalesReport = () => {
       setLoading(false);
     }
   }, [dateRange]);
-
+ 
   useEffect(() => {
     fetchSalesData();
   }, [fetchSalesData]);
-
+ 
   const sortedData = useMemo(() => {
     const sorted = [...data];
     if (sortBy === 'date') {
@@ -78,11 +78,11 @@ const SalesReport = () => {
     }
     return sorted;
   }, [data, sortBy]);
-
+ 
   const totalSales = data.reduce((sum, d) => sum + (d.total_sales || 0), 0);
   const totalOrders = data.reduce((sum, d) => sum + (d.total_orders || 0), 0);
   const avgOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
-
+ 
   const getWeekNumber = (date) => {
     const d = new Date(date);
     d.setHours(0, 0, 0, 0);
@@ -90,14 +90,14 @@ const SalesReport = () => {
     const week1 = new Date(d.getFullYear(), 0, 4);
     return 1 + Math.round(((d - week1) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7);
   };
-
+ 
   const formatDate = (date) => {
     const d = new Date(date);
     if (dateRange === 'week') return `Week ${getWeekNumber(date)}, ${d.getFullYear()}`;
     if (dateRange === 'month') return d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -105,7 +105,7 @@ const SalesReport = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -131,7 +131,7 @@ const SalesReport = () => {
           color="purple" 
         />
       </div>
-
+ 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -164,7 +164,7 @@ const SalesReport = () => {
             </button>
           </div>
         </div>
-
+ 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -207,14 +207,14 @@ const SalesReport = () => {
     </div>
   );
 };
-
+ 
 // Revenue Report Component
 const RevenueReport = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
   const [revenueType, setRevenueType] = useState('all');
-
+ 
   const fetchRevenueData = useCallback(async () => {
     setLoading(true);
     try {
@@ -227,16 +227,16 @@ const RevenueReport = () => {
       setLoading(false);
     }
   }, [dateRange, revenueType]);
-
+ 
   useEffect(() => {
     fetchRevenueData();
   }, [fetchRevenueData]);
-
+ 
   const totalRevenue = data.reduce((sum, d) => sum + (d.revenue || 0), 0);
   const totalProfit = data.reduce((sum, d) => sum + (d.profit || 0), 0);
   const totalCost = data.reduce((sum, d) => sum + (d.cost || 0), 0);
   const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -244,7 +244,7 @@ const RevenueReport = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -253,7 +253,7 @@ const RevenueReport = () => {
         <StatsCard title="Total Cost" value={`$${totalCost.toLocaleString()}`} change="+10.3%" icon={FiPackage} color="yellow" />
         <StatsCard title="Profit Margin" value={`${profitMargin.toFixed(1)}%`} change="+3.5%" icon={FiPieChart} color="purple" />
       </div>
-
+ 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -283,7 +283,7 @@ const RevenueReport = () => {
             </select>
           </div>
         </div>
-
+ 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -330,14 +330,14 @@ const RevenueReport = () => {
     </div>
   );
 };
-
+ 
 // Customer Report Component
 const CustomerReport = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
   const [segment, setSegment] = useState('all');
-
+ 
   const fetchCustomerData = useCallback(async () => {
     setLoading(true);
     try {
@@ -350,16 +350,16 @@ const CustomerReport = () => {
       setLoading(false);
     }
   }, [dateRange, segment]);
-
+ 
   useEffect(() => {
     fetchCustomerData();
   }, [fetchCustomerData]);
-
+ 
   const totalCustomers = data.length;
   const totalOrders = data.reduce((sum, d) => sum + (d.total_orders || 0), 0);
   const totalSpent = data.reduce((sum, d) => sum + (d.total_spent || 0), 0);
   const avgSpent = totalCustomers > 0 ? totalSpent / totalCustomers : 0;
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -367,7 +367,7 @@ const CustomerReport = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -376,7 +376,7 @@ const CustomerReport = () => {
         <StatsCard title="Total Spent" value={`$${totalSpent.toLocaleString()}`} change="+14.1%" icon={FiDollarSign} color="purple" />
         <StatsCard title="Avg Spent" value={`$${avgSpent.toFixed(2)}`} change="+7.9%" icon={FiBarChart2} color="indigo" />
       </div>
-
+ 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -406,7 +406,7 @@ const CustomerReport = () => {
             </select>
           </div>
         </div>
-
+ 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -463,14 +463,14 @@ const CustomerReport = () => {
     </div>
   );
 };
-
+ 
 // Product Performance Component
 const ProductPerformance = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('month');
   const [sortBy, setSortBy] = useState('revenue');
-
+ 
   const fetchProductData = useCallback(async () => {
     setLoading(true);
     try {
@@ -483,11 +483,11 @@ const ProductPerformance = () => {
       setLoading(false);
     }
   }, [dateRange]);
-
+ 
   useEffect(() => {
     fetchProductData();
   }, [fetchProductData]);
-
+ 
   const sortedData = useMemo(() => {
     const sorted = [...data];
     if (sortBy === 'revenue') sorted.sort((a, b) => b.revenue - a.revenue);
@@ -495,11 +495,11 @@ const ProductPerformance = () => {
     else if (sortBy === 'profit') sorted.sort((a, b) => b.profit - a.profit);
     return sorted;
   }, [data, sortBy]);
-
+ 
   const totalRevenue = data.reduce((sum, d) => sum + (d.revenue || 0), 0);
   const totalSales = data.reduce((sum, d) => sum + (d.sales || 0), 0);
   const totalProfit = data.reduce((sum, d) => sum + (d.profit || 0), 0);
-
+ 
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -507,7 +507,7 @@ const ProductPerformance = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -515,7 +515,7 @@ const ProductPerformance = () => {
         <StatsCard title="Total Sales" value={totalSales.toLocaleString()} change="+10.2%" icon={FiShoppingCart} color="blue" />
         <StatsCard title="Total Profit" value={`$${totalProfit.toLocaleString()}`} change="+16.7%" icon={FiTrendingUp} color="purple" />
       </div>
-
+ 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="p-4 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -544,7 +544,7 @@ const ProductPerformance = () => {
             </select>
           </div>
         </div>
-
+ 
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -612,19 +612,19 @@ const ProductPerformance = () => {
     </div>
   );
 };
-
+ 
 // Main Analytics Component
 const AdminAnalytics = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('sales');
-
+ 
   const tabs = [
     { id: 'sales', label: 'Sales Report' },
     { id: 'revenue', label: 'Revenue Report' },
     { id: 'customers', label: 'Customer Report' },
     { id: 'products', label: 'Product Performance' },
   ];
-
+ 
   // Set active tab based on route path
   useEffect(() => {
     const path = location.pathname;
@@ -633,7 +633,7 @@ const AdminAnalytics = () => {
     else if (path.includes('products')) setActiveTab('products');
     else setActiveTab('sales');
   }, [location]);
-
+ 
   const renderContent = () => {
     switch (activeTab) {
       case 'sales': return <SalesReport />;
@@ -643,7 +643,7 @@ const AdminAnalytics = () => {
       default: return <SalesReport />;
     }
   };
-
+ 
   return (
     <AdminLayout title="Analytics">
       <div className="space-y-6">
@@ -651,7 +651,7 @@ const AdminAnalytics = () => {
           <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
           <p className="text-sm text-gray-500 mt-1">Track and analyze your store performance</p>
         </div>
-
+ 
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="border-b border-gray-200">
             <div className="flex overflow-x-auto">
@@ -670,7 +670,7 @@ const AdminAnalytics = () => {
               ))}
             </div>
           </div>
-
+ 
           <div className="p-6">
             {renderContent()}
           </div>
@@ -679,5 +679,5 @@ const AdminAnalytics = () => {
     </AdminLayout>
   );
 };
-
+ 
 export default AdminAnalytics;
