@@ -13,8 +13,8 @@ const PaymentSettings = () => {
       { id: 'razorpay', name: 'Razorpay', enabled: false, config: { key_id: '***', key_secret: '***' } },
     ],
     default_gateway: 'stripe',
-    currency_code: 'USD',
-    currency_symbol: '$',
+    currency_code: 'INR',
+    currency_symbol: '₹',
     tax_rate: 0.0,
     tax_included: false,
   });
@@ -174,7 +174,7 @@ const PaymentSettings = () => {
               className="form-input"
               value={settings.currency_symbol}
               onChange={(e) => setSettings({ ...settings, currency_symbol: e.target.value })}
-              placeholder="e.g., $, €, £"
+              placeholder="e.g., ₹, €, £"
               maxLength="3"
             />
           </div>

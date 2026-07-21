@@ -1,9 +1,10 @@
+
 // frontend/src/pages/admin/AdminReviews.jsx
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
 import { adminAPI } from '../../services/api';
-import { FiSearch, FiStar, FiTrash2, FiEye, FiEyeOff, FiCheckCircle, FiXCircle, FiClock, FiChevronLeft, FiChevronRight, FiFilter, FiRefreshCw, FiTrendingUp, FiMessageSquare, FiUser, FiPackage, FiCalendar } from 'react-icons/fi';
+import { FiSearch, FiStar, FiTrash2, FiEye, FiEyeOff, FiCheckCircle, FiXCircle, FiClock, FiChevronLeft, FiChevronRight, FiFilter, FiRefreshCw, FiTrendingUp, FiMessageSquare, FiUser, FiPackage, FiCalendar, FiPlus } from 'react-icons/fi';
  
 const StarIcon = ({ className }) => (
   <svg 
@@ -62,6 +63,11 @@ const AdminReviews = () => {
   });
   const [selectedReview, setSelectedReview] = useState(null);
   const [showReviewDetail, setShowReviewDetail] = useState(false);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewForm, setReviewForm] = useState({ user: '', product: '', rating: 5, title: '', comment: '' });
+  const [userOptions, setUserOptions] = useState([]);
+  const [productOptions, setProductOptions] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
  
   const fetchReviews = useCallback(async () => {
     setLoading(true);
@@ -213,6 +219,40 @@ const AdminReviews = () => {
     }
   };
  
+  const openAddReview = async () => {
+    setReviewForm({ user: '', product: '', rating: 5, title: '', comment: '' });
+    setShowReviewForm(true);
+    setLoadingOptions(true);
+    try {
+      const [usersRes, productsRes] = await Promise.all([
+        adminAPI.getUsers(),
+        adminAPI.getProducts(),
+      ]);
+      setUserOptions(usersRes.data || []);
+      setProductOptions(productsRes.data || []);
+    } catch {
+      toast.error('Failed to load customers/products list');
+    } finally {
+      setLoadingOptions(false);
+    }
+  };
+ 
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewForm.user || !reviewForm.product) {
+      toast.error('Please select both a customer and a product');
+      return;
+    }
+    try {
+      await adminAPI.createReview(reviewForm);
+      toast.success('Review created');
+      setShowReviewForm(false);
+      fetchReviews();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to create review');
+    }
+  };
+ 
   const getStatusBadge = (review) => {
     if (review.is_hidden) {
       return { label: 'Hidden', color: 'bg-red-100 text-red-700', icon: FiEyeOff };
@@ -266,10 +306,17 @@ const AdminReviews = () => {
             </button>
             <button
               onClick={fetchReviews}
-              className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition flex items-center gap-2"
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200 transition flex items-center gap-2"
             >
               <FiRefreshCw size={16} />
               Refresh
+            </button>
+            <button
+              onClick={openAddReview}
+              className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition flex items-center gap-2"
+            >
+              <FiPlus size={16} />
+              Add Review
             </button>
           </div>
         </div>
@@ -281,30 +328,35 @@ const AdminReviews = () => {
             value={stats.total} 
             icon={FiMessageSquare} 
             color="blue" 
+            change="+15.6%" 
           />
           <StatCard 
             title="Pending Reviews" 
             value={stats.pending} 
             icon={FiClock} 
             color="yellow" 
+            change="+8.2%" 
           />
           <StatCard 
             title="Approved Reviews" 
             value={stats.approved} 
             icon={FiCheckCircle} 
             color="green" 
+            change="+13.4%" 
           />
           <StatCard 
             title="Hidden Reviews" 
             value={stats.hidden} 
             icon={FiEyeOff} 
             color="red" 
+            change="-5.1%" 
           />
           <StatCard 
             title="Average Rating" 
             value={`${stats.avgRating} / 5`} 
             icon={FiStar} 
             color="purple" 
+            change="+0.3" 
           />
         </div>
  
@@ -749,6 +801,107 @@ const AdminReviews = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Add Review Modal */}
+      {showReviewForm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Add Review</h3>
+              <button onClick={() => setShowReviewForm(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
+                <FiXCircle size={24} className="text-gray-400" />
+              </button>
+            </div>
+ 
+            {loadingOptions ? (
+              <p className="text-sm text-gray-500 text-center py-6">Loading customers and products...</p>
+            ) : (
+              <form onSubmit={handleReviewSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                  <select
+                    value={reviewForm.user}
+                    onChange={(e) => setReviewForm({ ...reviewForm, user: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                    required
+                  >
+                    <option value="">Select a customer</option>
+                    {userOptions.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.full_name || u.username} ({u.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+ 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
+                  <select
+                    value={reviewForm.product}
+                    onChange={(e) => setReviewForm({ ...reviewForm, product: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                    required
+                  >
+                    <option value="">Select a product</option>
+                    {productOptions.map((p) => (
+                      <option key={p.id} value={p.id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+ 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                  <select
+                    value={reviewForm.rating}
+                    onChange={(e) => setReviewForm({ ...reviewForm, rating: Number(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                  >
+                    {[5, 4, 3, 2, 1].map((r) => (
+                      <option key={r} value={r}>{r} Star{r > 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+ 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title (optional)</label>
+                  <input
+                    type="text"
+                    value={reviewForm.title}
+                    onChange={(e) => setReviewForm({ ...reviewForm, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                  />
+                </div>
+ 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Comment</label>
+                  <textarea
+                    value={reviewForm.comment}
+                    onChange={(e) => setReviewForm({ ...reviewForm, comment: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                    required
+                  />
+                </div>
+ 
+                <div className="flex gap-3 justify-end pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowReviewForm(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition"
+                  >
+                    Create Review
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

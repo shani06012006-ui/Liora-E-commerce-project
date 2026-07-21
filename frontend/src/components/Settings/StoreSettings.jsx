@@ -58,7 +58,7 @@ const StoreSettings = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setSettings({ ...settings, [field]: reader.result });
-        toast.success(`📸 ${field.replace('_', ' ')} uploaded!`);
+        toast.success(` ${field.replace('_', ' ')} uploaded!`);
       };
       reader.readAsDataURL(file);
     }

@@ -97,6 +97,7 @@ const patch = (url, data, config = {}) => API.patch(url, data, config);
 const del = (url) => API.delete(url);
 const isFormData = (data) => typeof FormData !== 'undefined' && data instanceof FormData;
  
+//AUTH APIs - All use the same API instance
 export const authAPI = {
   register: (data) => post("/register/", data),
   login: (data) => post("/Login/", data),
@@ -116,7 +117,7 @@ export const authAPI = {
   setDefaultAddress: (id) => post(`/addresses/${id}/set-default/`),
 };
  
-// PRODUCT APIs
+//PRODUCT APIs
 export const productAPI = {
   getAll: (params) => get("/products/", params),
   getById: (id) => get(`/products/${id}/`),
@@ -124,7 +125,7 @@ export const productAPI = {
   search: (search) => get("/products/", { search }),
 };
  
-// CART APIs
+//CART APIs
 export const cartAPI = {
   getCart: () => get("/cart/"),
   addToCart: (data) => post("/cart/", data),
@@ -132,7 +133,7 @@ export const cartAPI = {
   removeItem: (id) => del(`/cart/${id}/`),
 };
  
-// ORDER APIs
+//ORDER APIs
 export const orderAPI = {
   checkout: (data) => post("/checkout/", data),
   getOrders: () => get("/orders/"),
@@ -171,10 +172,13 @@ export const adminAPI = {
   updateOrderStatus: (id, status) => patch(`/admin/orders/${id}/`, { status }),
   deleteOrder: (id) => del(`/admin/orders/${id}/`),
   getUsers: () => get("/admin/users/"),
+  createUser: (data) => post("/admin/users/create/", data),
+  updateUser: (id, data) => patch(`/admin/users/${id}/`, data),
   toggleUserBlock: (id, isBlocked) =>
     patch(`/admin/users/${id}/`, { is_blocked: !isBlocked }),
   deleteUser: (id) => del(`/admin/users/${id}/`),
   getReviews: () => get("/admin/reviews/"),
+  createReview: (data) => post("/admin/reviews/", data),
   updateReview: (id, data) => patch(`/admin/reviews/${id}/`, data),
   deleteReview: (id) => del(`/admin/reviews/${id}/`),
   getAnalyticsSales: (params) => get("/admin/analytics/sales/", params),

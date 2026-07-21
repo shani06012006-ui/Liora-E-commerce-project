@@ -7,6 +7,7 @@ import {
   FiSearch,
   FiTrash2,
   FiEye,
+  FiEdit2,
   FiUsers,
   FiUserPlus,
   FiRepeat,
@@ -18,6 +19,10 @@ import {
   FiXCircle,
 } from 'react-icons/fi';
  
+const EMPTY_USER_FORM = {
+  username: '', email: '', password: '', full_name: '', phone: '', role: 'user',
+};
+ 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +31,9 @@ const AdminUsers = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetail, setShowUserDetail] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(8);
+  const [showUserForm, setShowUserForm] = useState(false);
+  const [editUser, setEditUser] = useState(null);
+  const [userForm, setUserForm] = useState(EMPTY_USER_FORM);
  
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -134,6 +142,44 @@ const AdminUsers = () => {
     }
   };
  
+  const openAddUser = () => {
+    setEditUser(null);
+    setUserForm(EMPTY_USER_FORM);
+    setShowUserForm(true);
+  };
+ 
+  const openEditUser = (user) => {
+    setEditUser(user);
+    setUserForm({
+      username: user.username || '',
+      email: user.email || '',
+      password: '',
+      full_name: user.full_name || '',
+      phone: user.phone || '',
+      role: user.role || 'user',
+    });
+    setShowUserForm(true);
+  };
+ 
+  const handleUserSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (editUser) {
+        const rest = { ...userForm };
+        delete rest.password;
+        await adminAPI.updateUser(editUser.id, rest);
+        toast.success('Customer updated');
+      } else {
+        await adminAPI.createUser(userForm);
+        toast.success('Customer created');
+      }
+      setShowUserForm(false);
+      fetchUsers();
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to save customer');
+    }
+  };
+ 
   // Handle view user details
   const handleViewUser = (user) => {
     setSelectedUser(user);
@@ -162,6 +208,13 @@ const AdminUsers = () => {
             <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
             <p className="text-sm text-gray-500 mt-1">Manage your customer base</p>
           </div>
+          <button
+            onClick={openAddUser}
+            className="flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+          >
+            <FiUserPlus className="mr-2" size={16} />
+            Add Customer
+          </button>
         </div>
  
         {/* Stats Cards */}
@@ -179,6 +232,22 @@ const AdminUsers = () => {
               </div>
             </div>
           ))}
+        </div>
+ 
+        {/* Top Customers Banner */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <FiDollarSign className="text-blue-600" size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-900">Top Customers</p>
+                <p className="text-sm text-gray-600">{stats.topCustomers} customers have spent over $1,000</p>
+              </div>
+            </div>
+            <button className="text-sm text-blue-600 hover:underline font-medium">View all →</button>
+          </div>
         </div>
  
         {/* Search */}
@@ -270,6 +339,13 @@ const AdminUsers = () => {
                                 title="View Details"
                               >
                                 <FiEye size={16} />
+                              </button>
+                              <button
+                                onClick={() => openEditUser(user)}
+                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                title="Edit Customer"
+                              >
+                                <FiEdit2 size={16} />
                               </button>
                               <button
                                 onClick={() => toggleBlock(user.id, user.is_blocked)}
@@ -470,6 +546,109 @@ const AdminUsers = () => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Add / Edit User Modal */}
+      {showUserForm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900">
+                {editUser ? 'Edit Customer' : 'Add Customer'}
+              </h3>
+              <button onClick={() => setShowUserForm(false)} className="p-2 hover:bg-gray-100 rounded-lg transition">
+                <FiXCircle size={24} className="text-gray-400" />
+              </button>
+            </div>
+ 
+            <form onSubmit={handleUserSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input
+                  type="text"
+                  value={userForm.username}
+                  onChange={(e) => setUserForm({ ...userForm, username: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                  required
+                  disabled={!!editUser}
+                />
+              </div>
+ 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={userForm.email}
+                  onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                  required
+                  disabled={!!editUser}
+                />
+              </div>
+ 
+              {!editUser && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                  <input
+                    type="password"
+                    value={userForm.password}
+                    onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              )}
+ 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={userForm.full_name}
+                  onChange={(e) => setUserForm({ ...userForm, full_name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                />
+              </div>
+ 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  value={userForm.phone}
+                  onChange={(e) => setUserForm({ ...userForm, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                />
+              </div>
+ 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select
+                  value={userForm.role}
+                  onChange={(e) => setUserForm({ ...userForm, role: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
+                >
+                  <option value="user">Customer</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+ 
+              <div className="flex gap-3 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUserForm(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-black text-white rounded-lg text-sm hover:bg-gray-800 transition"
+                >
+                  {editUser ? 'Update Customer' : 'Create Customer'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

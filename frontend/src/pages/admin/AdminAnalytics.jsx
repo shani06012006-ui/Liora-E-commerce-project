@@ -5,10 +5,11 @@ import toast from 'react-hot-toast';
 import { adminAPI } from '../../services/api';
 import { useLocation } from 'react-router-dom';
 import {
-  FiTrendingUp, FiTrendingDown, FiDollarSign, FiShoppingCart,
+  FiTrendingUp, FiTrendingDown, FiShoppingCart,
   FiUsers, FiPackage, FiDownload,
   FiPieChart, FiBarChart2, 
 } from 'react-icons/fi';
+import {FaRupeeSign} from "react-icons/fa6"
  
 // Stats Card Component
 const StatsCard = ({ title, value, change, icon: Icon, color }) => {
@@ -111,8 +112,8 @@ const SalesReport = () => {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatsCard 
           title="Total Sales" 
-          value={`$${totalSales.toLocaleString()}`} 
-          icon={FiDollarSign} 
+          value={`₹${totalSales.toLocaleString()}`} 
+          icon={FaRupeeSign} 
           color="green" 
         />
         <StatsCard 
@@ -123,7 +124,7 @@ const SalesReport = () => {
         />
         <StatsCard 
           title="Avg Order Value" 
-          value={`$${avgOrderValue.toFixed(2)}`} 
+          value={`₹${avgOrderValue.toFixed(2)}`} 
           icon={FiBarChart2} 
           color="purple" 
         />
@@ -168,8 +169,8 @@ const SalesReport = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sales ($)</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Order ($)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Sales (₹)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Order (₹)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -189,10 +190,10 @@ const SalesReport = () => {
                       {item.total_orders || 0}
                     </td>
                     <td className="px-6 py-4 text-sm text-right font-semibold text-gray-900">
-                      ${(item.total_sales || 0).toFixed(2)}
+                      ₹{(item.total_sales || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-gray-600">
-                      ${(item.total_orders > 0 ? (item.total_sales / item.total_orders) : 0).toFixed(2)}
+                      ₹{(item.total_orders > 0 ? (item.total_sales / item.total_orders) : 0).toFixed(2)}
                     </td>
                   </tr>
                 ))
@@ -245,9 +246,9 @@ const RevenueReport = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={FiDollarSign} color="green" />
-        <StatsCard title="Total Profit" value={`$${totalProfit.toLocaleString()}`} icon={FiTrendingUp} color="blue" />
-        <StatsCard title="Total Cost" value={`$${totalCost.toLocaleString()}`} icon={FiPackage} color="yellow" />
+        <StatsCard title="Total Revenue" value={`₹${totalRevenue.toLocaleString()}`} icon={FaRupeeSign} color="green" />
+        <StatsCard title="Total Profit" value={`₹${totalProfit.toLocaleString()}`} icon={FiTrendingUp} color="blue" />
+        <StatsCard title="Total Cost" value={`₹${totalCost.toLocaleString()}`} icon={FiPackage} color="yellow" />
         <StatsCard title="Profit Margin" value={`${profitMargin.toFixed(1)}%`} icon={FiPieChart} color="purple" />
       </div>
  
@@ -286,9 +287,9 @@ const RevenueReport = () => {
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue ($)</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost ($)</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit ($)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue (₹)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost (₹)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit (₹)</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Margin (%)</th>
               </tr>
             </thead>
@@ -370,8 +371,8 @@ const CustomerReport = () => {
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <StatsCard title="Total Customers" value={totalCustomers.toLocaleString()} icon={FiUsers} color="blue" />
         <StatsCard title="Total Orders" value={totalOrders.toLocaleString()} icon={FiShoppingCart} color="green" />
-        <StatsCard title="Total Spent" value={`$${totalSpent.toLocaleString()}`} icon={FiDollarSign} color="purple" />
-        <StatsCard title="Avg Spent" value={`$${avgSpent.toFixed(2)}`} icon={FiBarChart2} color="indigo" />
+        <StatsCard title="Total Spent" value={`₹${totalSpent.toLocaleString()}`} icon={FaRupeeSign} color="purple" />
+        <StatsCard title="Avg Spent" value={`₹${avgSpent.toFixed(2)}`} icon={FiBarChart2} color="indigo" />
       </div>
  
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -410,8 +411,8 @@ const CustomerReport = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent ($)</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Order ($)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent (₹)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Order (₹)</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Segment</th>
               </tr>
             </thead>
@@ -435,10 +436,10 @@ const CustomerReport = () => {
                       {customer.total_orders || 0}
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-semibold text-gray-900">
-                      ${(customer.total_spent || 0).toFixed(2)}
+                      ₹{(customer.total_spent || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-right text-sm text-gray-600">
-                      ${(customer.total_orders > 0 ? (customer.total_spent / customer.total_orders) : 0).toFixed(2)}
+                      ₹{(customer.total_orders > 0 ? (customer.total_spent / customer.total_orders) : 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${
@@ -508,9 +509,9 @@ const ProductPerformance = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <StatsCard title="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={FiDollarSign} color="green" />
+        <StatsCard title="Total Revenue" value={`₹${totalRevenue.toLocaleString()}`} icon={FaRupeeSign} color="green" />
         <StatsCard title="Total Sales" value={totalSales.toLocaleString()}  icon={FiShoppingCart} color="blue" />
-        <StatsCard title="Total Profit" value={`$${totalProfit.toLocaleString()}`} icon={FiTrendingUp} color="purple" />
+        <StatsCard title="Total Profit" value={`₹${totalProfit.toLocaleString()}`} icon={FiTrendingUp} color="purple" />
       </div>
  
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -548,8 +549,8 @@ const ProductPerformance = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Sales</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue ($)</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit ($)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue (₹)</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Profit (₹)</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Margin (%)</th>
                 <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Trend</th>
               </tr>

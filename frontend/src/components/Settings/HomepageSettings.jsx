@@ -23,7 +23,7 @@ const HomepageSettings = () => {
     ],
     featured_products_count: 8,
     show_banner: true,
-    banner_text: 'Free shipping on orders over $50',
+    banner_text: 'Free shipping on orders over ₹2000',
     banner_link: '/collections',
     sections_order: ['hero', 'categories', 'featured', 'banner', 'newsletter'],
   });

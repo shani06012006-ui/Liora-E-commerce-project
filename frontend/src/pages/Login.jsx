@@ -148,7 +148,7 @@ const Login = () => {
       setTokens(accessToken, refreshToken);
       
       const tabId = getTabId();
-      console.log('🔐 Google Login - Tab ID:', tabId);
+      console.log('Google Login - Tab ID:', tabId);
       
       localStorage.setItem('last_user', JSON.stringify(fullUserData));
       localStorage.setItem('last_token', accessToken);

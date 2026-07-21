@@ -5,7 +5,7 @@ import { adminAPI, getImageUrl } from '../../services/api';
 import {
   FiSearch, FiEdit, FiTrash2, FiEye, FiFilter, FiChevronLeft, FiChevronRight,
   FiGrid, FiList, FiPackage, FiBox, FiAlertTriangle, FiXCircle, FiTrendingUp,
-  FiDownload, FiCheckSquare, FiSquare
+  FiDownload, FiCheckSquare, FiSquare, FiPlus
 } from 'react-icons/fi';
  
 // Must match backend Product.CATEGORY_CHOICES exactly (products/models.py)
@@ -71,19 +71,19 @@ const AdminProducts = () => {
   finally { setLoading(false); }
   }, [calculateStats]);
  
+  const openAddModal = () => {
+    setEdit(null);
+    setForm(EMPTY_FORM);
+    setImageFile(null);
+    setImagePreview('');
+    setShowForm(true);
+  };
+ 
   useEffect(() => { 
     fetchProducts();
-    
-    // Listen for add product event
-    const handleOpenAdd = () => {
-      setEdit(null);
-      setForm(EMPTY_FORM);
-      setImageFile(null);
-      setImagePreview('');
-      setShowForm(true);
-    };
-    document.addEventListener('openAddProductModal', handleOpenAdd);
-    return () => document.removeEventListener('openAddProductModal', handleOpenAdd);
+    // Kept for backward compatibility with any other code dispatching this event
+    document.addEventListener('openAddProductModal', openAddModal);
+    return () => document.removeEventListener('openAddProductModal', openAddModal);
   }, [fetchProducts]);
  
  
@@ -321,6 +321,13 @@ const AdminProducts = () => {
                   <FiGrid size={18} />
                 </button>
               </div>
+              <button
+                onClick={openAddModal}
+                className="flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+              >
+                <FiPlus className="mr-2" size={16} />
+                Add Product
+              </button>
             </div>
           </div>
         </div>
