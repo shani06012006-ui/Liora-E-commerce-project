@@ -1,18 +1,18 @@
 .admin-shell {
   display: flex;
   min-height: 100vh;
-  background: #f5f6f8;
+  background: var(--admin-page-bg, #f5f6f8);
 }
  
 /* SIDEBAR */
 .admin-sidebar {
   width: 260px;
   flex-shrink: 0;
-  background: #14141a;
-  color: #e5e7eb;
+  background: var(--admin-sidebar-bg, #14141a);
+  color: var(--admin-sidebar-text, #e5e7eb);
   display: flex;
   flex-direction: column;
-  transition: width 0.25s ease;
+  transition: width 0.25s ease, background-color 0.3s ease, color 0.3s ease;
 }
  
 .sidebar-collapsed .admin-sidebar { width: 76px; }
@@ -27,8 +27,8 @@
 }
  
 .brand-text { display: flex; flex-direction: column; }
-.brand-name { font-size: 22px; font-weight: 700; letter-spacing: 3px; color: #fff; }
-.brand-sub { font-size: 9px; letter-spacing: 2px; color: #9ca3af; margin-top: 2px; }
+.brand-name { font-size: 22px; font-weight: 700; letter-spacing: 3px; color: var(--admin-sidebar-heading, #fff); }
+.brand-sub { font-size: 9px; letter-spacing: 2px; color: var(--admin-sidebar-text-muted, #9ca3af); margin-top: 2px; }
  
 .sidebar-nav {
   flex: 1;
@@ -41,7 +41,7 @@
  
 .sidebar-divider {
   height: 1px;
-  background: rgba(255,255,255,0.08);
+  background: var(--admin-sidebar-divider, rgba(255,255,255,0.08));
   margin: 10px 4px;
 }
  
@@ -52,7 +52,7 @@
   gap: 12px;
   padding: 10px 12px;
   border-radius: 8px;
-  color: #b3b6bd;
+  color: var(--admin-sidebar-text, #b3b6bd);
   text-decoration: none;
   font-size: 14px;
   background: transparent;
@@ -92,12 +92,12 @@
 }
  
 .sidebar-link:hover,
-.sidebar-parent:hover { background: rgba(255,255,255,0.06); color: #fff; }
+.sidebar-parent:hover { background: var(--admin-sidebar-hover-bg, rgba(255,255,255,0.06)); color: var(--admin-sidebar-heading, #fff); }
  
 .sidebar-link.active,
 .sidebar-parent.active {
-  background: #fff;
-  color: #14141a;
+  background: var(--admin-sidebar-active-bg, #fff);
+  color: var(--admin-sidebar-active-text, #14141a);
   font-weight: 600;
 }
  
@@ -117,13 +117,13 @@
   padding: 8px 10px;
   border-radius: 6px;
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--admin-sidebar-text-muted, #9ca3af);
   text-decoration: none;
   transition: all 0.2s ease;
 }
  
-.sidebar-sublink:hover { color: #fff; background: rgba(255,255,255,0.06); }
-.sidebar-sublink.active { color: #fff; font-weight: 600; }
+.sidebar-sublink:hover { color: var(--admin-sidebar-heading, #fff); background: var(--admin-sidebar-hover-bg, rgba(255,255,255,0.06)); }
+.sidebar-sublink.active { color: var(--admin-sidebar-heading, #fff); font-weight: 600; }
  
 .sidebar-footer { padding: 16px; }
  
@@ -131,15 +131,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: rgba(255,255,255,0.06);
+  background: var(--admin-sidebar-hover-bg, rgba(255,255,255,0.06));
   border-radius: 10px;
   padding: 14px;
 }
  
-.help-icon { color: #9ca3af; }
+.help-icon { color: var(--admin-sidebar-text-muted, #9ca3af); }
 .help-text { display: flex; flex-direction: column; font-size: 12px; }
-.help-text strong { color: #fff; font-size: 13px; }
-.help-text span { color: #9ca3af; }
+.help-text strong { color: var(--admin-sidebar-heading, #fff); font-size: 13px; }
+.help-text span { color: var(--admin-sidebar-text-muted, #9ca3af); }
  
 /* MAIN */
 .admin-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -149,8 +149,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 18px 32px;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  background: var(--admin-header-bg, #fff);
+  border-bottom: 1px solid var(--admin-header-border, #e5e7eb);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
  
 .header-left { display: flex; align-items: center; gap: 16px; }
@@ -159,15 +160,15 @@
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #374151;
+  color: var(--admin-header-icon, #374151);
   display: flex;
   padding: 6px;
   border-radius: 8px;
 }
-.header-menu-btn:hover { background: #f3f4f6; }
+.header-menu-btn:hover { background: var(--admin-search-bg, #f3f4f6); }
  
-.header-title { font-size: 22px; font-weight: 700; color: #1a1a1a; margin: 0; }
-.header-subtitle { font-size: 13px; color: #6b7280; margin: 2px 0 0; }
+.header-title { font-size: 22px; font-weight: 700; color: var(--admin-header-title, #1a1a1a); margin: 0; }
+.header-subtitle { font-size: 13px; color: var(--admin-header-subtitle, #6b7280); margin: 2px 0 0; }
  
 .header-right { display: flex; align-items: center; gap: 20px; }
  
@@ -175,7 +176,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #f3f4f6;
+  background: var(--admin-search-bg, #f3f4f6);
   border-radius: 10px;
   padding: 10px 14px;
   width: 280px;
@@ -186,16 +187,16 @@
   outline: none;
   font-size: 14px;
   width: 100%;
-  color: #1a1a1a;
+  color: var(--admin-header-title, #1a1a1a);
 }
-.header-search-icon { color: #9ca3af; flex-shrink: 0; }
+.header-search-icon { color: var(--admin-header-subtitle, #9ca3af); flex-shrink: 0; }
  
 .header-icon-btn {
   position: relative;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: #374151;
+  color: var(--admin-header-icon, #374151);
   display: flex;
   padding: 6px;
 }
@@ -229,7 +230,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #1a1a1a;
+  background: var(--admin-avatar-bg, #1a1a1a);
   color: #fff;
   display: flex;
   align-items: center;
@@ -241,8 +242,8 @@
 .header-avatar img { width: 100%; height: 100%; object-fit: cover; }
  
 .header-user-text { display: flex; flex-direction: column; line-height: 1.2; }
-.header-user-text strong { font-size: 13px; color: #1a1a1a; }
-.header-user-text span { font-size: 11px; color: #9ca3af; }
+.header-user-text strong { font-size: 13px; color: var(--admin-header-title, #1a1a1a); }
+.header-user-text span { font-size: 11px; color: var(--admin-header-subtitle, #9ca3af); }
  
 .header-user-menu {
   position: absolute;
@@ -282,7 +283,7 @@
 @media (max-width: 1024px) {
   .header-search { display: none; }
 }
-
+ 
 /* Ensure proper flex/grid display */
 .settings-section {
   width: 100%;
@@ -293,3 +294,4 @@
 .settings-section * {
   box-sizing: border-box;
 }
+ 

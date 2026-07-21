@@ -4,6 +4,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { FiMenu, FiSearch, FiChevronDown, FiChevronRight, FiHome, FiShoppingCart, FiBox, FiUsers, FiStar, FiSettings, FiHeadphones, FiLogOut, FiBarChart2, FiCreditCard } from 'react-icons/fi';
 import './AdminLayout.css';
+import '../theme/adminThemes.css';
+import { getStoredAdminTheme, applyAdminTheme } from '../theme/adminThemes';
  
 const analyticsSubItems = [
   { label: 'Sales Report', path: '/admin/analytics/sales' },
@@ -43,6 +45,14 @@ const AdminLayout = ({ title, subtitle, children }) => {
     role: user?.role === 'admin' || user?.is_staff ? 'Super Admin' : 'Admin',
     avatarUrl: user?.profile_pic_url || null,
   };
+ 
+  // Re-apply the saved theme every time any admin page mounts. Each admin
+  // page renders its own AdminLayout instance, so this keeps the chosen
+  // theme consistent as you navigate around, without needing a global
+  // React context/provider.
+  useEffect(() => {
+    applyAdminTheme(getStoredAdminTheme());
+  }, []);
   
   const [openGroups, setOpenGroups] = useState(() => {
     const initial = {};

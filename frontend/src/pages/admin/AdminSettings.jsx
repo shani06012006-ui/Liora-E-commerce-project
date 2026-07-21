@@ -7,7 +7,8 @@ import NotificationSettings from '../../components/Settings/NotificationSettings
 import HomepageSettings from '../../components/Settings/HomepageSettings';
 import SecuritySettings from '../../components/Settings/SecuritySettings';
 import AdminProfileSettings from '../../components/Settings/AdminProfileSettings';
-import { FiSettings, FiShoppingBag, FiCreditCard, FiBell, FiHome, FiShield, FiUser } from 'react-icons/fi';
+import ThemeSettings from '../../components/Settings/ThemeSettings';
+import { FiSettings, FiShoppingBag, FiCreditCard, FiBell, FiHome, FiShield, FiUser, FiDroplet } from 'react-icons/fi';
  
 // ============================================================
 // Styles are embedded directly here (instead of an external
@@ -777,6 +778,7 @@ const AdminSettings = () => {
  
   const tabs = [
     { id: 'general', label: 'General', icon: <FiSettings /> },
+    { id: 'theme', label: 'Theme', icon: <FiDroplet /> },
     { id: 'store', label: 'Store', icon: <FiShoppingBag /> },
     { id: 'payments', label: 'Payments', icon: <FiCreditCard /> },
     { id: 'notifications', label: 'Notifications', icon: <FiBell /> },
@@ -788,6 +790,7 @@ const AdminSettings = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'general': return <GeneralSettings />;
+      case 'theme': return <ThemeSettings />;
       case 'store': return <StoreSettings />;
       case 'payments': return <PaymentSettings />;
       case 'notifications': return <NotificationSettings />;
