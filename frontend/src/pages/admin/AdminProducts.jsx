@@ -107,8 +107,6 @@ const AdminProducts = () => {
     try {
       let payload = form;
  
-      // If an image file was chosen, send multipart/form-data so the
-      // backend's ImageField (products/models.py -> image) receives it.
       if (imageFile) {
         const fd = new FormData();
         Object.entries(form).forEach(([key, value]) => {
@@ -231,21 +229,18 @@ const AdminProducts = () => {
           <StatCard 
             title="Total Products" 
             value={stats.total.toLocaleString()} 
-            change="+12.5%"
             icon={FiPackage}
             color="blue"
           />
           <StatCard 
             title="In Stock" 
             value={stats.inStock.toLocaleString()} 
-            change="+8.4%"
             icon={FiBox}
             color="green"
           />
           <StatCard 
             title="Low Stock" 
             value={stats.lowStock.toLocaleString()} 
-            change="-4.2%"
             icon={FiAlertTriangle}
             color="yellow"
             trend="down"
@@ -253,7 +248,6 @@ const AdminProducts = () => {
           <StatCard 
             title="Out of Stock" 
             value={stats.outOfStock.toLocaleString()} 
-            change="-2.1%"
             icon={FiXCircle}
             color="red"
             trend="down"
@@ -707,7 +701,7 @@ const AdminProducts = () => {
 };
  
 // Stat Card Component
-const StatCard = ({ title, value, change, icon: Icon, color, trend = 'up' }) => {
+const StatCard = ({ title, value, icon: Icon, color = 'up' }) => {
   const colorClasses = {
     blue: 'text-blue-600 bg-blue-50',
     green: 'text-green-600 bg-green-50',
@@ -715,15 +709,7 @@ const StatCard = ({ title, value, change, icon: Icon, color, trend = 'up' }) => 
     red: 'text-red-600 bg-red-50'
   };
  
-  const trendColors = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    red: 'bg-red-50 text-red-600'
-  };
- 
-  const isPositive = trend === 'up' ? change.startsWith('+') : change.startsWith('-');
-  const trendIcon = isPositive ? <FiTrendingUp className="inline mr-1" size={12} /> : 
+  // const isPositive = trend === 'up' ? change.startsWith('+') : change.startsWith('-');
     <FiTrendingUp className="inline mr-1 transform rotate-180" size={12} />;
  
   return (
@@ -732,10 +718,6 @@ const StatCard = ({ title, value, change, icon: Icon, color, trend = 'up' }) => 
         <div>
           <p className="text-sm text-gray-500">{title}</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          <p className={`text-xs font-medium mt-2 ${trendColors[color]} inline-block px-2 py-0.5 rounded-full`}>
-            {trendIcon}
-            {change} vs last month
-          </p>
         </div>
         <div className={`p-3 rounded-xl ${colorClasses[color]}`}>
           <Icon size={24} />

@@ -234,22 +234,6 @@ const AdminUsers = () => {
           ))}
         </div>
  
-        {/* Top Customers Banner */}
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FiDollarSign className="text-blue-600" size={20} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Top Customers</p>
-                <p className="text-sm text-gray-600">{stats.topCustomers} customers have spent over $1,000</p>
-              </div>
-            </div>
-            <button className="text-sm text-blue-600 hover:underline font-medium">View all →</button>
-          </div>
-        </div>
- 
         {/* Search */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200">

@@ -328,35 +328,30 @@ const AdminReviews = () => {
             value={stats.total} 
             icon={FiMessageSquare} 
             color="blue" 
-            change="+15.6%" 
           />
           <StatCard 
             title="Pending Reviews" 
             value={stats.pending} 
             icon={FiClock} 
             color="yellow" 
-            change="+8.2%" 
           />
           <StatCard 
             title="Approved Reviews" 
             value={stats.approved} 
             icon={FiCheckCircle} 
             color="green" 
-            change="+13.4%" 
           />
           <StatCard 
             title="Hidden Reviews" 
             value={stats.hidden} 
             icon={FiEyeOff} 
             color="red" 
-            change="-5.1%" 
           />
           <StatCard 
             title="Average Rating" 
             value={`${stats.avgRating} / 5`} 
             icon={FiStar} 
             color="purple" 
-            change="+0.3" 
           />
         </div>
  
