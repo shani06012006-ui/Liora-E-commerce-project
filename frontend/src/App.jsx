@@ -10,6 +10,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Sidebar from './components/Sidebar';
 import LoadingSpinner from './components/LoadingSpinner';
+import ErrorBoundary from './components/ErrorBoundary';
  
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -172,7 +173,8 @@ const AppContent = () => {
   }
  
   return (
-    <Routes>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
       {/* Public Routes */}
       <Route path="/" element={<MainLayout><Home /></MainLayout>} />
       <Route path="/Home" element={<MainLayout><Home /></MainLayout>} />
@@ -229,7 +231,8 @@ const AppContent = () => {
  
       {/* 404 */}
       <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 };
  
@@ -246,12 +249,21 @@ const NotFound = () => (
 function App() {
   return (
     <Provider store={store}>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Toaster position="top-right" />
-        <AppContent />
+        <AppWithErrorBoundary />
       </Router>
     </Provider>
   );
 }
+ 
+const AppWithErrorBoundary = () => {
+  const location = useLocation();
+  return (
+    <ErrorBoundary locationKey={location.pathname}>
+      <AppContent />
+    </ErrorBoundary>
+  );
+};
  
 export default App;

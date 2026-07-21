@@ -282,6 +282,7 @@
 @media (max-width: 1024px) {
   .header-search { display: none; }
 }
+
 /* Ensure proper flex/grid display */
 .settings-section {
   width: 100%;
