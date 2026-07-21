@@ -29,9 +29,9 @@ export const ADMIN_THEMES = [
   {
     id: 'lavender',
     name: 'Lavender',
-    description: 'Cool dreamy purple with a gentle glow',
+    description: 'Deep royal purple with a rich violet glow',
     iconKey: 'droplet',
-    colors: ['#221a35', '#f4f0fc', '#a78bd6', '#ffffff'],
+    colors: ['#1a1228', '#f3effc', '#8b5cf6', '#ffffff'],
   },
   {
     id: 'rose-gold',
@@ -39,13 +39,6 @@ export const ADMIN_THEMES = [
     description: 'Warm metallic blush, luxe and premium',
     iconKey: 'award',
     colors: ['#2c1c1b', '#fdf3ee', '#dba590', '#f6d9c4'],
-  },
-  {
-    id: 'champagne',
-    name: 'Champagne',
-    description: 'Warm neutral gold, refined and understated',
-    iconKey: 'star',
-    colors: ['#2a2416', '#faf7ee', '#c9a86a', '#e8dcb8'],
   },
 ];
  

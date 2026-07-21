@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { 
   FiSave, FiRefreshCw, FiGlobe, FiMail, FiPhone, FiMapPin, 
-  FiClock, FiFlag, FiMoon, FiSun, FiCheckCircle, FiInfo
+  FiClock, FiFlag, FiCheckCircle, FiInfo
 } from 'react-icons/fi';
 
 const GeneralSettings = () => {
@@ -226,64 +226,6 @@ const GeneralSettings = () => {
               <option value="hi">🇮🇳 Hindi</option>
               <option value="zh">🇨🇳 Chinese</option>
             </select>
-          </div>
-
-          {/* Toggle Section - Full width */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 rounded-xl p-4 md:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* Maintenance Mode */}
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-gray-300 transition-all">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Maintenance Mode</p>
-                    <p className="text-xs text-gray-500">Store unavailable</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.maintenance_mode}
-                      onChange={(e) => setSettings({ ...settings, maintenance_mode: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-black/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                  </label>
-                </div>
-
-                {/* Dark Mode */}
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-gray-300 transition-all">
-                  <div className="flex items-center gap-2">
-                    {settings.dark_mode ? <FiMoon className="text-gray-700" size={16} /> : <FiSun className="text-gray-700" size={16} />}
-                    <p className="text-sm font-medium text-gray-800">Dark Mode</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.dark_mode}
-                      onChange={(e) => setSettings({ ...settings, dark_mode: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-black/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                  </label>
-                </div>
-
-                {/* Analytics */}
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg shadow-sm border border-gray-100 hover:border-gray-300 transition-all">
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">Analytics</p>
-                    <p className="text-xs text-gray-500">Track store data</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.analytics_enabled}
-                      onChange={(e) => setSettings({ ...settings, analytics_enabled: e.target.checked })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-black/20 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                  </label>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
