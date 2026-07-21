@@ -45,7 +45,7 @@ const StoreSettings = () => {
     setSaving(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1200));
-      toast.success('🎨 Store settings updated successfully!');
+      toast.success(' Store settings updated successfully!');
     } catch {
       toast.error('Failed to save settings');
     } finally {

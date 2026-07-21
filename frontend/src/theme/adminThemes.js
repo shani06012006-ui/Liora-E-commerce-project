@@ -1,8 +1,5 @@
 // frontend/src/theme/adminThemes.js
-//
-// Single source of truth for admin dashboard themes.
-// Each theme's `id` matches the CSS selector [data-admin-theme="<id>"]
-// defined in adminThemes.css - keep these two files in sync.
+
  
 export const ADMIN_THEMES = [
   {
@@ -57,12 +54,7 @@ export const getStoredAdminTheme = () => {
   return DEFAULT_ADMIN_THEME;
 };
  
-/**
- * Apply a theme id to the document and persist it.
- * Setting the attribute on <html> means the theme survives across every
- * admin page (each of which mounts its own AdminLayout instance) without
- * needing a shared React context/provider.
- */
+
 export const applyAdminTheme = (themeId) => {
   const valid = ADMIN_THEMES.some((t) => t.id === themeId) ? themeId : DEFAULT_ADMIN_THEME;
   document.documentElement.setAttribute('data-admin-theme', valid);

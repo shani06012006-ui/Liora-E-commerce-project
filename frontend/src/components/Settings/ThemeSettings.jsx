@@ -14,7 +14,7 @@ const ThemeSettings = () => {
     setSelectedId(applied);
  
     const theme = ADMIN_THEMES.find((t) => t.id === applied);
-    toast.success(`✨ ${theme?.name || 'Theme'} applied`);
+    toast.success(` ${theme?.name || 'Theme'} applied`);
   };
  
   return (
