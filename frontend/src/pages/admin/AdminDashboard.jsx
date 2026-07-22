@@ -15,14 +15,14 @@ import { FiDollarSign, FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangl
 import { Link } from 'react-router-dom';
 import { adminAPI, getImageUrl } from '../../services/api';
  
-
+ 
  
 const formatCurrencyShort = (value) => {
   if (value >= 1000) return `₹${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
   return `₹${value}`;
 };
  
-const RevenueLineChart = ({ data }) => {
+const RevenueBarChart = ({ data }) => {
   const [progress, setProgress] = useState(0);
   const [hoverIndex, setHoverIndex] = useState(null);
   const dataKey = data.map((d) => `${d.label}:${d.revenue}`).join('|');
@@ -35,155 +35,119 @@ const RevenueLineChart = ({ data }) => {
     return () => cancelAnimationFrame(raf);
   }, [dataKey]);
  
+  // Guard: only ever render real, fetched data — never fabricate placeholder bars.
+  if (!Array.isArray(data) || data.length === 0) {
+    return (
+      <div className="h-64 flex flex-col items-center justify-center text-gray-400 text-sm gap-1">
+        <FiBarChart2 size={22} className="text-gray-300" />
+        No revenue data available for this period
+      </div>
+    );
+  }
+ 
   const width = 700;
   const height = 260;
-  const padLeft = 52;
+  const padLeft = 56;
   const padRight = 16;
-  const padTop = 20;
+  const padTop = 24;
   const padBottom = 32;
   const plotW = width - padLeft - padRight;
   const plotH = height - padTop - padBottom;
  
   const values = data.map((d) => d.revenue);
-  const maxValue = Math.max(...values, 1);
+  const maxValue = Math.max(...values, 0);
   const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue || 1)));
-  const axisMax = Math.ceil((maxValue * 1.15) / magnitude) * magnitude || 1;
- 
-  const xFor = (i) => padLeft + (data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2);
-  const yFor = (v) => padTop + plotH - (v / axisMax) * plotH;
- 
-  const points = data.map((d, i) => ({ x: xFor(i), y: yFor(d.revenue), ...d }));
- 
-  // Smooth path via Catmull-Rom -> cubic bezier conversion
-  const buildSmoothPath = (pts) => {
-    if (pts.length === 0) return '';
-    if (pts.length === 1) return `M ${pts[0].x} ${pts[0].y}`;
-    let d = `M ${pts[0].x} ${pts[0].y}`;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i - 1] || pts[i];
-      const p1 = pts[i];
-      const p2 = pts[i + 1];
-      const p3 = pts[i + 2] || p2;
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
-      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-    }
-    return d;
-  };
- 
-  const linePath = buildSmoothPath(points);
-  const areaPath = points.length
-    ? `${linePath} L ${points[points.length - 1].x} ${padTop + plotH} L ${points[0].x} ${padTop + plotH} Z`
-    : '';
+  const axisMax = maxValue > 0 ? Math.ceil((maxValue * 1.15) / magnitude) * magnitude : 1;
  
   const gridLines = 4;
   const yTicks = Array.from({ length: gridLines + 1 }, (_, i) => (axisMax / gridLines) * i).reverse();
  
-  const hovered = hoverIndex !== null ? points[hoverIndex] : null;
+  const n = data.length;
+  const slot = plotW / n;
+  const barWidth = Math.min(48, slot * 0.55);
+  const gap = slot - barWidth;
  
-  const handleMouseMove = (e) => {
-    const svg = e.currentTarget;
-    const rect = svg.getBoundingClientRect();
-    const relX = ((e.clientX - rect.left) / rect.width) * width;
-    let closest = 0;
-    let bestDist = Infinity;
-    points.forEach((p, i) => {
-      const dist = Math.abs(p.x - relX);
-      if (dist < bestDist) {
-        bestDist = dist;
-        closest = i;
-      }
-    });
-    setHoverIndex(closest);
-  };
+  const bars = data.map((d, i) => {
+    const x = padLeft + i * slot + gap / 2;
+    const barHeight = axisMax > 0 ? (d.revenue / axisMax) * plotH : 0;
+    const y = padTop + plotH - barHeight;
+    return { ...d, x, y, barHeight, index: i };
+  });
  
-  if (points.length === 0) {
-    return <div className="h-64 flex items-center justify-center text-gray-400 text-sm">No revenue data available</div>;
-  }
+  const hovered = hoverIndex !== null ? bars[hoverIndex] : null;
+  const peakIndex = values.indexOf(Math.max(...values));
  
   return (
     <div className="relative">
-      <svg
-        viewBox={`0 0 ${width} ${height}`}
-        className="w-full h-64 cursor-crosshair"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setHoverIndex(null)}
-      >
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64">
         <defs>
-          <linearGradient id="revenueAreaGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#F43F5E" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#F43F5E" stopOpacity="0" />
+          <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#FB7185" />
+            <stop offset="100%" stopColor="#F43F5E" />
+          </linearGradient>
+          <linearGradient id="barGradientPeak" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#111827" />
+            <stop offset="100%" stopColor="#374151" />
           </linearGradient>
         </defs>
  
+        {/* Gridlines + Y axis labels */}
         {yTicks.map((tick, i) => {
-          const y = yFor(tick);
+          const y = padTop + plotH - (tick / axisMax) * plotH;
           return (
             <g key={i}>
               <line x1={padLeft} y1={y} x2={width - padRight} y2={y} stroke="#F3F4F6" strokeWidth="1" />
-              <text x={padLeft - 8} y={y + 4} textAnchor="end" fontSize="11" fill="#9CA3AF">
+              <text x={padLeft - 10} y={y + 4} textAnchor="end" fontSize="11" fill="#9CA3AF">
                 {formatCurrencyShort(Math.round(tick))}
               </text>
             </g>
           );
         })}
  
-        <path
-          d={areaPath}
-          fill="url(#revenueAreaGradient)"
-          style={{
-            opacity: progress,
-            transition: 'opacity 1s ease',
-          }}
-        />
+        {/* Baseline */}
+        <line x1={padLeft} y1={padTop + plotH} x2={width - padRight} y2={padTop + plotH} stroke="#E5E7EB" strokeWidth="1.5" />
  
-        <path
-          d={linePath}
-          fill="none"
-          stroke="#F43F5E"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          pathLength={100}
-          strokeDasharray={100}
-          strokeDashoffset={100 - progress * 100}
-          style={{ transition: 'stroke-dashoffset 1.1s cubic-bezier(0.4,0,0.2,1)' }}
-        />
- 
-        {/* Point markers */}
-        {points.map((p, i) => (
-          <circle
-            key={i}
-            cx={p.x}
-            cy={p.y}
-            r={hoverIndex === i ? 5 : 3.5}
-            fill="#fff"
-            stroke="#F43F5E"
-            strokeWidth="2"
-            style={{ opacity: progress, transition: 'r 0.15s ease, opacity 0.6s ease' }}
-          />
-        ))}
- 
-        {/* X axis labels */}
-        {points.map((p, i) => (
-          <text key={i} x={p.x} y={height - 8} textAnchor="middle" fontSize="10" fill="#9CA3AF">
-            {p.label}
-          </text>
-        ))}
- 
-        {/* Hover guide line */}
-        {hovered && (
-          <line x1={hovered.x} y1={padTop} x2={hovered.x} y2={padTop + plotH} stroke="#E5E7EB" strokeWidth="1" strokeDasharray="3 3" />
-        )}
+        {/* Bars */}
+        {bars.map((b, i) => {
+          const isHovered = hoverIndex === i;
+          const isPeak = i === peakIndex && b.revenue > 0;
+          const animatedHeight = b.barHeight * progress;
+          const animatedY = padTop + plotH - animatedHeight;
+          return (
+            <g
+              key={i}
+              onMouseEnter={() => setHoverIndex(i)}
+              onMouseLeave={() => setHoverIndex(null)}
+              style={{ cursor: 'pointer' }}
+            >
+              {/* Invisible full-height hit area so hovering near a short bar still works */}
+              <rect x={b.x - gap / 2} y={padTop} width={barWidth + gap} height={plotH} fill="transparent" />
+              <rect
+                x={b.x}
+                y={animatedY}
+                width={barWidth}
+                height={Math.max(animatedHeight, 0)}
+                rx={6}
+                ry={6}
+                fill={isPeak ? 'url(#barGradientPeak)' : 'url(#barGradient)'}
+                opacity={isHovered || hoverIndex === null ? 1 : 0.55}
+                style={{ transition: 'height 0.8s cubic-bezier(0.4,0,0.2,1), y 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease' }}
+              />
+              {/* X axis label */}
+              <text x={b.x + barWidth / 2} y={height - 10} textAnchor="middle" fontSize="10.5" fill={isHovered ? '#111827' : '#9CA3AF'} fontWeight={isHovered ? 600 : 400}>
+                {b.label}
+              </text>
+            </g>
+          );
+        })}
       </svg>
  
       {/* Floating tooltip */}
       {hovered && (
         <div
-          className="absolute bg-gray-900 text-white text-xs rounded-lg px-3 py-2 pointer-events-none shadow-lg -translate-x-1/2 -translate-y-full"
+          className="absolute bg-gray-900 text-white text-xs rounded-lg px-3 py-2 pointer-events-none shadow-lg -translate-x-1/2 -translate-y-full z-10"
           style={{
-            left: `${(hovered.x / width) * 100}%`,
+            left: `${((hovered.x + barWidth / 2) / width) * 100}%`,
             top: `${(hovered.y / height) * 100}%`,
             marginTop: '-10px',
           }}
@@ -385,7 +349,7 @@ const AdminDashboard = () => {
         delivered: res.data.delivered_orders || 0,
         cancelled: res.data.cancelled_orders || 0,
       });
-
+ 
       setRevenueTrend(
         (res.data.revenue_trend || []).map((item) => ({
           label: item.label,
@@ -493,7 +457,7 @@ const AdminDashboard = () => {
  
         {/* Charts Section - Revenue Bar Chart & Orders Donut Pie Chart */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Revenue Overview - Line/Area Chart */}
+          {/* Revenue Overview - Bar Chart (real data from backend revenue_trend) */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Revenue Overview</h2>
@@ -516,7 +480,7 @@ const AdminDashboard = () => {
               </span>
             </div>
  
-            <RevenueLineChart data={revenueTrend} />
+            <RevenueBarChart data={revenueTrend} />
           </div>
  
           {/* Orders Overview - Donut Pie Chart */}

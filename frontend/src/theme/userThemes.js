@@ -5,33 +5,38 @@ export const USER_THEMES = [
   {
     id: 'elegant-light',
     name: 'Elegant Light',
-    description: 'Clean charcoal navbar, soft light storefront',
-    colors: ['#14141a', '#f5f6f8', '#d4a574', '#ffffff'],
+    description: 'Minimal black & white monochrome theme',
+    colors: ['#000000', '#ffffff', '#000000', '#ffffff'],
   },
+
   {
-    id: 'midnight-black',
-    name: 'Midnight Black',
-    description: 'Deep black, full dark mode for night browsing',
-    colors: ['#0a0a0c', '#18181b', '#d4af7a', '#e5e7eb'],
+  id: 'midnight-black',
+  name: 'Midnight Black',
+  description: 'Pure monochrome dark theme',
+  colors: ['#000000', '#121212', '#ffffff', '#ffffff'],
   },
+
   {
-    id: 'blush-pink',
-    name: 'Blush Pink',
-    description: 'Soft romantic pink, warm and inviting',
-    colors: ['#2b1620', '#fdf1f5', '#e8a0b4', '#ffffff'],
+  id: 'blush-pink',
+  name: 'Blush Pink',
+  description: 'Elegant blush monochrome with soft luxury tones',
+  colors: ['#fff7f9', '#ffffff', '#d98fa8', '#2d1b22'],
   },
+
   {
-    id: 'lavender',
-    name: 'Lavender',
-    description: 'Deep royal purple with a rich violet glow',
-    colors: ['#1a1228', '#f3effc', '#8b5cf6', '#ffffff'],
-  },
+  id: 'lavender',
+  name: 'Lavender',
+  description: 'Soft royal lavender with elegant luxury tones',
+  colors: ['#f7f4fc', '#ffffff', '#8d74c7', '#2f2645'],
+},
+
   {
-    id: 'rose-gold',
-    name: 'Rose Gold',
-    description: 'Warm metallic blush, luxe and premium',
-    colors: ['#2c1c1b', '#fdf3ee', '#dba590', '#f6d9c4'],
-  },
+  id: 'rose-gold',
+  name: 'Rose Gold',
+  description: 'Warm rose gold with timeless elegance',
+  colors: ['#fcf6f3', '#ffffff', '#c98d79', '#3b2925'],
+},
+
 ];
  
 export const DEFAULT_USER_THEME = 'elegant-light';

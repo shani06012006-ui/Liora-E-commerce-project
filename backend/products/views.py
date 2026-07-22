@@ -1,3 +1,4 @@
+import calendar
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -5,16 +6,17 @@ from rest_framework.viewsets import ModelViewSet
 from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
 from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate, TruncMonth
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import get_user_model
-
+ 
 User = get_user_model()
-
-
+ 
+ 
 class AdminDashboardStatsView(APIView):
     permission_classes = [IsAuthenticated]
-
+ 
     def get(self, request):
         try:
             # Check admin permission
@@ -111,16 +113,72 @@ class AdminDashboardStatsView(APIView):
             ).order_by('stock')[:5]
             low_stock_products_data = ProductSerializer(low_stock_products, many=True).data
             
-            # Monthly data
-            monthly_data = []
-            months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-            for month in months:
-                monthly_data.append({
-                    'month': month,
-                    'revenue': 0,
-                    'orders': 0
-                })
-            
+            # Real revenue trend for the bar chart — bucketed by the requested period,
+            # built from actual delivered orders (not placeholder/fake data).
+            revenue_period = request.query_params.get('revenue_period', 'week')
+            revenue_trend = []
+            try:
+                from orders.models import Order as RevenueOrder
+                now = timezone.now()
+ 
+                if revenue_period == 'week':
+                    start = (now - timedelta(days=6)).replace(hour=0, minute=0, second=0, microsecond=0)
+                    daily = (
+                        RevenueOrder.objects.filter(created_at__gte=start, status='delivered')
+                        .annotate(day=TruncDate('created_at'))
+                        .values('day')
+                        .annotate(revenue=Sum('total_amount'))
+                    )
+                    revenue_by_day = {row['day']: float(row['revenue'] or 0) for row in daily}
+                    for i in range(7):
+                        d = (start + timedelta(days=i)).date()
+                        revenue_trend.append({
+                            'label': d.strftime('%a'),
+                            'revenue': round(revenue_by_day.get(d, 0), 2),
+                        })
+ 
+                elif revenue_period == 'month':
+                    start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+                    days_in_month = calendar.monthrange(now.year, now.month)[1]
+                    last_day = min(now.day, days_in_month)
+                    daily = (
+                        RevenueOrder.objects.filter(created_at__gte=start, status='delivered')
+                        .annotate(day=TruncDate('created_at'))
+                        .values('day')
+                        .annotate(revenue=Sum('total_amount'))
+                    )
+                    revenue_by_day = {row['day']: float(row['revenue'] or 0) for row in daily}
+                    num_weeks = (last_day + 6) // 7
+                    for w in range(num_weeks):
+                        week_start_day = w * 7 + 1
+                        week_end_day = min(week_start_day + 6, last_day)
+                        week_revenue = sum(
+                            revenue_by_day.get(start.replace(day=d).date(), 0)
+                            for d in range(week_start_day, week_end_day + 1)
+                        )
+                        revenue_trend.append({
+                            'label': f'Week {w + 1}',
+                            'revenue': round(week_revenue, 2),
+                        })
+ 
+                elif revenue_period == 'year':
+                    start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+                    monthly = (
+                        RevenueOrder.objects.filter(created_at__gte=start, status='delivered')
+                        .annotate(month=TruncMonth('created_at'))
+                        .values('month')
+                        .annotate(revenue=Sum('total_amount'))
+                    )
+                    revenue_by_month = {row['month'].month: float(row['revenue'] or 0) for row in monthly}
+                    months_short = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                    for m in range(1, now.month + 1):
+                        revenue_trend.append({
+                            'label': months_short[m - 1],
+                            'revenue': round(revenue_by_month.get(m, 0), 2),
+                        })
+            except Exception:
+                revenue_trend = []
+ 
             response_data = {
                 'total_users': total_users,
                 'total_products': total_products,
@@ -137,10 +195,10 @@ class AdminDashboardStatsView(APIView):
                 'popular_products': popular_products_data,
                 'top_categories': top_categories_data,
                 'low_stock_products': low_stock_products_data,
-                'monthly_data': monthly_data,
-                
+                'revenue_trend': revenue_trend,
+ 
                 'confirmed_orders': Order.objects.filter(status='confirmed').count(),
-                'processing_orders': Order.objects.filter(status='processing').count(),
+                'packed_orders': Order.objects.filter(status='packed').count(),
                 'shipped_orders': Order.objects.filter(status='shipped').count(),
                 'cancelled_orders': Order.objects.filter(status='cancelled').count(),
             }
@@ -155,14 +213,14 @@ class AdminDashboardStatsView(APIView):
                 },
                 status=500
             )
-
-
+ 
+ 
 class ProductViewSet(ModelViewSet):
     """Customer-facing browse endpoint — read-only, public."""
     serializer_class = ProductSerializer
     permission_classes = [AllowAny]
     http_method_names = ['get', 'head']
-
+ 
     def get_queryset(self):
         qs = Product.objects.filter(is_active=True)
         category = self.request.query_params.get('category')
@@ -172,27 +230,27 @@ class ProductViewSet(ModelViewSet):
         if search:
             qs = qs.filter(name__icontains=search)
         return qs.order_by('-created_at')
-
-
+ 
+ 
 class AdminProductListView(APIView):
     permission_classes = [IsAuthenticated]
-
+ 
     def get(self, request):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
         products = Product.objects.all().order_by('-created_at')
-
+ 
         search = request.query_params.get('search')
         if search:
             products = products.filter(name__icontains=search)
-
+ 
         is_active = request.query_params.get('is_active')
         if is_active is not None:
             products = products.filter(is_active=is_active.lower() == 'true')
-
+ 
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
-
+ 
     def post(self, request):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
@@ -201,11 +259,11 @@ class AdminProductListView(APIView):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-
-
+ 
+ 
 class AdminProductDetailView(APIView):
     permission_classes = [IsAuthenticated]
-
+ 
     def get(self, request, product_id):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
@@ -214,7 +272,7 @@ class AdminProductDetailView(APIView):
         except Product.DoesNotExist:
             return Response({"error": "Product not found."}, status=404)
         return Response(ProductSerializer(product).data)
-
+ 
     def patch(self, request, product_id):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
@@ -227,7 +285,7 @@ class AdminProductDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
-
+ 
     def delete(self, request, product_id):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
@@ -239,23 +297,23 @@ class AdminProductDetailView(APIView):
         product.delete()
         
         return Response({"message": "Product deactivated."}, status=204)
-
-
+ 
+ 
 class AdminCategoryListView(APIView):
     permission_classes = [IsAuthenticated]
-
+ 
     def get(self, request):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
         categories = Category.objects.all().order_by('name')
-
+ 
         search = request.query_params.get('search')
         if search:
             categories = categories.filter(name__icontains=search)
-
+ 
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data)
-
+ 
     def post(self, request):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
@@ -264,11 +322,11 @@ class AdminCategoryListView(APIView):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
-
-
+ 
+ 
 class AdminCategoryDetailView(APIView):
     permission_classes = [IsAuthenticated]
-
+ 
     def patch(self, request, category_id):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
@@ -281,7 +339,7 @@ class AdminCategoryDetailView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
-
+ 
     def delete(self, request, category_id):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)

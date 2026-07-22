@@ -109,7 +109,7 @@ const Wishlist = () => {
       {/* Header */}
       <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-200">
         <HeartIcon className="w-7 h-7 text-gray-900" />
-        <h1 className="text-3xl font-serif text-gray-900">My Wishlist</h1>
+        <h1 className="text-3xl font-serif text-black">My Wishlist</h1>
         <span className="text-sm text-gray-500">({wishlistItems.length} items)</span>
       </div>
 

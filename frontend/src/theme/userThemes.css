@@ -1,139 +1,200 @@
-/* frontend/src/theme/userThemes.css
-   ------------------------------------------------------------------
-   Storefront (user-side) theme engine.
- 
-   Scoped with html[data-user-theme='...'] — completely separate from
-   theme/adminThemes.css, which uses html[data-admin-theme='...'].
-   Different localStorage key, different <html> attribute, different
-   CSS variable names ⇒ the two systems can never affect each other.
- 
-   This file has two parts:
-   1. Theme palettes — one block of --user-* variables per theme.
-   2. Application rules — the *actual* Tailwind utility classes used
-      across every page (Home, Cart, Checkout, Login, Profile,
-      Wishlist, Orders, Address, Sidebar, Navbar, Footer, etc.) are
-      re-pointed at those variables with !important, so backgrounds,
-      buttons, borders, focus rings, badges and hovers all reskin
-      together the moment a theme is picked — no per-page edits needed.
-   ------------------------------------------------------------------ */
+/* frontend/src/theme/userThemes.css */
  
 /* ============ 1. THEME PALETTES ============ */
  
 :root,
 html[data-user-theme='elegant-light'] {
-  --user-page-bg: #f5f6f8;
+
+  /* Backgrounds */
+  --user-page-bg: #ffffff;
   --user-navbar-bg: #ffffff;
-  --user-navbar-border: #e5e7eb;
-  --user-navbar-icon: #4b5563;
-  --user-navbar-text: #111827;
- 
-  --user-accent: #d4a574;
-  --user-accent-hover: #c08f5a;
-  --user-accent-text: #14141a;
- 
   --user-card-bg: #ffffff;
-  --user-content-heading: #111827;
-  --user-content-text: #374151;
-  --user-content-muted: #6b7280;
-  --user-hover-bg: #f0eee9;
- 
-  --user-btn-bg: var(--user-accent);
-  --user-btn-bg-hover: var(--user-accent-hover);
-  --user-btn-text: var(--user-accent-text);
+  --user-hover-bg: #f5f5f5;
+
+  /* Borders */
+  --user-navbar-border: #000000;
+
+  /* Navbar */
+  --user-navbar-icon: #000000;
+  --user-navbar-text: #000000;
+
+  /* Accent */
+  --user-accent: #000000;
+  --user-accent-hover: #222222;
+  --user-accent-text: #ffffff;
+
+  /* Typography */
+  --user-content-heading: #000000;
+  --user-content-text: #000000;
+  --user-content-muted: #666666;
+
+  /* Buttons */
+  --user-btn-bg: #000000;
+  --user-btn-bg-hover: #222222;
+  --user-btn-text: #ffffff;
+
+  --user-newsletter-button-bg: #ede6e6;
+  --user-newsletter-button-text: #010101;
 }
  
 html[data-user-theme='midnight-black'] {
-  --user-page-bg: #0f0f11;
-  --user-navbar-bg: #18181b;
-  --user-navbar-border: #27272a;
-  --user-navbar-icon: #9d7882;
-  --user-navbar-text: #f4f4f5;
- 
-  --user-accent: #7e715f;
-  --user-accent-hover: #c19a5f;
-  --user-accent-text: #14141a;
- 
-  --user-card-bg: #1c1c1f;
-  --user-content-heading: #f4f4f5;
-  --user-content-text: #d4d4d8;
-  --user-content-muted: #a1a1aa;
-  --user-hover-bg: #232326;
- 
-  --user-btn-bg: var(--user-accent);
-  --user-btn-bg-hover: var(--user-accent-hover);
-  --user-btn-text: var(--user-accent-text);
+
+  /* Main background */
+  --user-page-bg: #0a0a0a;
+
+  /* Navbar */
+  --user-navbar-bg: #000000;
+
+  /* Cards */
+  --user-card-bg: #151515;
+
+  /* Hover */
+  --user-hover-bg: #202020;
+
+  /* Borders */
+  --user-navbar-border: #2d2d2d;
+
+  /* Navbar text */
+  --user-navbar-icon: #ffffff;
+  --user-navbar-text: #fffafa;
+
+  /* Accent */
+  --user-accent: #7d0414;
+  --user-accent-hover: #d9d9d9;
+  --user-accent-text: #000000;
+
+  /* Typography */
+  --user-content-heading: #fffefe;
+  --user-content-text: #fffbfb;
+  --user-content-muted: #9d9d9d;
+
+  /* Buttons */
+  --user-btn-bg: #2d2b2b;
+  --user-btn-bg-hover: #e8e8e8;
+  --user-btn-text: #fff8f8;
 }
  
 html[data-user-theme='blush-pink'] {
-  --user-page-bg: #fdf6f8;
+
+  /* Backgrounds */
+  --user-page-bg: #fff7f9;
   --user-navbar-bg: #ffffff;
-  --user-navbar-border: #f3d9e0;
-  --user-navbar-icon: #7a4756;
-  --user-navbar-text: #2b1620;
- 
-  --user-accent: #e8a0b4;
-  --user-accent-hover: #d885a0;
-  --user-accent-text: #2b1620;
- 
-  --user-card-bg: #957e8f;
-  --user-content-heading: #2b1620;
-  --user-content-text: #5a3540;
-  --user-content-muted: #a06478;
-  --user-hover-bg: #fbeaf0;
- 
-  --user-btn-bg: var(--user-accent);
-  --user-btn-bg-hover: var(--user-accent-hover);
-  --user-btn-text: var(--user-accent-text);
+  --user-card-bg: #ffffff;
+  --user-hover-bg: #fceef3;
+
+  /* Borders */
+  --user-navbar-border: #f2d7e1;
+
+  /* Navbar */
+  --user-navbar-icon: #5b3744;
+  --user-navbar-text: #2d1b22;
+
+  /* Accent */
+  --user-accent: #d98fa8;
+  --user-accent-hover: #cb7896;
+  --user-accent-text: #121212;
+
+  /* Typography */
+  --user-content-heading: #2d1b22;
+  --user-content-text: #5b3744;
+  --user-content-muted: #98707d;
+
+  /* Buttons */
+  --user-btn-bg: #d98fa8;
+  --user-btn-bg-hover: #cb7896;
+  --user-btn-text: #0e0d0d;
+
+  --user-newsletter-button-bg: #ffffff;
+  --user-newsletter-button-text: #5b3744;
+
 }
  
 html[data-user-theme='lavender'] {
-  --user-page-bg: #c4ade7;
-  --user-navbar-bg: #6869a8;
-  --user-navbar-border: #d7c3f2;
-  --user-navbar-icon: #0b1a44;
-  --user-navbar-text: #23163d;
- 
-  --user-accent: #3e314b;
-  --user-accent-hover: #a994d13b;
+
+  /* Backgrounds */
+  --user-page-bg: #f7f4fc;
+  --user-navbar-bg: #ffffff;
+  --user-card-bg: #ffffff;
+  --user-hover-bg: #f0ebfa;
+
+  /* Borders */
+  --user-navbar-border: #ddd3ef;
+
+  /* Navbar */
+  --user-navbar-icon: #5d4d84;
+  --user-navbar-text: #2f2645;
+
+  /* Accent */
+  --user-accent: #8d74c7;
+  --user-accent-hover: #7b62b5;
   --user-accent-text: #ffffff;
- 
-  --user-card-bg: #83729d;
-  --user-content-heading: #302645;
-  --user-content-text: #1d0d28;
-  --user-content-muted: #570824;
-  --user-hover-bg: #b1a5c5;
- 
-  --user-btn-bg: var(--user-accent);
-  --user-btn-bg-hover: var(--user-accent-hover);
-  --user-btn-text: var(--user-accent-text);
+
+  /* Typography */
+  --user-content-heading: #2f2645;
+  --user-content-text: #5d4d84;
+  --user-content-muted: #8b7ba8;
+
+  /* Buttons */
+  --user-btn-bg: #8d74c7;
+  --user-btn-bg-hover: #7b62b5;
+  --user-btn-text: #ffffff;
+
+  /* Newsletter */
+  --user-newsletter-bg: #9d84d4;
+  --user-newsletter-heading: #ffffff;
+  --user-newsletter-text: rgba(255,255,255,.88);
+  --user-newsletter-input: rgba(255,255,255,.16);
+  --user-newsletter-border: rgba(255,255,255,.28);
+
+  --user-newsletter-button-bg: #ffffff;
+  --user-newsletter-button-text: #5d4d84;
+  --user-newsletter-button-hover: #f5f2fb;
 }
  
 html[data-user-theme='rose-gold'] {
-  --user-page-bg: #fdf5f1;
+
+  /* Backgrounds */
+  --user-page-bg: #fcf6f3;
   --user-navbar-bg: #ffffff;
-  --user-navbar-border: #f3e0d5;
-  --user-navbar-icon: #7a5645;
-  --user-navbar-text: #2c1c1b;
- 
-  --user-accent: #dba590;
-  --user-accent-hover: #cf8f76;
-  --user-accent-text: #2c1c1b;
- 
   --user-card-bg: #ffffff;
-  --user-content-heading: #2c1c1b;
-  --user-content-text: #5c443d;
-  --user-content-muted: #a67c68;
-  --user-hover-bg: #f7e9e0;
- 
-  --user-btn-bg: var(--user-accent);
-  --user-btn-bg-hover: var(--user-accent-hover);
-  --user-btn-text: var(--user-accent-text);
+  --user-hover-bg: #f8ece7;
+
+  /* Borders */
+  --user-navbar-border: #ecd5cb;
+
+  /* Navbar */
+  --user-navbar-icon: #7a584d;
+  --user-navbar-text: #3b2925;
+
+  /* Accent */
+  --user-accent: #c98d79;
+  --user-accent-hover: #b87b67;
+  --user-accent-text: #ffffff;
+
+  /* Typography */
+  --user-content-heading: #3b2925;
+  --user-content-text: #6d5148;
+  --user-content-muted: #9b7c72;
+
+  /* Buttons */
+  --user-btn-bg: #c98d79;
+  --user-btn-bg-hover: #b87b67;
+  --user-btn-text: #ffffff;
+
+  /* Newsletter */
+  --user-newsletter-bg: #d8aa98;
+  --user-newsletter-heading: #ffffff;
+  --user-newsletter-text: rgba(255,255,255,.90);
+  --user-newsletter-input: rgba(255,255,255,.18);
+  --user-newsletter-border: rgba(255,255,255,.28);
+
+  --user-newsletter-button-bg: #ffffff;
+  --user-newsletter-button-text: #7a584d;
+  --user-newsletter-button-hover: #fff7f4;
 }
  
 /* ============ 2. APPLICATION RULES ============ */
-/* All rules are scoped under .user-shell, the wrapper that MainLayout and
-   ProfileLayout put around every route (see App.jsx), so this reskins the
-   entire storefront — not just one page. */
+
  
 .user-shell {
   background-color: var(--user-page-bg);

@@ -339,8 +339,10 @@ const NewsletterSection = () => {
             />
             <button
               type="submit"
-              className="px-6 py-3 bg-white text-black font-semibold hover:bg-white/90 transition-colors"
-              style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '10px', letterSpacing: '0.2em' }}
+              className="px-6 py-3 font-semibold transition-colors"
+              style={{ background: "var(--user-newsletter-button-bg)", color: "var(--user-newsletter-button-text)",
+                fontFamily: "'Montserrat', sans-serif",  fontSize: "10px", letterSpacing: "0.2em",
+               }}
             >
               SUBSCRIBE
             </button>
