@@ -10,7 +10,6 @@ import { FiDollarSign, FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangl
   FiLayers,
   FiPercent,
   FiClipboard,
-  FiTrendingUp,
   FiPieChart,
 } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
@@ -546,10 +545,6 @@ const AdminDashboard = () => {
             </div>
  
             <div className="flex items-center gap-3 mb-2">
-              <span className="text-sm text-green-600 flex items-center">
-                <FiTrendingUp className="mr-1" size={14} />
-                +12.5%
-              </span>
               <span className="text-sm text-gray-500">
                 Total: ₹{revenueTrend.reduce((sum, d) => sum + d.revenue, 0).toLocaleString()}
               </span>

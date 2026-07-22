@@ -1,0 +1,114 @@
+/* frontend/src/components/ThemeMenu.css */
+ 
+.theme-menu {
+  position: relative;
+}
+ 
+.theme-menu-trigger {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--admin-header-icon, #374151);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+ 
+.theme-menu-trigger:hover {
+  background: var(--admin-search-bg, #f3f4f6);
+}
+ 
+.theme-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  background: var(--admin-card-bg, #ffffff);
+  border: 1px solid var(--admin-border, #e5e7eb);
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  padding: 8px;
+  z-index: 30;
+  animation: theme-menu-fade-in 0.15s ease;
+}
+ 
+@keyframes theme-menu-fade-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+ 
+.theme-menu-header {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-text-tertiary, #9ca3af);
+  padding: 8px 10px 6px;
+}
+ 
+.theme-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+ 
+.theme-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13.5px;
+  color: var(--admin-text-primary, #1a1a1a);
+  transition: background-color 0.15s ease;
+}
+ 
+.theme-menu-item:hover {
+  background: var(--admin-hover-muted, #f3f4f6);
+}
+ 
+.theme-menu-item-active {
+  background: var(--admin-hover-muted, #f3f4f6);
+  font-weight: 600;
+}
+ 
+.theme-menu-item-palette {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+}
+ 
+.theme-menu-swatch {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+ 
+.theme-menu-item-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+ 
+.theme-menu-item-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--admin-accent-strong, #14141a);
+  color: var(--admin-accent-strong-text, #fff);
+  flex-shrink: 0;
+}
+ 

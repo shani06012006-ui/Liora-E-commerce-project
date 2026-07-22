@@ -1,8 +1,11 @@
 // frontend/src/components/AdminLayout.jsx
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { FiMenu, FiSearch, FiChevronDown, FiChevronRight, FiHome, FiShoppingCart, FiBox, FiUsers, FiStar, FiSettings, FiHeadphones, FiLogOut, FiBarChart2, FiCreditCard } from 'react-icons/fi';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { FiMenu, FiSearch, FiChevronDown, FiChevronRight, FiHome, FiShoppingCart, FiBox, FiUsers, FiStar, FiHeadphones, FiLogOut, FiBarChart2, FiCreditCard } from 'react-icons/fi';
+import ThemeMenu from './ThemeMenu';
+import { logout as logoutAction } from '../redux/authSlice';
+import { fullLogout } from '../utils/storage';
 import './AdminLayout.css';
 import '../theme/adminThemes.css';
 import { getStoredAdminTheme, applyAdminTheme } from '../theme/adminThemes';
@@ -30,12 +33,12 @@ const navItems = [
   { divider: true },
   { label: 'Analytics', icon: <FiBarChart2 />, path: '/admin/analytics', children: analyticsSubItems },
   { label: 'Payments', icon: <FiCreditCard />, path: '/admin/payments', children: paymentsSubItems },
-  { divider: true },
-  { label: 'Settings', icon: <FiSettings />, path: '/admin/settings' },
 ];
  
 const AdminLayout = ({ title, subtitle, children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [collapsed, setCollapsed] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
@@ -44,6 +47,12 @@ const AdminLayout = ({ title, subtitle, children }) => {
     name: user?.full_name || user?.username || 'Admin',
     role: user?.role === 'admin' || user?.is_staff ? 'Super Admin' : 'Admin',
     avatarUrl: user?.profile_pic_url || null,
+  };
+ 
+  const handleLogout = () => {
+    dispatch(logoutAction());
+    fullLogout();
+    navigate('/admin/login', { replace: true });
   };
  
   // Re-apply the saved theme every time any admin page mounts. Each admin
@@ -183,6 +192,8 @@ const AdminLayout = ({ title, subtitle, children }) => {
               <input type="text" placeholder="Search anything..." />
             </div>
  
+            <ThemeMenu />
+ 
             <div className="header-user" onClick={() => setUserMenuOpen((o) => !o)}>
               <div className="header-avatar">
                 {admin.avatarUrl ? (
@@ -199,9 +210,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
  
               {userMenuOpen && (
                 <div className="header-user-menu">
-                  <Link to="/admin/settings/profile">Admin Profile</Link>
-                  <Link to="/admin/settings">Settings</Link>
-                  <button type="button" className="logout-btn">
+                  <button type="button" className="logout-btn" onClick={handleLogout}>
                     <FiLogOut size={14} /> Logout
                   </button>
                 </div>
