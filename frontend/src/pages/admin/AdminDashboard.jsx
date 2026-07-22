@@ -15,28 +15,7 @@ import { FiDollarSign, FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangl
 import { Link } from 'react-router-dom';
 import { adminAPI, getImageUrl } from '../../services/api';
  
-const generateMonthlyData = (totalRevenue = 0, totalOrders = 0) => {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
- 
-  if (totalRevenue > 0 || totalOrders > 0) {
-    return months.map((month, index) => {
-      const factor = Math.sin((index / 11) * Math.PI) * 0.8 + 0.2;
-      const revenue = Math.round(totalRevenue * factor * 0.15);
-      const orders = Math.max(Math.round(totalOrders * factor * 0.15), 1);
-      return { month, revenue, orders };
-    });
-  }
- 
-  return months.map((month, index) => {
-    const baseRevenue = 500 + (index * 200) + Math.floor(Math.random() * 300);
-    const baseOrders = 2 + (index * 2) + Math.floor(Math.random() * 3);
-    return {
-      month,
-      revenue: baseRevenue,
-      orders: baseOrders,
-    };
-  });
-};
+
  
 const formatCurrencyShort = (value) => {
   if (value >= 1000) return `₹${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}K`;
@@ -406,28 +385,15 @@ const AdminDashboard = () => {
         delivered: res.data.delivered_orders || 0,
         cancelled: res.data.cancelled_orders || 0,
       });
- 
-      const apiMonthlyData = res.data.monthly_data || [];
-      const hasRealData = apiMonthlyData.some((d) => d.revenue > 0 || d.orders > 0);
- 
-      let effectiveMonthlyData;
-      if (hasRealData) {
-        effectiveMonthlyData = apiMonthlyData;
-      } else {
-        const totalRevenue = res.data.monthly_revenue || 0;
-        const totalOrders = res.data.total_orders || 0;
-        effectiveMonthlyData =
-          totalRevenue > 0 || totalOrders > 0 ? generateMonthlyData(totalRevenue, totalOrders) : [];
-      }
- 
-      const apiTrend = res.data.revenue_trend || null;
-      if (apiTrend && apiTrend.length > 0) {
-        setRevenueTrend(apiTrend.map((d) => ({ label: d.label, revenue: d.revenue || 0 })));
-      } else {
-        setRevenueTrend(effectiveMonthlyData.map((d) => ({ label: d.month, revenue: d.revenue || 0 })));
-      }
+
+      setRevenueTrend(
+        (res.data.revenue_trend || []).map((item) => ({
+          label: item.label,
+          revenue: item.revenue,
+        }))
+      );
     } catch (error) {
-      console.error('❌ Error fetching dashboard data:', error);
+      console.error(error);
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);

@@ -5,19 +5,17 @@ import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
 import { BellIcon, MoonIcon, LockClosedIcon, TrashIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
-
+ 
 const Settings = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const [activeTab, setActiveTab] = useState('settings');
   const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promotions, setPromotions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
+ 
   // Profile edit state
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -25,7 +23,7 @@ const Settings = () => {
     email: '',
     phone: '',
   });
-
+ 
   // Password change state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [passwordData, setPasswordData] = useState({
@@ -33,7 +31,7 @@ const Settings = () => {
     new_password: '',
     confirm_password: '',
   });
-
+ 
   useEffect(() => {
     // Apply dark mode
     if (darkMode) {
@@ -44,7 +42,7 @@ const Settings = () => {
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
-
+ 
   // Load user data when available
   useEffect(() => {
     if (user) {
@@ -55,35 +53,35 @@ const Settings = () => {
       });
     }
   }, [user]);
-
+ 
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
   };
-
+ 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
     setLoading(true);
-
+ 
     try {
       const updateData = {
         full_name: profileData.full_name,
         email: profileData.email,
         phone: profileData.phone,
       };
-
+ 
       const res = await authAPI.updateProfile(updateData);
-
+ 
       // Update localStorage
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...currentUser, ...res.data };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-
+ 
       // Update Redux store
       dispatch(setCredentials({
         user: updatedUser,
         access: localStorage.getItem('access_token')
       }));
-
+ 
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch {
@@ -92,22 +90,22 @@ const Settings = () => {
       setLoading(false);
     }
   };
-
+ 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-
+ 
     if (passwordData.new_password !== passwordData.confirm_password) {
       toast.error('New passwords do not match');
       return;
     }
-
+ 
     if (passwordData.new_password.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
     }
-
+ 
     setLoading(true);
-
+ 
     try {
       // API call for password change
       toast.success('Password changed successfully!');
@@ -119,7 +117,7 @@ const Settings = () => {
       setLoading(false);
     }
   };
-
+ 
   const handleDeleteAccount = async () => {
     setLoading(true);
     try {
@@ -133,11 +131,11 @@ const Settings = () => {
       setLoading(false);
     }
   };
-
+ 
   const handlePasswordInputChange = (e) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
   };
-
+ 
   const cancelEdit = () => {
     setIsEditing(false);
     setProfileData({
@@ -146,20 +144,19 @@ const Settings = () => {
       phone: user?.phone || '',
     });
   };
-
+ 
+  // ✅ FIX: No <Sidebar> here anymore, and no outer min-h-screen / max-w-6xl /
+  // flex wrapper either — the parent <ProfileLayout> (in App.jsx) already
+  // supplies the page shell + the single Sidebar. This component now only
+  // renders its own settings card, which is why the account pages used to
+  // show two sidebars stacked next to each other.
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex gap-6 flex-col md:flex-row">
-          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-
-          <div className="flex-1">
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100">
                 <h1 className="text-2xl font-serif text-gray-800">Settings</h1>
                 <p className="text-sm text-gray-500 mt-1">Manage your account preferences</p>
               </div>
-
+ 
               <div className="p-6 space-y-8">
                 {/* Profile Information - Editable */}
                 <div>
@@ -178,7 +175,7 @@ const Settings = () => {
                       </button>
                     )}
                   </div>
-
+ 
                   {isEditing ? (
                     <form onSubmit={handleProfileUpdate} className="space-y-4">
                       <div>
@@ -262,7 +259,7 @@ const Settings = () => {
                     </div>
                   )}
                 </div>
-
+ 
                 {/* Change Password - Collapsible */}
                 <div className="pt-4 border-t border-gray-100">
                   <button
@@ -277,7 +274,7 @@ const Settings = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-
+ 
                   {showPasswordForm && (
                     <form onSubmit={handlePasswordChange} className="mt-4 space-y-4">
                       <div>
@@ -333,7 +330,7 @@ const Settings = () => {
                     </form>
                   )}
                 </div>
-
+ 
                 {/* Appearance */}
                 <div className="pt-4 border-t border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -359,7 +356,7 @@ const Settings = () => {
                     </button>
                   </div>
                 </div>
-
+ 
                 {/* Notifications */}
                 <div className="pt-4 border-t border-gray-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -417,7 +414,7 @@ const Settings = () => {
                     </div>
                   </div>
                 </div>
-
+ 
                 {/* Danger Zone */}
                 <div className="pt-4 border-t border-red-200">
                   {!showDeleteConfirm ? (
@@ -452,11 +449,7 @@ const Settings = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 };
-
+ 
 export default Settings;

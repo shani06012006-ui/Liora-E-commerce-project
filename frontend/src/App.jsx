@@ -11,6 +11,8 @@ import Footer from './components/Footer';
 import Sidebar from './components/Sidebar';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
+import { getStoredUserTheme, applyUserTheme } from './theme/userThemes';
+import './theme/userThemes.css';
  
 // Lazy load pages for better performance
 const Home = lazy(() => import('./pages/Home'));
@@ -47,8 +49,13 @@ const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
  
 // Layouts
+// "user-shell" scopes the USER-SIDE theme (see theme/userThemes.css). This is
+// completely separate from the admin theme system (theme/adminThemes.css),
+// which is scoped to .admin-shell / .admin-content and uses its own
+// localStorage key + data-admin-theme attribute. Changing one never touches
+// the other.
 const MainLayout = ({ children }) => (
-  <div className="min-h-screen flex flex-col bg-gray-50">
+  <div className="user-shell min-h-screen flex flex-col bg-gray-50">
     <Navbar />
     <main className="flex-grow">
       <Suspense fallback={<LoadingSpinner />}>
@@ -59,24 +66,41 @@ const MainLayout = ({ children }) => (
   </div>
 );
  
-const ProfileLayout = ({ children }) => (
-  <div className="min-h-screen bg-gray-50">
-    <Navbar />
-    <main className="py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex gap-6 flex-col md:flex-row">
-          <Sidebar activeTab="personal" setActiveTab={() => {}} />
-          <div className="flex-1">
-            <Suspense fallback={<LoadingSpinner />}>
-              {children}
-            </Suspense>
+// ✅ FIX: this layout is the ONLY place that should render <Sidebar> for the
+// account pages. Profile.jsx / Settings.jsx used to render their own Sidebar
+// too, which is why the profile page showed two sidebars. Sidebar now lives
+// here exclusively, and the highlighted tab is derived from the current
+// route instead of being hardcoded to "personal".
+const PROFILE_TAB_BY_PATH = {
+  '/profile': 'personal',
+  '/settings': 'settings',
+};
+ 
+const ProfileLayout = ({ children }) => {
+  const location = useLocation();
+  const activeTab = PROFILE_TAB_BY_PATH[location.pathname] || 'personal';
+ 
+  return (
+    <div className="user-shell min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="py-8">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex gap-6 flex-col md:flex-row">
+            <div className="w-72 shrink-0">
+              <Sidebar activeTab={activeTab} setActiveTab={() => {}} />
+            </div>
+            <div className="flex-1">
+              <Suspense fallback={<LoadingSpinner />}>
+                {children}
+              </Suspense>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
-    <Footer />
-  </div>
-);
+      </main>
+      <Footer />
+    </div>
+  );
+};
  
 // Route Guard
 const ProtectedRoute = ({ children, redirectTo = '/Login' }) => {
@@ -166,6 +190,13 @@ const AppContent = () => {
  
     return cleanup;
   }, [dispatch]);
+ 
+  // Apply the saved USER-SIDE theme once when the app boots, independent of
+  // whatever theme is stored for the admin side (different localStorage key,
+  // different data-attribute on <html>).
+  useEffect(() => {
+    applyUserTheme(getStoredUserTheme());
+  }, []);
  
   if (isLoading) {
     return <LoadingSpinner />;
@@ -265,3 +296,4 @@ const AppWithErrorBoundary = () => {
 };
  
 export default App;
+ 

@@ -1,0 +1,121 @@
+/* frontend/src/theme/userThemes.css
+   Storefront (user-side) theme variables.
+   Scoped with html[data-user-theme='...'] — completely separate from
+   theme/adminThemes.css, which uses html[data-admin-theme='...'].
+   The two never read or write each other's attribute, so changing one
+   never affects the other. */
+ 
+:root,
+html[data-user-theme='elegant-light'] {
+  --user-page-bg: #f5f6f8;
+  --user-navbar-bg: #ffffff;
+  --user-navbar-border: #e5e7eb;
+  --user-navbar-icon: #4b5563;
+  --user-navbar-text: #111827;
+  --user-accent: #d4a574;
+  --user-accent-text: #14141a;
+  --user-card-bg: #ffffff;
+  --user-content-heading: #111827;
+  --user-content-text: #374151;
+  --user-content-muted: #6b7280;
+}
+ 
+html[data-user-theme='midnight-black'] {
+  --user-page-bg: #0f0f11;
+  --user-navbar-bg: #18181b;
+  --user-navbar-border: #27272a;
+  --user-navbar-icon: #d4d4d8;
+  --user-navbar-text: #f4f4f5;
+  --user-accent: #d4af7a;
+  --user-accent-text: #14141a;
+  --user-card-bg: #1c1c1f;
+  --user-content-heading: #f4f4f5;
+  --user-content-text: #d4d4d8;
+  --user-content-muted: #a1a1aa;
+}
+ 
+html[data-user-theme='blush-pink'] {
+  --user-page-bg: #fdf6f8;
+  --user-navbar-bg: #ffffff;
+  --user-navbar-border: #f3d9e0;
+  --user-navbar-icon: #7a4756;
+  --user-navbar-text: #2b1620;
+  --user-accent: #e8a0b4;
+  --user-accent-text: #2b1620;
+  --user-card-bg: #ffffff;
+  --user-content-heading: #2b1620;
+  --user-content-text: #5a3540;
+  --user-content-muted: #a06478;
+}
+ 
+html[data-user-theme='lavender'] {
+  --user-page-bg: #efe7fb;
+  --user-navbar-bg: #ffffff;
+  --user-navbar-border: #d7c3f2;
+  --user-navbar-icon: #6f5d94;
+  --user-navbar-text: #23163d;
+  --user-accent: #8b5cf6;
+  --user-accent-text: #ffffff;
+  --user-card-bg: #ffffff;
+  --user-content-heading: #23163d;
+  --user-content-text: #4a3a6b;
+  --user-content-muted: #6f5d94;
+}
+ 
+html[data-user-theme='rose-gold'] {
+  --user-page-bg: #fdf5f1;
+  --user-navbar-bg: #ffffff;
+  --user-navbar-border: #f3e0d5;
+  --user-navbar-icon: #7a5645;
+  --user-navbar-text: #2c1c1b;
+  --user-accent: #dba590;
+  --user-accent-text: #2c1c1b;
+  --user-card-bg: #ffffff;
+  --user-content-heading: #2c1c1b;
+  --user-content-text: #5c443d;
+  --user-content-muted: #a67c68;
+}
+ 
+/* --- Where the variables actually get applied --- */
+ 
+.user-shell {
+  background-color: var(--user-page-bg);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+ 
+/* Navbar chrome */
+.user-navbar {
+  background-color: var(--user-navbar-bg) !important;
+  border-color: var(--user-navbar-border) !important;
+}
+ 
+.user-navbar .user-navbar-icon {
+  color: var(--user-navbar-icon) !important;
+}
+ 
+.user-navbar a,
+.user-navbar span {
+  transition: color 0.2s ease;
+}
+ 
+/* Cards / panels anywhere inside the themed shell (profile card, settings
+   card, product cards, etc.) pick up the theme's surface color. */
+.user-shell .bg-white {
+  background-color: var(--user-card-bg) !important;
+}
+ 
+.user-shell .text-gray-900,
+.user-shell .text-gray-800 {
+  color: var(--user-content-heading);
+}
+ 
+.user-shell .text-gray-600,
+.user-shell .text-gray-700 {
+  color: var(--user-content-text);
+}
+ 
+.user-shell .text-gray-500,
+.user-shell .text-gray-400 {
+  color: var(--user-content-muted);
+}
+ 

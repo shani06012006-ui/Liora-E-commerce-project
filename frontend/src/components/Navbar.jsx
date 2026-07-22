@@ -13,7 +13,8 @@ import {
 import { cartAPI, wishlistAPI } from '../services/api';
 import { setCart } from '../redux/cartSlice';
 import { handleLogout } from '../redux/authUtils';
-
+import UserThemeMenu from './UserThemeMenu';
+ 
 const uiReducer = (state, action) => {
   switch (action.type) {
     case 'SET_WISHLIST_COUNT':  return { ...state, wishlistCount:  action.payload };
@@ -25,7 +26,7 @@ const uiReducer = (state, action) => {
     default:                    return state;
   }
 };
-
+ 
 const initialUI = {
   wishlistCount:  0,
   isDropdownOpen: false,
@@ -33,27 +34,27 @@ const initialUI = {
   searchTerm:     '',
   isMobileOpen:   false,
 };
-
+ 
 const Navbar = () => {
   const reduxDispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-
+ 
   const { user: reduxUser } = useSelector((state) => state.auth);
   const { items } = useSelector((state) => state.cart);
-
+ 
   const currentUser = reduxUser || getCurrentUser();
-
+ 
   const cartCount = items?.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
-
+ 
   const [ui, uiDispatch] = useReducer(uiReducer, initialUI);
   const { wishlistCount, isDropdownOpen, isSearchOpen, searchTerm, isMobileOpen } = ui;
-
+ 
   const dropdownRef  = useRef(null);
   const mobileRef    = useRef(null);
   const debounceRef  = useRef(null);
-
+ 
   const fetchCartCount = useCallback(async () => {
     const { accessToken } = getTokens();
     if (!accessToken) return;
@@ -62,7 +63,7 @@ const Navbar = () => {
       reduxDispatch(setCart(res.data));
     } catch (err) { console.error(err); }
   }, [reduxDispatch]);
-
+ 
   const fetchWishlistCount = useCallback(async () => {
     const { accessToken } = getTokens();
     if (!accessToken) return;
@@ -71,14 +72,14 @@ const Navbar = () => {
       uiDispatch({ type: 'SET_WISHLIST_COUNT', payload: res.data.length });
     } catch (err) { console.error(err); }
   }, []);
-
+ 
   useEffect(() => {
     const { accessToken } = getTokens();
     if (!accessToken) return;
     fetchCartCount();
     fetchWishlistCount();
   }, [reduxUser, fetchCartCount, fetchWishlistCount]);
-
+ 
   useEffect(() => {
     window.addEventListener('cartUpdated', fetchCartCount);
     window.addEventListener('wishlistUpdated', fetchWishlistCount);
@@ -87,7 +88,7 @@ const Navbar = () => {
       window.removeEventListener('wishlistUpdated', fetchWishlistCount);
     };
   }, [fetchCartCount, fetchWishlistCount]);
-
+ 
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -100,24 +101,24 @@ const Navbar = () => {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
+ 
   useEffect(() => {
     document.body.style.overflow = isMobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isMobileOpen]);
-
+ 
   useEffect(() => {
     uiDispatch({ type: 'SET_SEARCH_TERM', payload: searchParams.get('search') || '' });
   }, [location.pathname, location.search, searchParams]);
-
+ 
   const onLogout = () => {
     uiDispatch({ type: 'LOGOUT' });
     handleLogout(reduxDispatch, navigate);
   };
-
+ 
   const handleSearchChange = (value) => {
     uiDispatch({ type: 'SET_SEARCH_TERM', payload: value });
-
+ 
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const params = new URLSearchParams();
@@ -126,39 +127,39 @@ const Navbar = () => {
       navigate(`/Collections${query ? `?${query}` : ''}`, { replace: true });
     }, 400);
   };
-
+ 
   const clearSearch = () => {
     clearTimeout(debounceRef.current);
     uiDispatch({ type: 'SET_SEARCH_TERM', payload: '' });
     navigate('/Collections', { replace: true });
   };
-
+ 
   const closeMobile = () => uiDispatch({ type: 'SET_MOBILE_MENU', payload: false });
-
+ 
   const getUserDisplayName = () => {
     if (!currentUser) return 'Guest';
     return currentUser.full_name || currentUser.username || 'User';
   };
-
+ 
   const getUserInitial = () => {
     if (!currentUser) return 'U';
     const name = currentUser.full_name || currentUser.username || 'User';
     return name.charAt(0).toUpperCase();
   };
-
+ 
   const navLinks = [
     { to: '/new-arrivals', label: 'New Arrivals', className: 'text-gray-600 hover:text-gray-900' },
     { to: '/Collections',  label: 'Collections',  className: 'text-gray-600 hover:text-gray-900' },
     { to: '/best-sellers', label: 'Best Sellers', className: 'text-gray-600 hover:text-gray-900' },
     { to: '/sale',         label: 'Sale',         className: 'text-red-600 hover:text-red-700 font-medium' },
   ];
-
+ 
   return (
     <>
-      <nav className="bg-white shadow-sm sticky top-0 z-50">
+      <nav className="user-navbar bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-
+ 
             {/* Hamburger — mobile only */}
             <button
               className="md:hidden text-gray-600 hover:text-gray-900 transition"
@@ -168,12 +169,12 @@ const Navbar = () => {
                 ? <XMarkIcon className="h-6 w-6" />
                 : <Bars3Icon className="h-6 w-6" />}
             </button>
-
+ 
             {/* Logo */}
             <Link to="/" className="text-xl md:text-2xl font-serif font-light tracking-wide text-gray-900">
               L I O R A
             </Link>
-
+ 
             {/* Desktop Nav Links */}
             <div className="hidden md:flex space-x-8">
               {navLinks.map(({ to, label, className }) => (
@@ -183,19 +184,22 @@ const Navbar = () => {
                 </Link>
               ))}
             </div>
-
+ 
             {/* Right Icons */}
             <div className="flex items-center space-x-3 md:space-x-5">
               {/* Search */}
               <button
                 onClick={() => uiDispatch({ type: 'SET_SEARCH_OPEN', payload: !isSearchOpen })}
-                className="text-gray-600 hover:text-gray-900 transition"
+                className="user-navbar-icon text-gray-600 hover:text-gray-900 transition"
               >
                 {isSearchOpen
                   ? <XMarkIcon className="h-5 w-5" />
                   : <MagnifyingGlassIcon className="h-5 w-5" />}
               </button>
-
+ 
+              {/* Theme — independent from the admin dashboard's theme */}
+              <UserThemeMenu />
+ 
               {currentUser && (
                 <>
                   {/* Wishlist */}
@@ -207,7 +211,7 @@ const Navbar = () => {
                       </span>
                     )}
                   </Link>
-
+ 
                   {/* Cart */}
                   <Link to="/cart" className="relative">
                     <ShoppingBagIcon className="h-5 w-5 text-gray-600 hover:text-gray-900 transition" />
@@ -219,7 +223,7 @@ const Navbar = () => {
                   </Link>
                 </>
               )}
-
+ 
               {/* User / Login - ✅ Shows actual username */}
               {currentUser ? (
                 <div className="relative" ref={dropdownRef}>
@@ -238,7 +242,7 @@ const Navbar = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-
+ 
                   {isDropdownOpen && (
                     <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-100 shadow-lg rounded-lg z-50">
                       <Link to="/profile" onClick={() => uiDispatch({ type: 'SET_DROPDOWN', payload: false })}
@@ -261,7 +265,7 @@ const Navbar = () => {
               )}
             </div>
           </div>
-
+ 
           {isSearchOpen && (
             <div className="py-3 border-t border-gray-100 animate-fadeIn">
               <div className="flex items-center gap-2 max-w-2xl mx-auto">
@@ -276,7 +280,7 @@ const Navbar = () => {
                     autoFocus
                   />
                 </div>
-
+ 
                 {searchTerm && (
                   <button
                     onClick={clearSearch}
@@ -286,7 +290,7 @@ const Navbar = () => {
                     Clear All
                   </button>
                 )}
-
+ 
                 <button onClick={() => uiDispatch({ type: 'SET_SEARCH_OPEN', payload: false })}
                   className="text-gray-400 hover:text-gray-600 text-xs px-1">
                   ESC
@@ -295,7 +299,7 @@ const Navbar = () => {
             </div>
           )}
         </div>
-
+ 
         <style>{`
           @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -304,7 +308,7 @@ const Navbar = () => {
           .animate-fadeIn { animation: fadeIn 0.2s ease-out; }
         `}</style>
       </nav>
-
+ 
       {/* Mobile Menu Overlay */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
@@ -317,7 +321,7 @@ const Navbar = () => {
                 <XMarkIcon className="h-6 w-6 text-gray-500" />
               </button>
             </div>
-
+ 
             {/* Mobile user info */}
             {currentUser && (
               <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
@@ -330,7 +334,7 @@ const Navbar = () => {
                 </div>
               </div>
             )}
-
+ 
             <div className="flex-1 px-6 py-6 space-y-1 overflow-y-auto">
               {navLinks.map(({ to, label, className }) => (
                 <Link key={to} to={to} onClick={closeMobile}
@@ -338,7 +342,7 @@ const Navbar = () => {
                   {label}
                 </Link>
               ))}
-
+ 
               {currentUser && (
                 <>
                   <div className="pt-4 pb-2">
@@ -359,7 +363,7 @@ const Navbar = () => {
                 </>
               )}
             </div>
-
+ 
             <div className="px-6 py-6 border-t border-gray-100">
               {currentUser ? (
                 <button onClick={() => { onLogout(); closeMobile(); }}
@@ -379,5 +383,5 @@ const Navbar = () => {
     </>
   );
 };
-
+ 
 export default Navbar;

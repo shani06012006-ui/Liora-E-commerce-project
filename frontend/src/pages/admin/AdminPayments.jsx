@@ -71,7 +71,7 @@ const PaymentMethods = () => {
     }
   };
  
-  const methodTypes = ['credit_card', 'debit_card', 'paypal', 'stripe', 'razorpay', 'cod', 'bank_transfer', 'upi'];
+  const methodTypes = ['credit_card', 'debit_card', 'paypal', 'stripe', 'razorpay', 'C O D', 'bank_transfer', 'upi'];
  
   if (loading) {
     return (

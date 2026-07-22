@@ -6,19 +6,17 @@ import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
 import { getTokens, getCurrentUser } from '../utils/storage';
 import toast from 'react-hot-toast';
-import Sidebar from '../components/Sidebar';
 import { PencilIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, UserCircleIcon, CheckBadgeIcon, CalendarIcon } from '@heroicons/react/24/outline';
-
+ 
 const Profile = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const [activeTab, setActiveTab] = useState('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
-
+ 
   const currentYear = new Date().getFullYear();
-
+ 
   const [formData, setFormData] = useState({
     full_name: '',
     username: '',
@@ -27,14 +25,14 @@ const Profile = () => {
     bio: '',
     location: '',
   });
-
+ 
   // ✅ Check if user is authenticated
   const isUserAuthenticated = () => {
     const { accessToken } = getTokens();
     const currentUser = getCurrentUser() || user;
     return !!(accessToken && currentUser);
   };
-
+ 
   useEffect(() => {
     if (user) {
       setFormData({
@@ -47,28 +45,28 @@ const Profile = () => {
       });
     }
   }, [user]);
-
+ 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+ 
   const handleImageClick = () => {
     fileInputRef.current.click();
   };
-
+ 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+ 
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB');
       return;
     }
-
+ 
     setLoading(true);
     const formDataPic = new FormData();
     formDataPic.append('profile_pic', file);
-
+ 
     try {
       const res = await authAPI.updateProfilePicture(formDataPic);
       const { accessToken } = getTokens();
@@ -83,7 +81,7 @@ const Profile = () => {
       setLoading(false);
     }
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -95,21 +93,21 @@ const Profile = () => {
         bio: formData.bio,
         location: formData.location,
       };
-
+ 
       const res = await authAPI.updateProfile(updateData);
       const { accessToken } = getTokens();
-
+ 
       // ✅ Update both localStorage and sessionStorage
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...currentUser, ...res.data };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       sessionStorage.setItem('user', JSON.stringify(updatedUser));
-
+ 
       dispatch(setCredentials({
         user: updatedUser,
         access: accessToken,
       }));
-
+ 
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch {
@@ -118,13 +116,13 @@ const Profile = () => {
       setLoading(false);
     }
   };
-
+ 
   const getProfileImage = (userData) => {
     if (userData?.profile_pic_url) return userData.profile_pic_url;
     return null;
   };
-
-
+ 
+ 
   if (!isUserAuthenticated()) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -137,8 +135,8 @@ const Profile = () => {
       </div>
     );
   }
-
-
+ 
+ 
   // Personal Detail Tab
   const renderPersonalDetail = () => (
     <div className="space-y-6">
@@ -157,7 +155,7 @@ const Profile = () => {
           </button>
         )}
       </div>
-
+ 
       {isEditing ? (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
@@ -165,7 +163,7 @@ const Profile = () => {
             <input type="text" name="full_name" value={formData.full_name} onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
           </div>
-
+ 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <div className="flex items-center gap-2">
@@ -174,7 +172,7 @@ const Profile = () => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
             </div>
           </div>
-
+ 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
             <div className="flex items-center gap-2">
@@ -183,7 +181,7 @@ const Profile = () => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
             </div>
           </div>
-
+ 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <div className="flex items-center gap-2">
@@ -193,14 +191,14 @@ const Profile = () => {
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
             </div>
           </div>
-
+ 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
             <textarea name="bio" value={formData.bio} onChange={handleChange} rows="3"
               placeholder="Tell us about yourself..."
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
           </div>
-
+ 
           <div className="flex gap-3 pt-4">
             <button type="submit" disabled={loading}
               className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium">
@@ -253,82 +251,72 @@ const Profile = () => {
       )}
     </div>
   );
-
+ 
+  // ✅ FIX: No <Sidebar> here anymore, and no outer min-h-screen / max-w-6xl /
+  // flex wrapper either — the parent <ProfileLayout> (in App.jsx) already
+  // supplies the page shell + the single Sidebar. This component now only
+  // renders its own content card, which is why the profile page used to show
+  // two sidebars stacked next to each other.
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="flex gap-6 flex-col md:flex-row">
-
-          {/* Sidebar */}
-          <div className="w-72">
-            <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+ 
+      {/* Profile Header */}
+      <div className="bg-gradient-to-r from-gray-900 to-gray-700 px-6 py-8">
+        <div className="flex items-center gap-6 flex-wrap">
+ 
+          {/* Profile Picture */}
+          <div className="relative group cursor-pointer" onClick={handleImageClick}>
+            <div className="w-24 h-24 rounded-full bg-white p-0.5">
+              <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center overflow-hidden">
+                {getProfileImage(user) ? (
+                  <img
+                    src={getProfileImage(user)}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover"
+                    onError={(e) => { e.target.src = ''; }}
+                  />
+                ) : (
+                  <UserCircleIcon className="w-14 h-14 text-gray-500" />
+                )}
+              </div>
+            </div>
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full transition-all flex items-center justify-center">
+              <PencilIcon className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition" />
+            </div>
+            {loading && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+              </div>
+            )}
+            <input type="file" ref={fileInputRef} onChange={handleImageChange}
+              accept="image/*" className="hidden" />
           </div>
-
-          {/* Main Content */}
-          <div className="flex-1">
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-
-              {/* Profile Header */}
-              <div className="bg-gradient-to-r from-gray-900 to-gray-700 px-6 py-8">
-                <div className="flex items-center gap-6 flex-wrap">
-
-                  {/* Profile Picture */}
-                  <div className="relative group cursor-pointer" onClick={handleImageClick}>
-                    <div className="w-24 h-24 rounded-full bg-white p-0.5">
-                      <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center overflow-hidden">
-                        {getProfileImage(user) ? (
-                          <img
-                            src={getProfileImage(user)}
-                            alt="Profile"
-                            className="w-full h-full rounded-full object-cover"
-                            onError={(e) => { e.target.src = ''; }}
-                          />
-                        ) : (
-                          <UserCircleIcon className="w-14 h-14 text-gray-500" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full transition-all flex items-center justify-center">
-                      <PencilIcon className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition" />
-                    </div>
-                    {loading && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
-                      </div>
-                    )}
-                    <input type="file" ref={fileInputRef} onChange={handleImageChange}
-                      accept="image/*" className="hidden" />
-                  </div>
-
-                  {/* User Info */}
-                  <div>
-                    <h1 className="text-2xl font-semibold text-white">{formData.full_name || user.username}</h1>
-                    <p className="text-gray-300 text-sm mt-1">@{user.username}</p>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                        <CheckBadgeIcon className="w-3 h-3" />
-                        Verified Member
-                      </span>
-                      <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                        <CalendarIcon className="w-3 h-3" />
-                        Joined {user.date_joined ? new Date(user.date_joined).getFullYear() : currentYear}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tab Content */}
-              <div className="p-6">
-                {renderPersonalDetail()}
-              </div>
-
+ 
+          {/* User Info */}
+          <div>
+            <h1 className="text-2xl font-semibold text-white">{formData.full_name || user.username}</h1>
+            <p className="text-gray-300 text-sm mt-1">@{user.username}</p>
+            <div className="flex items-center gap-3 mt-2">
+              <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                <CheckBadgeIcon className="w-3 h-3" />
+                Verified Member
+              </span>
+              <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                <CalendarIcon className="w-3 h-3" />
+                Joined {user.date_joined ? new Date(user.date_joined).getFullYear() : currentYear}
+              </span>
             </div>
           </div>
         </div>
       </div>
+ 
+      {/* Tab Content */}
+      <div className="p-6">
+        {renderPersonalDetail()}
+      </div>
+ 
     </div>
   );
 };
-
+ 
 export default Profile;
