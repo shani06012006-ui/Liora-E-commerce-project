@@ -235,8 +235,9 @@ class AdminProductDetailView(APIView):
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return Response({"error": "Product not found."}, status=404)
-        product.is_active = False
-        product.save()
+        
+        product.delete()
+        
         return Response({"message": "Product deactivated."}, status=204)
 
 

@@ -7,17 +7,17 @@ import {
   FiSearch,
   FiTrash2,
   FiEye,
-  FiEdit2,
   FiUsers,
   FiUserPlus,
   FiRepeat,
-  FiDollarSign,
   FiLock,
   FiUnlock,
   FiChevronLeft,
   FiChevronRight,
   FiXCircle,
 } from 'react-icons/fi';
+import {FaRupeeSign} from "react-icons/fa6"
+
  
 const EMPTY_USER_FORM = {
   username: '', email: '', password: '', full_name: '', phone: '', role: 'user',
@@ -148,18 +148,6 @@ const AdminUsers = () => {
     setShowUserForm(true);
   };
  
-  const openEditUser = (user) => {
-    setEditUser(user);
-    setUserForm({
-      username: user.username || '',
-      email: user.email || '',
-      password: '',
-      full_name: user.full_name || '',
-      phone: user.phone || '',
-      role: user.role || 'user',
-    });
-    setShowUserForm(true);
-  };
  
   const handleUserSubmit = async (e) => {
     e.preventDefault();
@@ -196,7 +184,7 @@ const AdminUsers = () => {
     { title: 'Total Customers', value: stats.total, icon: FiUsers, color: 'blue' },
     { title: 'New Customers (30d)', value: stats.new, icon: FiUserPlus, color: 'green' },
     { title: 'Repeat Customers', value: stats.repeat, icon: FiRepeat, color: 'purple' },
-    { title: 'Total Spent', value: formatCurrency(stats.totalSpent), icon: FiDollarSign, color: 'orange' },
+    { title: 'Total Spent', value: formatCurrency(stats.totalSpent), icon: FaRupeeSign, color: 'orange' },
   ];
  
   return (
@@ -324,13 +312,7 @@ const AdminUsers = () => {
                               >
                                 <FiEye size={16} />
                               </button>
-                              <button
-                                onClick={() => openEditUser(user)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                                title="Edit Customer"
-                              >
-                                <FiEdit2 size={16} />
-                              </button>
+ 
                               <button
                                 onClick={() => toggleBlock(user.id, user.is_blocked)}
                                 className={`p-2 rounded-lg transition ${
