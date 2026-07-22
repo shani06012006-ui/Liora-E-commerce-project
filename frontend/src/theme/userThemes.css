@@ -1,9 +1,23 @@
 /* frontend/src/theme/userThemes.css
-   Storefront (user-side) theme variables.
+   ------------------------------------------------------------------
+   Storefront (user-side) theme engine.
+ 
    Scoped with html[data-user-theme='...'] — completely separate from
    theme/adminThemes.css, which uses html[data-admin-theme='...'].
-   The two never read or write each other's attribute, so changing one
-   never affects the other. */
+   Different localStorage key, different <html> attribute, different
+   CSS variable names ⇒ the two systems can never affect each other.
+ 
+   This file has two parts:
+   1. Theme palettes — one block of --user-* variables per theme.
+   2. Application rules — the *actual* Tailwind utility classes used
+      across every page (Home, Cart, Checkout, Login, Profile,
+      Wishlist, Orders, Address, Sidebar, Navbar, Footer, etc.) are
+      re-pointed at those variables with !important, so backgrounds,
+      buttons, borders, focus rings, badges and hovers all reskin
+      together the moment a theme is picked — no per-page edits needed.
+   ------------------------------------------------------------------ */
+ 
+/* ============ 1. THEME PALETTES ============ */
  
 :root,
 html[data-user-theme='elegant-light'] {
@@ -12,26 +26,42 @@ html[data-user-theme='elegant-light'] {
   --user-navbar-border: #e5e7eb;
   --user-navbar-icon: #4b5563;
   --user-navbar-text: #111827;
+ 
   --user-accent: #d4a574;
+  --user-accent-hover: #c08f5a;
   --user-accent-text: #14141a;
+ 
   --user-card-bg: #ffffff;
   --user-content-heading: #111827;
   --user-content-text: #374151;
   --user-content-muted: #6b7280;
+  --user-hover-bg: #f0eee9;
+ 
+  --user-btn-bg: var(--user-accent);
+  --user-btn-bg-hover: var(--user-accent-hover);
+  --user-btn-text: var(--user-accent-text);
 }
  
 html[data-user-theme='midnight-black'] {
   --user-page-bg: #0f0f11;
   --user-navbar-bg: #18181b;
   --user-navbar-border: #27272a;
-  --user-navbar-icon: #d4d4d8;
+  --user-navbar-icon: #9d7882;
   --user-navbar-text: #f4f4f5;
-  --user-accent: #d4af7a;
+ 
+  --user-accent: #7e715f;
+  --user-accent-hover: #c19a5f;
   --user-accent-text: #14141a;
+ 
   --user-card-bg: #1c1c1f;
   --user-content-heading: #f4f4f5;
   --user-content-text: #d4d4d8;
   --user-content-muted: #a1a1aa;
+  --user-hover-bg: #232326;
+ 
+  --user-btn-bg: var(--user-accent);
+  --user-btn-bg-hover: var(--user-accent-hover);
+  --user-btn-text: var(--user-accent-text);
 }
  
 html[data-user-theme='blush-pink'] {
@@ -40,26 +70,42 @@ html[data-user-theme='blush-pink'] {
   --user-navbar-border: #f3d9e0;
   --user-navbar-icon: #7a4756;
   --user-navbar-text: #2b1620;
+ 
   --user-accent: #e8a0b4;
+  --user-accent-hover: #d885a0;
   --user-accent-text: #2b1620;
-  --user-card-bg: #ffffff;
+ 
+  --user-card-bg: #957e8f;
   --user-content-heading: #2b1620;
   --user-content-text: #5a3540;
   --user-content-muted: #a06478;
+  --user-hover-bg: #fbeaf0;
+ 
+  --user-btn-bg: var(--user-accent);
+  --user-btn-bg-hover: var(--user-accent-hover);
+  --user-btn-text: var(--user-accent-text);
 }
  
 html[data-user-theme='lavender'] {
-  --user-page-bg: #efe7fb;
-  --user-navbar-bg: #ffffff;
+  --user-page-bg: #c4ade7;
+  --user-navbar-bg: #6869a8;
   --user-navbar-border: #d7c3f2;
-  --user-navbar-icon: #6f5d94;
+  --user-navbar-icon: #0b1a44;
   --user-navbar-text: #23163d;
-  --user-accent: #8b5cf6;
+ 
+  --user-accent: #3e314b;
+  --user-accent-hover: #a994d13b;
   --user-accent-text: #ffffff;
-  --user-card-bg: #ffffff;
-  --user-content-heading: #23163d;
-  --user-content-text: #4a3a6b;
-  --user-content-muted: #6f5d94;
+ 
+  --user-card-bg: #83729d;
+  --user-content-heading: #302645;
+  --user-content-text: #1d0d28;
+  --user-content-muted: #570824;
+  --user-hover-bg: #b1a5c5;
+ 
+  --user-btn-bg: var(--user-accent);
+  --user-btn-bg-hover: var(--user-accent-hover);
+  --user-btn-text: var(--user-accent-text);
 }
  
 html[data-user-theme='rose-gold'] {
@@ -68,54 +114,152 @@ html[data-user-theme='rose-gold'] {
   --user-navbar-border: #f3e0d5;
   --user-navbar-icon: #7a5645;
   --user-navbar-text: #2c1c1b;
+ 
   --user-accent: #dba590;
+  --user-accent-hover: #cf8f76;
   --user-accent-text: #2c1c1b;
+ 
   --user-card-bg: #ffffff;
   --user-content-heading: #2c1c1b;
   --user-content-text: #5c443d;
   --user-content-muted: #a67c68;
+  --user-hover-bg: #f7e9e0;
+ 
+  --user-btn-bg: var(--user-accent);
+  --user-btn-bg-hover: var(--user-accent-hover);
+  --user-btn-text: var(--user-accent-text);
 }
  
-/* --- Where the variables actually get applied --- */
+/* ============ 2. APPLICATION RULES ============ */
+/* All rules are scoped under .user-shell, the wrapper that MainLayout and
+   ProfileLayout put around every route (see App.jsx), so this reskins the
+   entire storefront — not just one page. */
  
 .user-shell {
   background-color: var(--user-page-bg);
   transition: background-color 0.25s ease, color 0.25s ease;
 }
  
-/* Navbar chrome */
+/* ---- Navbar / header chrome ---- */
 .user-navbar {
   background-color: var(--user-navbar-bg) !important;
   border-color: var(--user-navbar-border) !important;
 }
- 
 .user-navbar .user-navbar-icon {
   color: var(--user-navbar-icon) !important;
 }
  
-.user-navbar a,
-.user-navbar span {
-  transition: color 0.2s ease;
-}
+/* Footer.jsx uses bg-white + border-gray-200 + text-gray-* like every other
+   card in the app, so it is already re-themed by the generic surface/text
+   rules below — no separate footer rule needed. */
  
-/* Cards / panels anywhere inside the themed shell (profile card, settings
-   card, product cards, etc.) pick up the theme's surface color. */
+/* ---- Page / card surfaces ---- */
 .user-shell .bg-white {
   background-color: var(--user-card-bg) !important;
 }
+.user-shell .bg-gray-50,
+.user-shell .bg-gray-100,
+.user-shell .bg-\[\#FAFAFA\] {
+  background-color: var(--user-hover-bg) !important;
+}
  
+/* ---- Headings / body text / muted text ---- */
 .user-shell .text-gray-900,
 .user-shell .text-gray-800 {
   color: var(--user-content-heading);
 }
- 
-.user-shell .text-gray-600,
-.user-shell .text-gray-700 {
+.user-shell .text-gray-700,
+.user-shell .text-gray-600 {
   color: var(--user-content-text);
 }
- 
 .user-shell .text-gray-500,
 .user-shell .text-gray-400 {
   color: var(--user-content-muted);
 }
  
+/* Hover text states adopt the accent color for a lively, "themed" feel */
+.user-shell .hover\:text-gray-900:hover,
+.user-shell .hover\:text-gray-800:hover,
+.user-shell .hover\:text-gray-700:hover,
+.user-shell .hover\:text-gray-600:hover,
+.user-shell .hover\:text-gray-500:hover,
+.user-shell .group:hover .group-hover\:text-gray-700 {
+  color: var(--user-accent) !important;
+}
+ 
+/* ---- Borders ---- */
+.user-shell .border-gray-100,
+.user-shell .border-gray-200,
+.user-shell .border-gray-300 {
+  border-color: var(--user-navbar-border) !important;
+}
+.user-shell .border-gray-900,
+.user-shell .hover\:border-gray-900:hover,
+.user-shell .hover\:border-gray-400:hover {
+  border-color: var(--user-accent) !important;
+}
+ 
+/* ---- Focus rings & focus borders on inputs ---- */
+.user-shell .focus\:border-gray-900:focus {
+  border-color: var(--user-accent) !important;
+}
+.user-shell .focus\:ring-gray-900:focus,
+.user-shell .focus\:ring-gray-800:focus,
+.user-shell .focus\:ring-gray-400:focus,
+.user-shell .ring-gray-900,
+.user-shell .ring-gray-800,
+.user-shell .ring-gray-400 {
+  --tw-ring-color: var(--user-accent) !important;
+}
+ 
+/* ---- Primary buttons (Add to Cart, Login, Save, etc.) ----
+   Any element styled bg-gray-900 / bg-black + text-white becomes the
+   theme's accent color, with text color chosen per-theme for contrast. */
+.user-shell .bg-gray-900,
+.user-shell .bg-black {
+  background-color: var(--user-btn-bg) !important;
+}
+.user-shell .bg-gray-900.text-white,
+.user-shell .bg-black.text-white,
+.user-shell .text-white.bg-gray-900,
+.user-shell .text-white.bg-black {
+  color: var(--user-btn-text) !important;
+}
+.user-shell .hover\:bg-gray-800:hover {
+  background-color: var(--user-btn-bg-hover) !important;
+}
+.user-shell .group:hover .group-hover\:bg-gray-900,
+.user-shell .group:hover .group-hover\:bg-gray-200 {
+  background-color: var(--user-btn-bg-hover) !important;
+}
+ 
+/* ---- Secondary / outline buttons & subtle hover backgrounds ---- */
+.user-shell .hover\:bg-gray-50:hover {
+  background-color: var(--user-hover-bg) !important;
+}
+ 
+/* ---- Gradients (profile header banner, sidebar avatar circle) ---- */
+.user-shell .from-gray-900,
+.user-shell .from-gray-700 {
+  --tw-gradient-from: var(--user-btn-bg) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, transparent) !important;
+}
+.user-shell .to-gray-700,
+.user-shell .to-gray-800 {
+  --tw-gradient-to: var(--user-accent) !important;
+}
+ 
+/* ---- Form controls: checkboxes, radios, range sliders ---- */
+.user-shell input[type='checkbox'],
+.user-shell input[type='radio'],
+.user-shell input[type='range'] {
+  accent-color: var(--user-accent);
+}
+ 
+/* ---- Links styled as plain accent text (e.g. "Go back home →") ---- */
+.user-shell a.text-gray-900:hover,
+.user-shell a.hover\:text-gray-600:hover {
+  color: var(--user-accent) !important;
+}
+ 
+

@@ -1,14 +1,5 @@
 // frontend/src/theme/userThemes.js
-//
-// This is the USER-SIDE theme system. It is intentionally a mirror of
-// theme/adminThemes.js, but fully independent from it:
-//   - separate localStorage key ('liora_user_theme' vs 'liora_admin_theme')
-//   - separate <html> data-attribute ('data-user-theme' vs 'data-admin-theme')
-//   - separate CSS variables ('--user-*' vs '--admin-*')
-//
-// Because both the storage key and the DOM attribute are different,
-// switching the theme from the storefront never touches the admin theme,
-// and switching it from the admin dashboard never touches the storefront.
+
  
 export const USER_THEMES = [
   {
