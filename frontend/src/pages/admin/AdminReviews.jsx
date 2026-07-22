@@ -253,15 +253,6 @@ const AdminReviews = () => {
     }
   };
  
-  const getStatusBadge = (review) => {
-    if (review.is_hidden) {
-      return { label: 'Hidden', color: 'bg-red-100 text-red-700', icon: FiEyeOff };
-    }
-    if (review.is_approved) {
-      return { label: 'Approved', color: 'bg-green-100 text-green-700', icon: FiCheckCircle };
-    }
-    return { label: 'Pending', color: 'bg-yellow-100 text-yellow-700', icon: FiClock };
-  };
  
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
@@ -486,14 +477,13 @@ const AdminReviews = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Review</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {currentItems.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
+                        <td colSpan="6" className="px-6 py-10 text-center text-gray-500">
                           <div className="flex flex-col items-center">
                             <FiMessageSquare size={40} className="text-gray-300 mb-2" />
                             <p>No reviews found</p>
@@ -503,8 +493,6 @@ const AdminReviews = () => {
                       </tr>
                     ) : (
                       currentItems.map((review) => {
-                        const status = getStatusBadge(review);
-                        const StatusIcon = status.icon;
                         return (
                           <tr key={review.id} className="hover:bg-gray-50 transition">
                             <td className="px-6 py-4">
@@ -544,17 +532,7 @@ const AdminReviews = () => {
                                 year: 'numeric' 
                               }) : '-'}
                             </td>
-                            <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full ${status.color}`}>
-                                <StatusIcon className="w-3 h-3 mr-1" />
-                                {status.label}
-                              </span>
-                              {review.is_verified_purchase && (
-                                <span className="ml-1 inline-flex items-center px-2 py-0.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full">
-                                  Verified
-                                </span>
-                              )}
-                            </td>
+
                             <td className="px-6 py-4 text-right">
                               <div className="flex items-center justify-end space-x-1">
                                 <button
@@ -712,9 +690,7 @@ const AdminReviews = () => {
                     <span className="text-sm text-gray-500">({selectedReview.rating || 0}/5)</span>
                   </div>
                 </div>
-                <span className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${getStatusBadge(selectedReview).color}`}>
-                  {getStatusBadge(selectedReview).label}
-                </span>
+
               </div>
  
               <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4">
