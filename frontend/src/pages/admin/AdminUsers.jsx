@@ -15,6 +15,7 @@ import {
   FiChevronLeft,
   FiChevronRight,
   FiXCircle,
+  FiPrinter,
 } from 'react-icons/fi';
 import {FaRupeeSign} from "react-icons/fa6"
  
@@ -92,7 +93,121 @@ const AdminUsers = () => {
  
     return result;
   }, [users, search]);
- 
+  
+  const handlePrintCustomers = () => {
+  const printWindow = window.open("", "_blank");
+
+  const rows = users
+    .map(
+      (user) => `
+      <tr>
+        <td>${user.full_name || user.username || "-"}</td>
+        <td>${user.email || "-"}</td>
+        <td>${user.phone || "-"}</td>
+        <td>${user.orders_count || 0}</td>
+        <td>${formatCurrency(user.total_spent)}</td>
+        <td>${formatDate(user.last_order_date)}</td>
+        <td>${user.is_blocked ? "Blocked" : "Active"}</td>
+      </tr>
+    `
+    )
+    .join("");
+
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Customer Report</title>
+
+        <style>
+          body{
+              font-family: Arial, sans-serif;
+              padding:30px;
+          }
+
+          h1{
+              text-align:center;
+              margin-bottom:5px;
+          }
+
+          p{
+              text-align:center;
+              margin-bottom:25px;
+              color:#666;
+          }
+
+          table{
+              width:100%;
+              border-collapse:collapse;
+          }
+
+          th,td{
+              border:1px solid #ccc;
+              padding:10px;
+              text-align:left;
+              font-size:14px;
+          }
+
+          th{
+              background:#000;
+              color:#fff;
+          }
+
+          tr:nth-child(even){
+              background:#f5f5f5;
+          }
+
+          @media print{
+              body{
+                  margin:0;
+              }
+          }
+        </style>
+      </head>
+
+      <body>
+
+      <h1>Customer Report</h1>
+
+      <p>
+      Generated on :
+      ${new Date().toLocaleString()}
+      </p>
+
+      <table>
+
+      <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Orders</th>
+        <th>Total Spent</th>
+        <th>Last Order</th>
+        <th>Status</th>
+      </tr>
+      </thead>
+
+      <tbody>
+
+      ${rows}
+
+      </tbody>
+
+      </table>
+
+      </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+
+  printWindow.focus();
+
+  printWindow.print();
+
+  printWindow.close();
+};
+
   // Pagination
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
@@ -192,13 +307,20 @@ const AdminUsers = () => {
             <h1 className="text-2xl font-bold text-gray-900">Customers</h1>
             <p className="text-sm text-gray-500 mt-1">Manage your customer base</p>
           </div>
-          <button
-            onClick={openAddUser}
-            className="flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
-          >
-            <FiUserPlus className="mr-2" size={16} />
+          <div className="flex items-center gap-3">
+        <button onClick={handlePrintCustomers}
+            className="flex items-center px-4 py-2 border border-gray-300 bg-white rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium" >
+          <FiPrinter className="mr-2" size={16} />
+            Print
+        </button>
+
+        <button onClick={openAddUser}
+            className="flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium" >
+          <FiUserPlus className="mr-2" size={16} />
             Add Customer
-          </button>
+        </button>
+
+      </div>
         </div>
  
         {/* Stats Cards */}

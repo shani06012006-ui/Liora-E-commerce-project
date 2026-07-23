@@ -6,8 +6,8 @@ import { adminAPI } from '../../services/api';
 import { useLocation } from 'react-router-dom';
 import {
   FiTrendingUp, FiTrendingDown, FiShoppingCart,
-  FiUsers, FiPackage, FiDownload,
-  FiPieChart, FiBarChart2, 
+  FiUsers, FiPackage,
+  FiPieChart, FiBarChart2, FiPrinter
 } from 'react-icons/fi';
 import {FaRupeeSign} from "react-icons/fa6"
  
@@ -42,6 +42,140 @@ const StatsCard = ({ title, value, change, icon: Icon, color }) => {
       </div>
     </div>
   );
+};
+
+const printReport = (title, columns, rows) => {
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    toast.error("Popup blocked. Please allow popups.")
+    return;
+  }
+
+  const tableHeaders = columns
+    .map((col) => `<th>${col}</th>`)
+    .join("");
+
+  const tableRows = rows
+    .map(
+      (row) => `
+        <tr>
+          ${row.map((cell) => `<td>${cell}</td>`).join("")}
+        </tr>
+      `
+    )
+    .join("");
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>${title}</title>
+
+        <style>
+
+          *{
+            box-sizing:border-box;
+          }
+
+          body{
+            font-family:Arial, Helvetica, sans-serif;
+            padding:30px;
+            color:#222;
+          }
+
+          h1{
+            text-align:center;
+            margin-bottom:5px;
+          }
+
+          p{
+            text-align:center;
+            color:#666;
+            margin-bottom:25px;
+          }
+
+          table{
+            width:100%;
+            border-collapse:collapse;
+          }
+
+          th{
+            background:#111827;
+            color:white;
+          }
+
+          th,
+          td{
+            border:1px solid #ddd;
+            padding:10px;
+            text-align:left;
+          }
+
+          tr:nth-child(even){
+            background:#f7f7f7;
+          }
+
+          @media print{
+
+            body{
+              margin:0;
+            }
+
+            table{
+              page-break-inside:auto;
+            }
+
+            tr{
+              page-break-inside:avoid;
+            }
+
+          }
+
+        </style>
+
+      </head>
+
+      <body>
+
+        <h1>${title}</h1>
+
+        <p>
+          Generated on :
+          ${new Date().toLocaleString()}
+        </p>
+
+        <table>
+
+          <thead>
+
+            <tr>
+
+              ${tableHeaders}
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            ${tableRows}
+
+          </tbody>
+
+        </table>
+
+      </body>
+
+    </html>
+  `);
+
+  printWindow.document.close();
+
+  printWindow.focus();
+
+  printWindow.print();
+
+  printWindow.close();
 };
  
 // Sales Report Component
@@ -83,6 +217,25 @@ const SalesReport = () => {
   const totalSales = data.reduce((sum, d) => sum + (d.total_sales || 0), 0);
   const totalOrders = data.reduce((sum, d) => sum + (d.total_orders || 0), 0);
   const avgOrderValue = totalOrders > 0 ? totalSales / totalOrders : 0;
+
+  const handlePrint = () => {
+  printReport(
+    "Sales Report",
+
+    ["Period", "Orders", "Sales (₹)", "Average Order (₹)"],
+
+    sortedData.map((item) => [
+      formatDate(item.date),
+      item.total_orders || 0,
+      (item.total_sales || 0).toFixed(2),
+      (
+        item.total_orders > 0
+          ? item.total_sales / item.total_orders
+          : 0
+      ).toFixed(2),
+    ])
+  );
+};
  
   const getWeekNumber = (date) => {
     const d = new Date(date);
@@ -156,9 +309,10 @@ const SalesReport = () => {
               <option value="sales">Sort by Sales</option>
               <option value="orders">Sort by Orders</option>
             </select>
-            <button className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition flex items-center gap-2">
-              <FiDownload size={16} />
-              Export
+            <button onClick={handlePrint}
+                className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition flex items-center gap-2">
+              <FiPrinter size={16} />
+               Print
             </button>
           </div>
         </div>
@@ -234,6 +388,38 @@ const RevenueReport = () => {
   const totalProfit = data.reduce((sum, d) => sum + (d.profit || 0), 0);
   const totalCost = data.reduce((sum, d) => sum + (d.cost || 0), 0);
   const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+  const handlePrint = () => {
+  printReport(
+    "Revenue Report",
+
+    [
+      "Period",
+      "Revenue (₹)",
+      "Cost (₹)",
+      "Profit (₹)",
+      "Margin (%)"
+    ],
+
+    data.map((item) => [
+      new Date(item.date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+
+      (item.revenue || 0).toFixed(2),
+
+      (item.cost || 0).toFixed(2),
+
+      (item.profit || 0).toFixed(2),
+
+      item.revenue > 0
+        ? ((item.profit / item.revenue) * 100).toFixed(1) + "%"
+        : "0%"
+    ])
+  );
+};
  
   if (loading) {
     return (
@@ -259,27 +445,31 @@ const RevenueReport = () => {
             <p className="text-sm text-gray-500">Detailed revenue and profit analysis</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <select
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black"
-            >
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-            <select
-              value={revenueType}
-              onChange={(e) => setRevenueType(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black"
-            >
-              <option value="all">All Types</option>
-              <option value="product">Products</option>
-              <option value="shipping">Shipping</option>
-              <option value="tax">Tax</option>
-            </select>
-          </div>
+
+        <select value={dateRange} onChange={(e) => setDateRange(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black">
+          <option value="today">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
+        </select>
+
+        <select value={revenueType} onChange={(e) => setRevenueType(e.target.value)}
+           className="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-black" >
+          <option value="all">All Types</option>
+          <option value="product">Products</option>
+          <option value="shipping">Shipping</option>
+          <option value="tax">Tax</option>
+       </select>
+
+    <button
+      onClick={handlePrint}
+      className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition flex items-center gap-2"
+    >
+      <FiPrinter size={16} />
+      Print
+    </button>
+
+</div>
         </div>
  
         <div className="overflow-x-auto">
@@ -357,6 +547,38 @@ const CustomerReport = () => {
   const totalOrders = data.reduce((sum, d) => sum + (d.total_orders || 0), 0);
   const totalSpent = data.reduce((sum, d) => sum + (d.total_spent || 0), 0);
   const avgSpent = totalCustomers > 0 ? totalSpent / totalCustomers : 0;
+
+  const handlePrint = () => {
+  printReport(
+    "Customer Report",
+
+    [
+      "Customer",
+      "Email",
+      "Orders",
+      "Total Spent (₹)",
+      "Average Order (₹)",
+      "Segment",
+    ],
+
+    data.map((customer) => [
+      customer.name,
+      customer.email,
+      customer.total_orders || 0,
+      (customer.total_spent || 0).toFixed(2),
+      (
+        customer.total_orders > 0
+          ? customer.total_spent / customer.total_orders
+          : 0
+      ).toFixed(2),
+      (customer.total_orders || 0) > 5
+        ? "VIP"
+        : (customer.total_orders || 0) > 1
+        ? "Regular"
+        : "New",
+    ])
+  );
+};
  
   if (loading) {
     return (
@@ -403,6 +625,11 @@ const CustomerReport = () => {
               <option value="high">High Value</option>
             </select>
           </div>
+          <button onClick={handlePrint}
+            className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition flex items-center gap-2">
+            <FiPrinter size={16} />
+             Print
+          </button>
         </div>
  
         <div className="overflow-x-auto">
@@ -497,6 +724,36 @@ const ProductPerformance = () => {
   const totalRevenue = data.reduce((sum, d) => sum + (d.revenue || 0), 0);
   const totalSales = data.reduce((sum, d) => sum + (d.sales || 0), 0);
   const totalProfit = data.reduce((sum, d) => sum + (d.profit || 0), 0);
+
+  const handlePrint = () => {
+  printReport(
+    "Product Performance Report",
+
+    [
+      "Product",
+      "Category",
+      "Sales",
+      "Revenue (₹)",
+      "Profit (₹)",
+      "Margin (%)",
+      "Trend",
+    ],
+
+    sortedData.map((product) => [
+      product.name,
+      product.category || "Uncategorized",
+      product.sales || 0,
+      (product.revenue || 0).toFixed(2),
+      (product.profit || 0).toFixed(2),
+      product.revenue > 0
+        ? ((product.profit / product.revenue) * 100).toFixed(1) + "%"
+        : "0%",
+      `${(product.trend || 0) > 0 ? "↑" : "↓"} ${Math.abs(
+        product.trend || 0
+      )}%`,
+    ])
+  );
+};
  
   if (loading) {
     return (
@@ -541,6 +798,11 @@ const ProductPerformance = () => {
               <option value="profit">Sort by Profit</option>
             </select>
           </div>
+          <button onClick={handlePrint}
+             className="px-3 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition flex items-center gap-2">
+            <FiPrinter size={16} />
+             Print
+          </button>
         </div>
  
         <div className="overflow-x-auto">
@@ -677,5 +939,7 @@ const AdminAnalytics = () => {
     </AdminLayout>
   );
 };
+
+
  
 export default AdminAnalytics;
