@@ -8,7 +8,7 @@ import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtil
 import { HeartIcon, ShoppingBagIcon, BoltIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
-
+ 
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_PRODUCTS':       return { ...state, products:     action.payload };
@@ -24,11 +24,11 @@ const reducer = (state, action) => {
     default:                   return state;
   }
 };
-
+ 
 const initialState = {
   products: [], loading: true, wishlist: new Set(), wishlistIds: {}, addingToCart: null,
 };
-
+ 
 const Collections = () => {
   const { style }           = useParams();
   const [searchParams]      = useSearchParams();
@@ -36,26 +36,30 @@ const Collections = () => {
   const navigate            = useNavigate();
   const [state, dispatch]   = useReducer(reducer, initialState);
   const { products, loading, wishlist, wishlistIds, addingToCart } = state;
-
+ 
   const searchTerm = searchParams.get('search') || '';
+  const categorySlug = searchParams.get('category') || '';
+ 
 
+ 
   const fetchProducts = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
     try {
       const params = {};
       if (searchTerm) params.search = searchTerm;
-
+      if (categorySlug) params.category = categorySlug;
+ 
       const res = await productAPI.getAll(params);
       let filtered = res.data;
-
+ 
       if (style) {
         filtered = filtered.filter(p => p.style && p.style.toLowerCase() === style.toLowerCase());
       }
       dispatch({ type: 'SET_PRODUCTS', payload: filtered });
     } catch { toast.error('Failed to load products'); }
     finally { dispatch({ type: 'SET_LOADING', payload: false }); }
-  }, [style, searchTerm]);
-
+  }, [style, searchTerm, categorySlug]);
+ 
   const fetchWishlist = useCallback(async () => {
     const token = localStorage.getItem('access_token');
     if (!token) { dispatch({ type: 'SET_WISHLIST', payload: { wishlistSet: new Set(), wishlistMap: {} } }); return; }
@@ -69,15 +73,18 @@ const Collections = () => {
       dispatch({ type: 'SET_WISHLIST', payload: { wishlistSet, wishlistMap } });
     } catch (err) { console.error(err); }
   }, []);
-
-  useEffect(() => { fetchProducts(); fetchWishlist(); }, [fetchProducts, fetchWishlist]);
-
+ 
+  useEffect(() => {
+  fetchProducts();
+  fetchWishlist();
+}, [fetchProducts, fetchWishlist]);
+ 
   const addToWishlist = async (productId) => {
     const result = await addToWishlistUtil(productId, navigate);
     if (result.success) { dispatch({ type: 'ADD_WISHLIST', payload: productId }); await fetchWishlist(); toast.success('Added to wishlist'); }
     else { toast.error(result.message); }
   };
-
+ 
   const removeFromWishlist = async (productId) => {
     const wishlistItemId = wishlistIds[productId];
     if (!wishlistItemId) { toast.error('Item not found in wishlist'); return; }
@@ -85,7 +92,7 @@ const Collections = () => {
     if (result.success) { dispatch({ type: 'REMOVE_WISHLIST', payload: productId }); toast.success('Removed from wishlist'); }
     else { toast.error(result.message); }
   };
-
+ 
   const addToCart = async (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) { toast.error('Please login to add to cart'); navigate('/Login'); return; }
@@ -97,33 +104,33 @@ const Collections = () => {
     } catch { toast.error('Failed to add to cart'); }
     finally { dispatch({ type: 'SET_ADDING_TO_CART', payload: null }); }
   };
-
+ 
   const buyNow = (productId) => {
     const token = localStorage.getItem('access_token');
     if (!token) { toast.error('Please login to buy'); navigate('/Login'); return; }
     navigate('/checkout', { state: { buyNow: true, product: products.find(p => p.id === productId), quantity: 1 } });
   };
-
+ 
   // ✅ Fixed: Use imported getImageUrl
   const getProductImage = (product) => getImageUrl(product);
-
-  const categories = [
+ 
+  const styleTabs = [
     { name: 'ALL',       path: '/Collections',           active: !style },
     { name: 'PARTY',     path: '/Collections/party',     active: style === 'party' },
     { name: 'CASUAL',    path: '/Collections/casual',    active: style === 'casual' },
     { name: 'OFFICE',    path: '/Collections/office',    active: style === 'office' },
     { name: 'AESTHETIC', path: '/Collections/aesthetic', active: style === 'aesthetic' },
   ];
-
+ 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA]">
       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-gray-900" />
     </div>
   );
-
+ 
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
-
+ 
       {/* Hero */}
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 py-10 md:py-16">
@@ -136,7 +143,7 @@ const Collections = () => {
               BUY 1 GET 1 15% OFF
             </span>
           </div>
-
+ 
           {searchTerm && (
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
@@ -153,12 +160,12 @@ const Collections = () => {
           )}
         </div>
       </div>
-
-      {/* Category Filter */}
+ 
+      {/* Category Filter (style-based tabs) */}
       <div className="border-b border-gray-200 bg-white sticky top-16 z-40">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex gap-6 md:gap-8 py-3 md:py-4 overflow-x-auto scrollbar-hide">
-            {categories.map((cat) => (
+            {styleTabs.map((cat) => (
               <Link key={cat.name} to={cat.path}
                 className={`text-[11px] md:text-xs uppercase tracking-[0.2em] font-medium transition whitespace-nowrap flex-shrink-0 ${
                   cat.active ? 'text-gray-900 border-b-2 border-gray-900 pb-1' : 'text-gray-400 hover:text-gray-600'
@@ -169,7 +176,7 @@ const Collections = () => {
           </div>
         </div>
       </div>
-
+ 
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         {products.length === 0 ? (
@@ -189,7 +196,7 @@ const Collections = () => {
             {products.map((product) => {
               const isInWishlist = wishlist.has(product.id);
               const isAdding     = addingToCart === product.id;
-
+ 
               return (
                 <div key={product.id} className="group">
                   <div className="relative overflow-hidden bg-gray-100 mb-3">
@@ -201,7 +208,7 @@ const Collections = () => {
                         onError={(e) => { e.target.src = 'https://placehold.co/400x500/f5f5f5/999999?text=No+Image'; }}
                       />
                     </Link>
-
+ 
                     <button
                       onClick={() => isInWishlist ? removeFromWishlist(product.id) : addToWishlist(product.id)}
                       className="absolute top-2 right-2 bg-white rounded-full p-1.5 md:p-2 shadow-md hover:bg-gray-100 transition z-10">
@@ -209,14 +216,14 @@ const Collections = () => {
                         ? <HeartSolidIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-red-500" />
                         : <HeartIcon className="w-3.5 h-3.5 md:w-4 md:h-4 text-gray-600" />}
                     </button>
-
+ 
                     {product.discount > 0 && (
                       <span className="absolute top-2 left-2 bg-black text-white text-[9px] md:text-[10px] px-1.5 py-0.5 md:px-2 md:py-1 tracking-wide">
                         -{product.discount}%
                       </span>
                     )}
                   </div>
-
+ 
                   <div className="text-center">
                     <Link to={`/product/${product.id}`}>
                       <h3 className="text-gray-800 text-xs md:text-sm font-medium tracking-wide mb-1 hover:text-gray-500 transition line-clamp-1">
@@ -229,7 +236,7 @@ const Collections = () => {
                         <span className="text-gray-400 line-through text-[11px] md:text-sm">₹{product.original_price}</span>
                       )}
                     </div>
-
+ 
                     <div className="flex gap-1.5 md:gap-2">
                       <button onClick={() => addToCart(product.id)} disabled={isAdding}
                         className="flex-1 bg-gray-900 text-white py-1.5 md:py-2 text-[10px] md:text-[11px] font-medium tracking-wide uppercase hover:bg-gray-800 transition disabled:opacity-50 flex items-center justify-center gap-1">
@@ -251,7 +258,7 @@ const Collections = () => {
           </div>
         )}
       </div>
-
+ 
       {/* Newsletter */}
       <div className="border-t border-gray-200 mt-8 md:mt-12 py-12 md:py-16 bg-white">
         <div className="max-w-2xl mx-auto px-4 text-center">
@@ -267,7 +274,7 @@ const Collections = () => {
           </form>
         </div>
       </div>
-
+ 
       <style>{`
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -275,5 +282,5 @@ const Collections = () => {
     </div>
   );
 };
-
+ 
 export default Collections;

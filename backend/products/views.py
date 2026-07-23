@@ -1,4 +1,5 @@
 import calendar
+from django.utils.text import slugify
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -93,7 +94,7 @@ class AdminDashboardStatsView(APIView):
             top_categories_data = []
             try:
                 top_categories = Category.objects.annotate(
-                    product_count=Count('product')
+                    product_count=Count('products')
                 ).order_by('-product_count')[:5]
                 top_categories_data = [
                     {'name': cat.name, 'count': cat.product_count}
@@ -226,7 +227,7 @@ class ProductViewSet(ModelViewSet):
         category = self.request.query_params.get('category')
         search = self.request.query_params.get('search')
         if category:
-            qs = qs.filter(category=category)
+            qs = qs.filter(category__slug=category)
         if search:
             qs = qs.filter(name__icontains=search)
         return qs.order_by('-created_at')
@@ -299,6 +300,16 @@ class AdminProductDetailView(APIView):
         return Response({"message": "Product deactivated."}, status=204)
  
  
+class PublicCategoryListView(APIView):
+    """Public, read-only category list for the storefront (nav bars, filters)."""
+    permission_classes = [AllowAny]
+ 
+    def get(self, request):
+        categories = Category.objects.filter(is_active=True).order_by('name')
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
+ 
+ 
 class AdminCategoryListView(APIView):
     permission_classes = [IsAuthenticated]
  
@@ -317,7 +328,18 @@ class AdminCategoryListView(APIView):
     def post(self, request):
         if request.user.role != 'admin' and not request.user.is_staff:
             return Response({"error": "Access denied."}, status=403)
-        serializer = CategorySerializer(data=request.data)
+ 
+        data = request.data.copy()
+        if not data.get('slug'):
+            base_slug = slugify(data.get('name', ''))
+            slug = base_slug
+            counter = 2
+            while Category.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            data['slug'] = slug
+ 
+        serializer = CategorySerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=201)

@@ -208,17 +208,17 @@ const AdminReviews = () => {
   };
  
   const deleteReview = async (reviewId) => {
-    if (!window.confirm('Are you sure you want to delete this review?')) return;
-    try {
-      await adminAPI.deleteReview(reviewId);
-      toast.success('Review deleted successfully');
-      fetchReviews();
-    } catch (error) {
-      toast.error('Failed to delete review');
-      console.error('Error deleting review:', error);
-    }
-  };
- 
+  if (!window.confirm('Are you sure you want to delete this review?')) return;
+
+  try {
+    await adminAPI.deleteReview(reviewId);
+    toast.success('Review deleted successfully');
+    fetchReviews();
+  } catch (error) {
+    toast.error('Failed to delete review');
+    console.error('Error deleting review:', error);
+  }
+};
   const openAddReview = async () => {
     setReviewForm({ user: '', product: '', rating: 5, title: '', comment: '' });
     setShowReviewForm(true);

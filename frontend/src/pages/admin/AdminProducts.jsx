@@ -8,15 +8,6 @@ import {
   FiDownload, FiCheckSquare, FiSquare, FiPlus
 } from 'react-icons/fi';
  
-// Must match backend Product.CATEGORY_CHOICES exactly (products/models.py)
-const CATEGORY_OPTIONS = [
-  { value: 'collections', label: 'Collections' },
-  { value: 'casual', label: 'Casual Wear' },
-  { value: 'party', label: 'Party Wear' },
-  { value: 'office', label: 'Office Wear' },
-  { value: 'aesthetic', label: 'Aesthetic' },
-];
- 
 // Must match backend Product.STYLE_CHOICES exactly (products/models.py)
 const STYLE_OPTIONS = [
   { value: 'casual', label: 'Casual' },
@@ -27,12 +18,13 @@ const STYLE_OPTIONS = [
  
 const EMPTY_FORM = {
   name: '', description: '', price: '', original_price: '', cost_price: '',
-  stock: '', category: 'collections', style: '', discount: '',
+  stock: '', category: '', style: '', discount: '',
   is_new_arrival: false, is_best_seller: false, is_on_sale: false, image_url: '',
 };
  
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editProduct, setEdit] = useState(null);
@@ -71,6 +63,17 @@ const AdminProducts = () => {
   finally { setLoading(false); }
   }, [calculateStats]);
  
+  const fetchCategoryOptions = useCallback(async () => {
+    try {
+      const res = await adminAPI.getCategories();
+      setCategoryOptions(
+        res.data.map((cat) => ({ value: cat.slug, label: cat.name }))
+      );
+    } catch {
+      toast.error('Failed to load categories');
+    }
+  }, []);
+ 
   const openAddModal = () => {
     setEdit(null);
     setForm(EMPTY_FORM);
@@ -81,10 +84,11 @@ const AdminProducts = () => {
  
   useEffect(() => { 
     fetchProducts();
+    fetchCategoryOptions();
     // Kept for backward compatibility with any other code dispatching this event
     document.addEventListener('openAddProductModal', openAddModal);
     return () => document.removeEventListener('openAddProductModal', openAddModal);
-  }, [fetchProducts]);
+  }, [fetchProducts, fetchCategoryOptions]);
  
  
   const openEdit = (product) => {
@@ -219,7 +223,7 @@ const AdminProducts = () => {
   };
  
   const getCategoryLabel = (value) =>
-    CATEGORY_OPTIONS.find((opt) => opt.value === value)?.label || value || '-';
+    categoryOptions.find((opt) => opt.value === value)?.label || value || '-';
  
   return (
     <AdminLayout title="Products">
@@ -566,7 +570,10 @@ const AdminProducts = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-black focus:outline-none"
                     required
                   >
-                    {CATEGORY_OPTIONS.map((opt) => (
+                    <option value="" disabled>
+                      {categoryOptions.length ? 'Select a category' : 'No categories yet — add one first'}
+                    </option>
+                    {categoryOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>

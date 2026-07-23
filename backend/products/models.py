@@ -13,14 +13,6 @@ class Category(models.Model):
         verbose_name_plural = 'Categories'
  
 class Product(models.Model):
-    CATEGORY_CHOICES = [
-        ('collections', 'Collections'),
-        ('casual', 'Casual Wear'),
-        ('party', 'Party Wear'),
-        ('office', 'Office Wear'),
-        ('aesthetic', 'Aesthetic'),
-    ]
-    
     STYLE_CHOICES = [
         ('party', 'Party'),
         ('casual', 'Casual'),
@@ -37,7 +29,9 @@ class Product(models.Model):
     )
     original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     discount = models.IntegerField(default=0)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='collections')
+    category = models.ForeignKey(
+        Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products'
+    )
     style = models.CharField(max_length=50, choices=STYLE_CHOICES, null=True, blank=True)
     stock = models.IntegerField(default=0)
     image = models.ImageField(upload_to='products/', blank=True, null=True)

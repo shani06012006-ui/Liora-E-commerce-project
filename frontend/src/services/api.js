@@ -123,6 +123,7 @@ export const productAPI = {
   getById: (id) => get(`/products/${id}/`),
   getByCategory: (category) => get("/products/", { category }),
   search: (search) => get("/products/", { search }),
+  getCategories: () => get("/categories/"),
 };
  
 //CART APIs
