@@ -8,7 +8,6 @@ import { FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangle, FiXCircle,
   FiFolder,
   FiBarChart2,
   FiLayers,
-  FiPercent,
   FiClipboard,
   FiPieChart,
 } from 'react-icons/fi';
@@ -405,8 +404,7 @@ const AdminDashboard = () => {
     { icon: FiPlus, label: 'Add Product', link: '/admin/products', color: 'bg-black' },
     { icon: FiClipboard, label: 'Create Order', link: '/admin/orders', color: 'bg-red-300' },
     { icon: FiFolder, label: 'Add Collection', link: '/admin/categories', color: 'bg-stone-600' },
-    { icon: FiPercent, label: 'Create Coupon', link: '/admin/discounts', color: 'bg-purple-500' },
-    { icon: FiBarChart2, label: 'View Reports', link: '/admin/analytics', color: 'bg-rose-300' },
+    { icon: FiBarChart2, label: 'View Reports', link: '/admin/analytics', color: 'bg-purple-400' },
   ];
  
   const getStatusColor = (status) => {
