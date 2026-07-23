@@ -2,12 +2,16 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI } from '../services/api';
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    username: '', email: '', password: '', confirmPassword: ''
+      firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '',
   });
+
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -27,7 +31,9 @@ const Register = () => {
     setLoading(true);
     try {
       await authAPI.register({
-        username: formData.username,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone: formData.phone,
         email: formData.email,
         password: formData.password,
       });
@@ -44,10 +50,12 @@ const Register = () => {
   };
 
   const fields = [
-    { name: 'username',        label: 'Username *',         type: 'text',     placeholder: 'Choose a username'    },
-    { name: 'email',           label: 'Email *',            type: 'email',    placeholder: 'you@example.com'      },
-    { name: 'password',        label: 'Password *',         type: 'password', placeholder: '••••••••'             },
-    { name: 'confirmPassword', label: 'Confirm Password *', type: 'password', placeholder: '••••••••'             },
+    { name: 'firstName', label: 'First Name *', type: 'text', placeholder: 'Enter your first name',},    
+    { name: 'lastName',  label: 'Last Name',    type: 'text', placeholder: 'Enter your last name', },
+    { name: 'email',     label: 'Email Address *', type: 'email', placeholder: 'you@example.com',  },
+    { name: 'phone',     label: 'Phone Number (Optional)', type: 'tel', placeholder: '+94 77 123 4567',},   
+    { name: 'password',  label: 'Password *',    type: 'password',   placeholder: '••••••••', }, 
+    { name: 'confirmPassword', label: 'Confirm Password *', type: 'password', placeholder: '••••••••' },
   ];
 
   return (
@@ -65,36 +73,47 @@ const Register = () => {
             Create Account
           </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {fields.map(({ name, label, type, placeholder }) => (
               <div key={name}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-                <input
-                  type={type}
-                  name={name}
-                  placeholder={placeholder}
-                  value={formData[name]}
-                  onChange={handleChange}
-                  required
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none text-sm transition ${
-                    name === 'confirmPassword' && formData.confirmPassword && formData.password !== formData.confirmPassword
-                      ? 'border-red-400 bg-red-50'
-                      : name === 'confirmPassword' && formData.confirmPassword && formData.password === formData.confirmPassword
-                      ? 'border-green-400 bg-green-50'
-                      : 'border-gray-300'
-                  }`}
-                />
-                {name === 'password' && (
-                  <p className="text-xs text-gray-400 mt-1">Minimum 6 characters (Numbers / Text)</p>
-                )}
-                {/* Confirm password live feedback */}
-                {name === 'confirmPassword' && formData.confirmPassword && (
-                  <p className={`text-xs mt-1 ${
-                    formData.password === formData.confirmPassword ? 'text-green-600' : 'text-red-500'
-                  }`}>
-                    {formData.password === formData.confirmPassword ? '✓ Passwords match' : '✗ Passwords do not match'}
-                  </p>
-                )}
+                <div className="relative">
+              <input type={
+                  name === "password"
+                  ? (showPassword ? "text" : "password")
+                  : name === "confirmPassword"
+                  ? (showConfirmPassword ? "text" : "password")
+                  : type }
+                name={name} placeholder={placeholder} value={formData[name]}
+                onChange={handleChange} required={name !== "phone"}
+                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none text-sm transition ${
+                 name === "confirmPassword" &&
+                formData.confirmPassword &&
+                formData.password !== formData.confirmPassword
+                ? "border-red-400 bg-red-50"
+                : name === "confirmPassword" &&
+                  formData.confirmPassword &&
+                  formData.password === formData.confirmPassword
+                ? "border-green-400 bg-green-50"
+                : "border-gray-300"
+              }`}
+               />
+
+            {(name === "password" || name === "confirmPassword") && (
+          <button type="button" onClick={() => {
+            if (name === "password") {
+            setShowPassword(prev => !prev);
+          } else {
+            setShowConfirmPassword(prev => !prev);
+          }
+          }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition" >
+        {name === "password"
+        ? (showPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />)
+        : (showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />)}
+        </button>
+        )}
+  
+</div>
               </div>
             ))}
 
@@ -111,7 +130,7 @@ const Register = () => {
                   </svg>
                   Sending OTP...
                 </span>
-              ) : 'Create Account'}
+              ) : 'Create My Account'}
             </button>
           </form>
 
