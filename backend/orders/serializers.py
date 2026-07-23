@@ -18,8 +18,11 @@ class CartSerializer(serializers.ModelSerializer):
         return obj.total_price()
  
     def get_product_image(self, obj):
-        if obj.product and obj.product.image:
-            return obj.product.image.url
+        if obj.product:
+            if obj.product.image:
+                return obj.product.image.url
+            if obj.product.image_url:
+                return obj.product.image_url
         return None
  
  
@@ -35,8 +38,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
         ]
  
     def get_product_image(self, obj):
-        if obj.product and obj.product.image:
-            return obj.product.image.url
+        if obj.product:
+            if obj.product.image:
+                return obj.product.image.url
+            if obj.product.image_url:
+                return obj.product.image_url
         return None
  
  
@@ -60,3 +66,4 @@ class OrderSerializer(serializers.ModelSerializer):
             'updated_at',
             'items'
         ]
+ 

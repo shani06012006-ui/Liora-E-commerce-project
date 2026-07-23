@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
-import { adminAPI } from '../../services/api';
+import { adminAPI, getImageUrl } from '../../services/api';
 import { FiSearch, FiEye, FiTrash2, FiChevronLeft, FiChevronRight, FiXCircle, FiPrinter, FiRefreshCw, FiShoppingBag, FiDownload } from 'react-icons/fi';
  
 const AdminOrders = () => {
@@ -223,6 +223,14 @@ const AdminOrders = () => {
     }).format(amount || 0);
   };
  
+  // Resolve a thumbnail for an order: use the first item's product image.
+  // Works for any order (old or newly placed) because the backend always
+  // sends `product_image` on every order item.
+  const getOrderThumbnail = (order) => {
+    const firstItem = order.items?.[0];
+    return getImageUrl({ image: firstItem?.product_image });
+  };
+ 
   const formatDate = (value) => {
     if (!value) return '-';
     return new Date(value).toLocaleDateString('en-US', { 
@@ -332,7 +340,7 @@ const AdminOrders = () => {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                   <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
@@ -359,9 +367,27 @@ const AdminOrders = () => {
                     return (
                       <tr key={order.id} className="hover:bg-gray-50 transition">
                         <td className="px-6 py-4">
-                          <span className="font-mono text-sm font-medium text-gray-900">
-                            #{order.order_number || order.id}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <div className="relative shrink-0">
+                              <img
+                                src={getOrderThumbnail(order)}
+                                alt={order.items?.[0]?.product_name || 'Product'}
+                                className="w-12 h-12 rounded-lg object-cover border border-gray-200 bg-gray-50"
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = 'https://placehold.co/100x100/e0e0e0/2D2D2D?text=No+Image';
+                                }}
+                              />
+                              {order.items?.length > 1 && (
+                                <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-[10px] font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+                                  +{order.items.length - 1}
+                                </span>
+                              )}
+                            </div>
+                            <span className="font-mono text-xs text-gray-500">
+                              #{order.order_number || order.id}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div>
@@ -582,9 +608,20 @@ const AdminOrders = () => {
                 <div className="border rounded-lg divide-y">
                   {selectedOrder.items?.map((item, idx) => (
                     <div key={idx} className="flex justify-between items-center p-3">
-                      <div>
-                        <p className="font-medium">{item.product_name}</p>
-                        <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={getImageUrl({ image: item.product_image })}
+                          alt={item.product_name}
+                          className="w-12 h-12 rounded-lg object-cover border border-gray-200 bg-gray-50"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = 'https://placehold.co/100x100/e0e0e0/2D2D2D?text=No+Image';
+                          }}
+                        />
+                        <div>
+                          <p className="font-medium">{item.product_name}</p>
+                          <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                        </div>
                       </div>
                       <p className="font-medium">{formatCurrency(item.price * item.quantity)}</p>
                     </div>
