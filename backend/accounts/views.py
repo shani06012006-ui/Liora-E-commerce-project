@@ -112,8 +112,11 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
-            email = serializer.validated_data.get('email')
-            username = serializer.validated_data.get('username')
+            email = serializer.validated_data.get("email")
+            username = serializer.validated_data.get("username")
+            full_name = serializer.validated_data.get("full_name", "")
+            phone = serializer.validated_data.get("phone", "")
+            password = serializer.validated_data.get("password")
             
             existing_user = User.objects.filter(email=email).first()
             
@@ -127,9 +130,9 @@ class RegisterView(APIView):
                     existing_user.is_deleted = False
                     existing_user.is_active = False
                     existing_user.username = username
-                    existing_user.full_name = serializer.validated_data.get('full_name', '')
-                    existing_user.phone = serializer.validated_data.get('phone', '')
-                    existing_user.set_password(serializer.validated_data['password'])
+                    existing_user.full_name = full_name
+                    existing_user.phone = phone
+                    existing_user.set_password(password)
                     existing_user.save()
                     
                     otp_code = OTPVerification.generate_otp()

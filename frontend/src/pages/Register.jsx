@@ -7,8 +7,8 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 const Register = () => {
   const [formData, setFormData] = useState({
       firstName: '', lastName: '', phone: '', email: '', password: '', confirmPassword: '',
-  });
-
+  }); 
+  const [agreeTerms, setAgreeTerms] = useState(false);  
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -31,12 +31,11 @@ const Register = () => {
     setLoading(true);
     try {
       await authAPI.register({
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        phone: formData.phone,
-        email: formData.email,
-        password: formData.password,
-      });
+    email: formData.email,
+    password: formData.password,
+    phone: formData.phone,
+    full_name: `${formData.firstName} ${formData.lastName}`.trim(),
+});
       toast.success('OTP sent to your email!');
       navigate('/verify-otp', { state: { email: formData.email } });
     } catch (err) {
@@ -112,11 +111,23 @@ const Register = () => {
         : (showConfirmPassword ? <FiEye size={18} /> : <FiEyeOff size={18} />)}
         </button>
         )}
-  
-</div>
-              </div>
-            ))}
+      </div>
+    </div>
+ ))}
+    <div className="flex items-start gap-3 pt-2">
+      <input type="checkbox" id="terms" checked={agreeTerms}
+          onChange={(e) => setAgreeTerms(e.target.checked)}
+        className="mt-1 h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900" />
 
+      <label htmlFor="terms" className="text-sm text-gray-600 leading-5"> I agree to the{" "}
+      <Link to="/Terms"
+        className="text-gray-900 font-medium hover:underline" > Terms of Service
+      </Link>{" "}  and{" "}
+      <Link to="/Privacy"
+        className="text-gray-900 font-medium hover:underline" >  Privacy Policy
+      </Link>
+  </label>
+</div>
             <button
               type="submit"
               disabled={loading || (formData.confirmPassword && formData.password !== formData.confirmPassword)}
