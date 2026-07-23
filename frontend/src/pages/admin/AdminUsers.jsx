@@ -17,7 +17,7 @@ import {
   FiXCircle,
 } from 'react-icons/fi';
 import {FaRupeeSign} from "react-icons/fa6"
-
+ 
  
 const EMPTY_USER_FORM = {
   username: '', email: '', password: '', full_name: '', phone: '', role: 'user',
@@ -103,11 +103,7 @@ const AdminUsers = () => {
     isBlocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
  
   const formatCurrency = (amount) =>
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount || 0);
+    `₹${(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
  
   const formatDate = (value) =>
     value ? new Date(value).toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';

@@ -161,15 +161,15 @@ const AdminOrders = () => {
                   <td>${index + 1}</td>
                   <td>${item.product_name}</td>
                   <td class="text-center">${item.quantity}</td>
-                  <td class="text-right">$${item.price.toFixed(2)}</td>
-                  <td class="text-right">$${(item.price * item.quantity).toFixed(2)}</td>
+                  <td class="text-right">₹${item.price.toFixed(2)}</td>
+                  <td class="text-right">₹${(item.price * item.quantity).toFixed(2)}</td>
                 </tr>
               `).join('') || '<tr><td colspan="5" style="text-align: center; color: #9ca3af;">No items found</td></tr>'}
             </tbody>
           </table>
           
           <div class="total">
-            <p>Total Amount: $${order.total_amount}</p>
+            <p>Total Amount: ₹${order.total_amount}</p>
           </div>
           
           <div class="footer">
@@ -216,11 +216,7 @@ const AdminOrders = () => {
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / itemsPerPage));
  
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(amount || 0);
+    return `₹${(amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
  
   // Resolve a thumbnail for an order: use the first item's product image.

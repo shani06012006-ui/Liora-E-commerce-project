@@ -286,7 +286,88 @@ const Transactions = () => {
     return { className: colors[status] || 'bg-gray-100 text-gray-700', Icon };
   };
  
-  const formatCurrency = (amount) => `$${(amount || 0).toFixed(2)}`;
+  const formatCurrency = (amount) => `₹${(amount || 0).toFixed(2)}`;
+ 
+  const printReceipt = (transaction) => {
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      toast.error('Please allow popups to print the receipt');
+      return;
+    }
+ 
+    const statusColor = {
+      completed: '#10B981',
+      pending: '#F59E0B',
+      failed: '#EF4444',
+      refunded: '#6B7280',
+      processing: '#3B82F6',
+    };
+ 
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Receipt - ${transaction.transaction_id || transaction.id}</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 700px; margin: 0 auto; color: #1a1a1a; }
+            .header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+            .brand { font-size: 24px; font-weight: 300; letter-spacing: 3px; }
+            .info { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; background: #f9fafb; padding: 20px; border-radius: 8px; }
+            .label { font-weight: 600; color: #6b7280; display: block; font-size: 12px; text-transform: uppercase; }
+            .value { font-size: 14px; margin-top: 2px; }
+            .status-badge { display: inline-block; padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; background: ${statusColor[transaction.status] || '#6b7280'}; color: white; }
+            .amount { font-size: 28px; font-weight: 700; text-align: right; margin-top: 20px; padding-top: 20px; border-top: 3px solid #1a1a2e; }
+            .footer { margin-top: 40px; border-top: 1px solid #e5e7eb; padding-top: 20px; text-align: center; color: #9ca3af; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <div class="brand">L I O R A</div>
+              <div style="color: #6b7280; font-size: 12px;">Aesthetic Fashion</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 20px; font-weight: 700;">RECEIPT</div>
+              <div style="color: #6b7280;">#${transaction.transaction_id || transaction.id}</div>
+            </div>
+          </div>
+ 
+          <div class="info">
+            <div>
+              <span class="label">Customer</span>
+              <div class="value">${transaction.customer_name || 'N/A'}</div>
+            </div>
+            <div>
+              <span class="label">Order</span>
+              <div class="value">#${transaction.order_number || 'N/A'}</div>
+            </div>
+            <div>
+              <span class="label">Payment Method</span>
+              <div class="value" style="text-transform: capitalize;">${transaction.payment_method || 'N/A'}</div>
+            </div>
+            <div>
+              <span class="label">Date</span>
+              <div class="value">${transaction.created_at ? new Date(transaction.created_at).toLocaleString() : 'N/A'}</div>
+            </div>
+            <div>
+              <span class="label">Status</span>
+              <div class="value"><span class="status-badge">${(transaction.status || 'unknown').toUpperCase()}</span></div>
+            </div>
+          </div>
+ 
+          <div class="amount">
+            Amount Paid: ₹${(transaction.amount || 0).toFixed(2)}
+          </div>
+ 
+          <div class="footer">
+            <p>Thank you for shopping with Liora!</p>
+            <p>This is a system-generated receipt</p>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
  
   if (loading) {
     return (
@@ -491,7 +572,10 @@ const Transactions = () => {
                     Mark as Complete
                   </button>
                 )}
-                <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200">
+                <button
+                  onClick={() => printReceipt(selectedTransaction)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200"
+                >
                   <FiPrinter className="inline mr-2" size={16} />
                   Print Receipt
                 </button>
@@ -547,7 +631,7 @@ const Refunds = () => {
     return colors[status] || 'bg-gray-100 text-gray-700';
   };
  
-  const formatCurrency = (amount) => `$${(amount || 0).toFixed(2)}`;
+  const formatCurrency = (amount) => `₹${(amount || 0).toFixed(2)}`;
  
   if (loading) {
     return (

@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import toast from 'react-hot-toast';
-import { FiDollarSign, FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangle, FiXCircle,
+import { FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangle, FiXCircle,
   FiCalendar,
   FiPlus,
   FiFolder,
@@ -12,6 +12,7 @@ import { FiDollarSign, FiShoppingCart, FiPackage, FiUsers, FiBox, FiAlertTriangl
   FiClipboard,
   FiPieChart,
 } from 'react-icons/fi';
+import { FaRupeeSign } from 'react-icons/fa6';
 import { Link } from 'react-router-dom';
 import { adminAPI, getImageUrl } from '../../services/api';
  
@@ -390,7 +391,7 @@ const AdminDashboard = () => {
   }
  
   const statCards = [
-    { title: 'Total Revenue', value: `₹${stats?.monthly_revenue?.toLocaleString() || 0}`, icon: FiDollarSign, color: 'green' },
+    { title: 'Total Revenue', value: `₹${stats?.monthly_revenue?.toLocaleString() || 0}`, icon: FaRupeeSign, color: 'green' },
     { title: 'Total Orders', value: stats?.total_orders || 0, icon: FiShoppingCart, color: 'blue' },
     { title: 'Total Products', value: stats?.total_products || 0, icon: FiPackage, color: 'purple' },
     { title: 'Total Customers', value: stats?.total_users || 0, icon: FiUsers, color: 'orange' },
