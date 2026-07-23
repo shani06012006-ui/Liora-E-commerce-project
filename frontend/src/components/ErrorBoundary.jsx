@@ -18,7 +18,7 @@ class ErrorBoundary extends Component {
  
   componentDidUpdate(prevProps) {
     // If the route changed after an error, try re-rendering the children again
-    // instead of staying stuck on the fallback screen.
+
     if (this.state.hasError && prevProps.locationKey !== this.props.locationKey) {
       this.setState({ hasError: false });
     }

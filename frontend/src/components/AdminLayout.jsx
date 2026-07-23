@@ -55,10 +55,7 @@ const AdminLayout = ({ title, subtitle, children }) => {
     navigate('/admin/login', { replace: true });
   };
  
-  // Re-apply the saved theme every time any admin page mounts. Each admin
-  // page renders its own AdminLayout instance, so this keeps the chosen
-  // theme consistent as you navigate around, without needing a global
-  // React context/provider.
+
   useEffect(() => {
     applyAdminTheme(getStoredAdminTheme());
   }, []);

@@ -38,7 +38,7 @@ const ThemeMenu = () => {
       const applied = applyAdminTheme(themeId);
       setSelectedId(applied);
       const theme = ADMIN_THEMES.find((t) => t.id === applied);
-      toast.success(`✨ ${theme?.name || 'Theme'} applied`);
+      toast.success(` ${theme?.name || 'Theme'} applied`);
     }
     setOpen(false);
   };

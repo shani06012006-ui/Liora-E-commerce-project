@@ -1,10 +1,5 @@
 // frontend/src/components/UserThemeMenu.jsx
-//
-// Storefront theme switcher. Visually/behaviorally mirrors the admin side's
-// ThemeMenu.jsx, but is wired to theme/userThemes.js instead of
-// theme/adminThemes.js — separate state, separate storage, separate
-// <html> attribute. Picking a theme here never changes the admin theme,
-// and picking a theme in the admin dashboard never changes this one.
+
 import { useState, useRef, useEffect } from 'react';
 import { MdPalette } from 'react-icons/md';
 import { FiCheck } from 'react-icons/fi';
@@ -17,8 +12,7 @@ const UserThemeMenu = () => {
   const [selectedId, setSelectedId] = useState(getStoredUserTheme());
   const menuRef = useRef(null);
  
-  // Close on outside click / Escape - same pattern as every other dropdown
-  // in the navbar (search, notifications, profile menu).
+
   useEffect(() => {
     if (!open) return;
  
@@ -44,7 +38,7 @@ const UserThemeMenu = () => {
       const applied = applyUserTheme(themeId);
       setSelectedId(applied);
       const theme = USER_THEMES.find((t) => t.id === applied);
-      toast.success(`✨ ${theme?.name || 'Theme'} applied`);
+      toast.success(` ${theme?.name || 'Theme'} applied`);
     }
     setOpen(false);
   };

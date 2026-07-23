@@ -3,13 +3,7 @@ import { useReducer, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCurrentUser, getTokens } from '../utils/storage';
-import {
-  ShoppingBagIcon,
-  MagnifyingGlassIcon,
-  HeartIcon,
-  XMarkIcon,
-  Bars3Icon,
-} from '@heroicons/react/24/outline';
+import { ShoppingBagIcon, MagnifyingGlassIcon, HeartIcon, XMarkIcon, Bars3Icon, } from '@heroicons/react/24/outline';
 import { cartAPI, wishlistAPI } from '../services/api';
 import { setCart } from '../redux/cartSlice';
 import { handleLogout } from '../redux/authUtils';
