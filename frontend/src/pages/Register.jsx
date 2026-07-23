@@ -65,7 +65,7 @@ const Register = () => {
       <div className="w-full max-w-md">
 
         <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-3xl md:text-4xl font-serif font-light text-white mb-10">Liora</h1>
+          <h1 className="text-3xl md:text-4xl font-serif font-light text-white mb-14">Liora</h1>
           <p className="text-sm text-white mb-3">Create your account</p>
           <div className="w-12 h-px bg-gray-300 mx-auto mt-3" />
         </div>
