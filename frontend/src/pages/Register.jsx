@@ -58,12 +58,15 @@ const Register = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex items-center justify-center py-10 px-4">
+    <div className="bg-black min-h-screen flex items-center justify-center py-10 px-4 bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: "url('https://i.pinimg.com/1200x/2c/9b/65/2c9b65132d46e525b0f9489a2d041696.jpg')",
+        backgroundSize: "80%" ,
+       }} >
       <div className="w-full max-w-md">
 
         <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-3xl md:text-4xl font-serif font-light text-gray-900 mb-2">Liora</h1>
-          <p className="text-sm text-gray-500">Create your account</p>
+          <h1 className="text-3xl md:text-4xl font-serif font-light text-white mb-10">Liora</h1>
+          <p className="text-sm text-white mb-3">Create your account</p>
           <div className="w-12 h-px bg-gray-300 mx-auto mt-3" />
         </div>
 

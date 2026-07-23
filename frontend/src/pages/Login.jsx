@@ -177,10 +177,13 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFA] px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-center bg-black bg-no-repeat"
+      style={{ backgroundImage: "url('https://i.pinimg.com/736x/21/42/2c/21422c461d630d34c776256c2f08bcb1.jpg')",
+        backgroundSize: "80%", }}>     
+
       <div className="w-full max-w-md">
         <div className="text-center mb-6 md:mb-8">
-          <h1 className="text-3xl md:text-4xl font-serif font-light text-gray-900 tracking-wide mb-2">
+          <h1 className="text-3xl md:text-4xl font-serif font-light text-white tracking-wide mb-2">
             Liora
           </h1>
           <p className="text-gray-500 text-sm">Welcome back</p>
