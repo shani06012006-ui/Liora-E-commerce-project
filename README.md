@@ -3,22 +3,22 @@
 A complete full-stack e-commerce platform for women's fashion built with **React** and **Django REST Framework**.
 
 ### User Features
-- 🔐 **Authentication** - Register, Login, Logout with JWT tokens
-- 👤 **Profile Management** - Update personal info, upload profile picture
-- 🛍️ **Product Browsing** - View all products, filter by category, search products
-- ❤️ **Wishlist** - Save favorite products for later
-- 🛒 **Shopping Cart** - Add/remove items, update quantities
-- 💳 **Checkout** - Fill shipping details, place orders
-- 📦 **Order History** - Track all past orders with status
-- 🎉 **Order Success** - Celebration animation with confetti
+-  **Authentication** - Register, Login, Logout with JWT tokens
+-  **Profile Management** - Update personal info, upload profile picture
+-  **Product Browsing** - View all products, filter by category, search products
+-  **Wishlist** - Save favorite products for later
+-  **Shopping Cart** - Add/remove items, update quantities
+-  **Checkout** - Fill shipping details, place orders
+-  **Order History** - Track all past orders with status
+-  **Order Success** - Celebration animation with confetti
 
 ### Admin Features
-- 📊 **Admin Dashboard** - Manage everything from Django Admin
-- ➕ **Product Management** - Add, edit, delete products with images
-- 👥 **User Management** - View all users, block/unblock accounts
-- 📝 **Order Management** - Update order status (pending → confirmed → shipped → delivered)
+-  **Admin Dashboard** - Manage everything from Django Admin
+-  **Product Management** - Add, edit, delete products with images
+-  **User Management** - View all users, block/unblock accounts
+-  **Order Management** - Update order status (pending → confirmed → shipped → delivered)
 
-## 🛠️ Tech Stacks
+##  Tech Stacks
 
 ### Frontend
 - React 18
@@ -38,6 +38,6 @@ A complete full-stack e-commerce platform for women's fashion built with **React
 - Pillow (Image processing)
 
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome! Feel free to fork this repository, create a feature branch, and submit a pull request.
