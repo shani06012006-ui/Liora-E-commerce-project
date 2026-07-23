@@ -26,7 +26,7 @@ const STYLE_OPTIONS = [
 ];
  
 const EMPTY_FORM = {
-  name: '', description: '', price: '', original_price: '',
+  name: '', description: '', price: '', original_price: '', cost_price: '',
   stock: '', category: 'collections', style: '', discount: '',
   is_new_arrival: false, is_best_seller: false, is_on_sale: false, image_url: '',
 };
@@ -591,6 +591,7 @@ const AdminProducts = () => {
                 {[
                   ['price', 'Price (₹)', 'number'],
                   ['original_price', 'Original Price (₹)', 'number'],
+                  ['cost_price', 'Cost Price (₹) — used for Analytics profit', 'number'],
                   ['discount', 'Discount (%)', 'number'],
                   ['stock', 'Stock', 'number'],
                 ].map(([key, label, type]) => (

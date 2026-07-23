@@ -307,13 +307,13 @@ const RevenueReport = () => {
                       {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 text-sm text-right font-semibold text-green-600">
-                      ${(item.revenue || 0).toFixed(2)}
+                      ₹{(item.revenue || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-red-600">
-                      ${(item.cost || 0).toFixed(2)}
+                      ₹{(item.cost || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-sm text-right font-semibold text-blue-600">
-                      ${(item.profit || 0).toFixed(2)}
+                      ₹{(item.profit || 0).toFixed(2)}
                     </td>
                     <td className={`px-6 py-4 text-sm text-right font-medium ${item.profit > 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {item.revenue > 0 ? ((item.profit / item.revenue) * 100).toFixed(1) : 0}%
@@ -583,10 +583,10 @@ const ProductPerformance = () => {
                       {product.sales || 0}
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-semibold text-green-600">
-                      ${(product.revenue || 0).toFixed(2)}
+                      ₹{(product.revenue || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-right text-sm font-semibold text-blue-600">
-                      ${(product.profit || 0).toFixed(2)}
+                      ₹{(product.profit || 0).toFixed(2)}
                     </td>
                     <td className={`px-6 py-4 text-right text-sm font-medium ${(product.profit || 0) > 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {product.revenue > 0 ? ((product.profit / product.revenue) * 100).toFixed(1) : 0}%
