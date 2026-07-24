@@ -1,53 +1,50 @@
 import calendar
-from django.utils.text import slugify
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.viewsets import ModelViewSet
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer
-from django.db.models import Sum, Count
+from datetime import timedelta
+ 
+from django.contrib.auth import get_user_model
+from django.db.models import Count, Sum
 from django.db.models.functions import TruncDate, TruncMonth
 from django.utils import timezone
-from datetime import timedelta
-from django.contrib.auth import get_user_model
+from django.utils.text import slugify
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+ 
+from .models import Category, Product
+from .serializers import CategorySerializer, ProductSerializer
  
 User = get_user_model()
  
  
 class AdminDashboardStatsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
  
     def get(self, request):
         try:
-            # Check admin permission
+            
             if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
                 return Response({"error": "Access denied."}, status=403)
-            
-            # Get basic counts
+ 
             total_users = User.objects.count()
             total_products = Product.objects.count()
-            
-            # Get order counts safely
+ 
             try:
                 from orders.models import Order
                 total_orders = Order.objects.count()
                 pending_orders = Order.objects.filter(status='pending').count()
                 completed_orders = Order.objects.filter(status='delivered').count()
-                
-                # Today's orders
+ 
                 today = timezone.now().date()
                 today_orders = Order.objects.filter(created_at__date=today).count()
-                
-                # Revenue (last 30 days)
+ 
                 last_30_days = timezone.now() - timedelta(days=30)
                 revenue_data = Order.objects.filter(
                     created_at__gte=last_30_days,
                     status='delivered'
                 ).aggregate(total=Sum('total_amount'))
                 revenue = float(revenue_data['total'] or 0)
-                
-                # Recent orders
+ 
                 recent_orders = Order.objects.order_by('-created_at')[:10]
                 recent_orders_data = []
                 for order in recent_orders:
@@ -59,26 +56,25 @@ class AdminDashboardStatsView(APIView):
                         'status': order.status,
                         'created_at': order.created_at.isoformat()
                     })
-            except Exception:
+            except Exception:  # noqa: BLE001
                 total_orders = 0
                 pending_orders = 0
                 completed_orders = 0
                 today_orders = 0
                 revenue = 0
                 recent_orders_data = []
-            
-            # Get review counts safely
+ 
             try:
                 from reviews.models import Review
                 total_reviews = Review.objects.count()
-            except Exception:
+            except Exception:  # noqa: BLE001 
                 total_reviews = 0
-            
+ 
             # Product stats
             in_stock = Product.objects.filter(stock__gt=10).count()
             low_stock = Product.objects.filter(stock__gt=0, stock__lte=10).count()
             out_of_stock = Product.objects.filter(stock=0).count()
-            
+ 
             # Popular products
             popular_products_data = []
             try:
@@ -86,11 +82,10 @@ class AdminDashboardStatsView(APIView):
                     total_sold=Sum('orderitem__quantity')
                 ).order_by('-total_sold')[:5]
                 popular_products_data = ProductSerializer(popular_products, many=True).data
-            except Exception:
+            except Exception:  # noqa: BLE001 - fall back if orderitem relation is unavailable
                 popular_products = Product.objects.all().order_by('-created_at')[:5]
                 popular_products_data = ProductSerializer(popular_products, many=True).data
-            
-            # Top categories
+ 
             top_categories_data = []
             try:
                 top_categories = Category.objects.annotate(
@@ -100,22 +95,20 @@ class AdminDashboardStatsView(APIView):
                     {'name': cat.name, 'count': cat.product_count}
                     for cat in top_categories
                 ]
-            except Exception:
+            except Exception:  # noqa: BLE001
                 top_categories = Category.objects.all()[:5]
                 top_categories_data = [
                     {'name': cat.name, 'count': 0}
                     for cat in top_categories
                 ]
-            
+ 
             # Low stock products
             low_stock_products = Product.objects.filter(
-                stock__gt=0, 
+                stock__gt=0,
                 stock__lte=10
             ).order_by('stock')[:5]
             low_stock_products_data = ProductSerializer(low_stock_products, many=True).data
-            
-            # Real revenue trend for the bar chart — bucketed by the requested period,
-            # built from actual delivered orders (not placeholder/fake data).
+
             revenue_period = request.query_params.get('revenue_period', 'week')
             revenue_trend = []
             try:
@@ -177,7 +170,7 @@ class AdminDashboardStatsView(APIView):
                             'label': months_short[m - 1],
                             'revenue': round(revenue_by_month.get(m, 0), 2),
                         })
-            except Exception:
+            except Exception:  # noqa: BLE001
                 revenue_trend = []
  
             response_data = {
@@ -203,10 +196,10 @@ class AdminDashboardStatsView(APIView):
                 'shipped_orders': Order.objects.filter(status='shipped').count(),
                 'cancelled_orders': Order.objects.filter(status='cancelled').count(),
             }
-            
+ 
             return Response(response_data)
-            
-        except Exception as error:
+ 
+        except Exception as error:  # noqa: BLE001
             return Response(
                 {
                     "error": str(error),
@@ -219,8 +212,8 @@ class AdminDashboardStatsView(APIView):
 class ProductViewSet(ModelViewSet):
     """Customer-facing browse endpoint — read-only, public."""
     serializer_class = ProductSerializer
-    permission_classes = [AllowAny]
-    http_method_names = ['get', 'head']
+    permission_classes = (AllowAny,)
+    http_method_names = ('get', 'head')
  
     def get_queryset(self):
         qs = Product.objects.filter(is_active=True)
@@ -234,7 +227,7 @@ class ProductViewSet(ModelViewSet):
  
  
 class AdminProductListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
  
     def get(self, request):
         if request.user.role != 'admin' and not request.user.is_staff:
@@ -263,7 +256,7 @@ class AdminProductListView(APIView):
  
  
 class AdminProductDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
  
     def get(self, request, product_id):
         if request.user.role != 'admin' and not request.user.is_staff:
@@ -294,15 +287,15 @@ class AdminProductDetailView(APIView):
             product = Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return Response({"error": "Product not found."}, status=404)
-        
+ 
         product.delete()
-        
+ 
         return Response({"message": "Product deactivated."}, status=204)
  
  
 class PublicCategoryListView(APIView):
     """Public, read-only category list for the storefront (nav bars, filters)."""
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny,)
  
     def get(self, request):
         categories = Category.objects.filter(is_active=True).order_by('name')
@@ -311,7 +304,7 @@ class PublicCategoryListView(APIView):
  
  
 class AdminCategoryListView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
  
     def get(self, request):
         if request.user.role != 'admin' and not request.user.is_staff:
@@ -347,7 +340,7 @@ class AdminCategoryListView(APIView):
  
  
 class AdminCategoryDetailView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
  
     def patch(self, request, category_id):
         if request.user.role != 'admin' and not request.user.is_staff:
@@ -371,3 +364,4 @@ class AdminCategoryDetailView(APIView):
             return Response({"error": "Category not found."}, status=404)
         category.delete()
         return Response({"message": "Category deleted."}, status=204)
+ 
