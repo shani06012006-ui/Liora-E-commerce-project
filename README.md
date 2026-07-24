@@ -33,7 +33,7 @@ A complete full-stack e-commerce platform for women's fashion built with **React
 - Django 6
 - Django REST Framework
 - Simple JWT (Authentication)
-- SQLite (Database)
+- PostgreSQL (Database)
 - Django CORS Headers
 - Pillow (Image processing)
 
