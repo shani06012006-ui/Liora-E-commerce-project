@@ -1,6 +1,6 @@
 # backend/accounts/middleware.py
-from django.http import JsonResponse
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
 from rest_framework import status
 
 User = get_user_model()
@@ -11,8 +11,8 @@ class BlockedUserMiddleware:
     Middleware to check if the authenticated user is blocked.
     Blocks access to all authenticated endpoints except public ones.
     """
-    
-    PUBLIC_PATHS = [
+
+    PUBLIC_PATHS = [  # noqa: RUF012
         '/api/Login/',
         '/api/register/',
         '/api/verify-otp/',
@@ -22,8 +22,8 @@ class BlockedUserMiddleware:
         '/api/products/',
         '/api/reviews/',
     ]
-    
-    BLOCKED_GET_PATHS = [
+
+    BLOCKED_GET_PATHS = [  # noqa: RUF012
         '/api/cart/',
         '/api/wishlist/',
         '/api/orders/',
@@ -32,7 +32,7 @@ class BlockedUserMiddleware:
         '/api/checkout/',
         '/api/buy-now/',
     ]
-    
+
     def __init__(self, get_response):
         self.get_response = get_response
 
@@ -42,8 +42,8 @@ class BlockedUserMiddleware:
                 return self.get_response(request)
 
         user = getattr(request, 'user', None)
-        
-        if user and user.is_authenticated:
+
+        if user and user.is_authenticated:    # noqa
             if hasattr(user, 'is_blocked') and user.is_blocked:
                 if request.method == 'GET':
                     for blocked_path in self.BLOCKED_GET_PATHS:
@@ -53,7 +53,7 @@ class BlockedUserMiddleware:
                                 "blocked": True
                             }, status=status.HTTP_403_FORBIDDEN)
                     return self.get_response(request)
-                
+
                 return JsonResponse({
                     "error": "Your account has been blocked by the administrator. Please contact support.",
                     "blocked": True

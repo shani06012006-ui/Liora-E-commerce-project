@@ -1,7 +1,8 @@
 # backend/accounts/serializers.py
 
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
+
 from .models import Address
 
 User = get_user_model()
@@ -10,7 +11,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
+        fields = [  # noqa: RUF012
             'id',
             'username',
             'email',
@@ -29,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
             'date_joined',
             'last_login',
         ]
-        read_only_fields = ['id', 'created_at', 'date_joined', 'last_login']
+        read_only_fields = ['id', 'created_at', 'date_joined', 'last_login']   # noqa: RUF012
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -37,7 +38,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
+        fields = [  # noqa: RUF012
             'email',
             'password',
             'full_name',
@@ -87,7 +88,7 @@ class OTPVerifySerializer(serializers.Serializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = [
+        fields = [  # noqa: RUF012
             'id',
             'full_name',
             'phone',
@@ -102,4 +103,4 @@ class AddressSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']    # noqa: RUF012

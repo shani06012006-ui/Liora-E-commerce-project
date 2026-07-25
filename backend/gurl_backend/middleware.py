@@ -1,7 +1,10 @@
-from django.utils.deprecation import MiddlewareMixin
+# backend/accounts/... (wherever this file lives)
 import logging
 
+from django.utils.deprecation import MiddlewareMixin
+
 logger = logging.getLogger(__name__)
+
 
 class KeepAdminSessionMiddleware(MiddlewareMixin):
     """
@@ -13,5 +16,5 @@ class KeepAdminSessionMiddleware(MiddlewareMixin):
             # If user is authenticated, refresh session
             if request.user.is_authenticated:
                 request.session.set_expiry(1209600)
-                
+
                 logger.debug(f"Admin session refreshed for user: {request.user.username}")

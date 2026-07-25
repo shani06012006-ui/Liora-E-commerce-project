@@ -1,12 +1,14 @@
 # backend/accounts/models.py
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 import random
-from django.utils import timezone
 from datetime import timedelta
 
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.utils import timezone
+
+
 class User(AbstractUser):
-    ROLE_CHOICES = [
+    ROLE_CHOICES = [  # noqa: RUF012
         ('user', 'User'),
         ('admin', 'Admin'),
     ]
@@ -71,7 +73,7 @@ class OTPVerification(models.Model):
 
 class Address(models.Model):
     """User-specific addresses"""
-    ADDRESS_TYPES = [
+    ADDRESS_TYPES = [  # noqa: RUF012
         ('home', 'Home'),
         ('work', 'Work'),
         ('other', 'Other'),
@@ -92,7 +94,7 @@ class Address(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-is_default', '-created_at']
+        ordering = ['-is_default', '-created_at']         # noqa: RUF012
 
     def __str__(self):
         return f"{self.user.username} - {self.address_line1[:30]}"
