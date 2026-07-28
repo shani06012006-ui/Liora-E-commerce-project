@@ -151,47 +151,7 @@ html[data-user-theme='lavender'] {
   --user-newsletter-button-hover: #f5f2fb;
 }
  
-html[data-user-theme='rose-gold'] {
 
-  /* Backgrounds */
-  --user-page-bg: #fcf6f3;
-  --user-navbar-bg: #ffffff;
-  --user-card-bg: #ffffff;
-  --user-hover-bg: #f8ece7;
-
-  /* Borders */
-  --user-navbar-border: #ecd5cb;
-
-  /* Navbar */
-  --user-navbar-icon: #7a584d;
-  --user-navbar-text: #3b2925;
-
-  /* Accent */
-  --user-accent: #c98d79;
-  --user-accent-hover: #b87b67;
-  --user-accent-text: #ffffff;
-
-  /* Typography */
-  --user-content-heading: #3b2925;
-  --user-content-text: #6d5148;
-  --user-content-muted: #9b7c72;
-
-  /* Buttons */
-  --user-btn-bg: #c98d79;
-  --user-btn-bg-hover: #b87b67;
-  --user-btn-text: #ffffff;
-
-  /* Newsletter */
-  --user-newsletter-bg: #d8aa98;
-  --user-newsletter-heading: #ffffff;
-  --user-newsletter-text: rgba(255,255,255,.90);
-  --user-newsletter-input: rgba(255,255,255,.18);
-  --user-newsletter-border: rgba(255,255,255,.28);
-
-  --user-newsletter-button-bg: #ffffff;
-  --user-newsletter-button-text: #7a584d;
-  --user-newsletter-button-hover: #fff7f4;
-}
  
 /* ============ 2. APPLICATION RULES ============ */
 
@@ -323,4 +283,3 @@ html[data-user-theme='rose-gold'] {
   color: var(--user-accent) !important;
 }
  
-

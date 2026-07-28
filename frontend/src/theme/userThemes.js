@@ -30,12 +30,7 @@ export const USER_THEMES = [
   colors: ['#f7f4fc', '#ffffff', '#8d74c7', '#2f2645'],
 },
 
-  {
-  id: 'rose-gold',
-  name: 'Rose Gold',
-  description: 'Warm rose gold with timeless elegance',
-  colors: ['#fcf6f3', '#ffffff', '#c98d79', '#3b2925'],
-},
+
 
 ];
  
