@@ -145,11 +145,7 @@ const Settings = () => {
     });
   };
  
-  // ✅ FIX: No <Sidebar> here anymore, and no outer min-h-screen / max-w-6xl /
-  // flex wrapper either — the parent <ProfileLayout> (in App.jsx) already
-  // supplies the page shell + the single Sidebar. This component now only
-  // renders its own settings card, which is why the account pages used to
-  // show two sidebars stacked next to each other.
+
   return (
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
               <div className="px-6 py-5 border-b border-gray-100">

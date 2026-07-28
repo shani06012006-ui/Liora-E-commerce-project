@@ -38,13 +38,12 @@ export const DEFAULT_USER_THEME = 'elegant-light';
  
 const STORAGE_KEY = 'liora_user_theme';
  
-/** Read the saved USER theme id from localStorage, falling back to the default. */
 export const getStoredUserTheme = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && USER_THEMES.some((t) => t.id === saved)) return saved;
   } catch {
-    // localStorage may be unavailable (private browsing, etc.) - fall back silently
+    // localStorage may be unavailable - fall back silently
   }
   return DEFAULT_USER_THEME;
 };

@@ -3,10 +3,10 @@ from rest_framework import serializers
 from .models import Category, Product
 
 
-class CategorySerializer(serializers.ModelSerializer):  #RUF012
+class CategorySerializer(serializers.ModelSerializer):  
     class Meta:
         model = Category
-        fields = ['id', 'name', 'slug', 'description', 'is_active']  
+        fields = ('id', 'name', 'slug', 'description', 'is_active') 
  
  
 class ProductSerializer(serializers.ModelSerializer):

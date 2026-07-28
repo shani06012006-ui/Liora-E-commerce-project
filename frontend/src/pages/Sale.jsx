@@ -133,7 +133,6 @@ const Sale = () => {
     });
   };
 
-  // ✅ Fixed: Use centralized getImageUrl
   const getProductImage = (product) => getImageUrl(product);
 
   const categories = [

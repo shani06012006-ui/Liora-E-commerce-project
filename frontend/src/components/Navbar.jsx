@@ -191,7 +191,6 @@ const Navbar = () => {
                   : <MagnifyingGlassIcon className="h-5 w-5" />}
               </button>
  
-              {/* Theme — independent from the admin dashboard's theme */}
               <UserThemeMenu />
  
               {currentUser && (
@@ -218,7 +217,6 @@ const Navbar = () => {
                 </>
               )}
  
-              {/* User / Login - ✅ Shows actual username */}
               {currentUser ? (
                 <div className="relative" ref={dropdownRef}>
                   <button

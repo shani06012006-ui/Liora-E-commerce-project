@@ -37,7 +37,7 @@ const authSlice = createSlice({
       localStorage.setItem('last_token', access);
     },
     logout: (state) => {
-      console.log('🚪 Logout - Tab:', state.tabId);
+      console.log(' Logout - Tab:', state.tabId);
       state.user = null;
       state.token = null;
       clearSession();

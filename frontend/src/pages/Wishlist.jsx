@@ -15,14 +15,12 @@ const Wishlist = () => {
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(null);
 
-  // ✅ Check if user is authenticated
   const isUserAuthenticated = () => {
     const { accessToken } = getTokens();
     const currentUser = getCurrentUser();
     return !!(accessToken && currentUser);
   };
 
-  // ✅ Fetch wishlist items
   const fetchWishlist = async () => {
     try {
       const res = await wishlistAPI.getWishlist();
@@ -37,7 +35,7 @@ const Wishlist = () => {
     }
   };
 
-  // ✅ Single useEffect for authentication and data fetching
+
   useEffect(() => {
     if (!isUserAuthenticated()) {
       navigate('/Login');
@@ -75,7 +73,6 @@ const Wishlist = () => {
     }
   };
 
-  // ✅ Fixed: Use getTokens() instead of localStorage
   const buyNow = (productId, wishlistId) => {
     const { accessToken } = getTokens();
     if (!accessToken) {

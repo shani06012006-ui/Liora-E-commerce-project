@@ -252,11 +252,7 @@ const Profile = () => {
     </div>
   );
  
-  // ✅ FIX: No <Sidebar> here anymore, and no outer min-h-screen / max-w-6xl /
-  // flex wrapper either — the parent <ProfileLayout> (in App.jsx) already
-  // supplies the page shell + the single Sidebar. This component now only
-  // renders its own content card, which is why the profile page used to show
-  // two sidebars stacked next to each other.
+
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
  

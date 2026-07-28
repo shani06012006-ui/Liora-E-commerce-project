@@ -170,9 +170,6 @@ html[data-user-theme='lavender'] {
   color: var(--user-navbar-icon) !important;
 }
  
-/* Footer.jsx uses bg-white + border-gray-200 + text-gray-* like every other
-   card in the app, so it is already re-themed by the generic surface/text
-   rules below — no separate footer rule needed. */
  
 /* ---- Page / card surfaces ---- */
 .user-shell .bg-white {
@@ -233,9 +230,7 @@ html[data-user-theme='lavender'] {
   --tw-ring-color: var(--user-accent) !important;
 }
  
-/* ---- Primary buttons (Add to Cart, Login, Save, etc.) ----
-   Any element styled bg-gray-900 / bg-black + text-white becomes the
-   theme's accent color, with text color chosen per-theme for contrast. */
+
 .user-shell .bg-gray-900,
 .user-shell .bg-black {
   background-color: var(--user-btn-bg) !important;

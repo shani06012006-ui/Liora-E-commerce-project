@@ -48,12 +48,7 @@ const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
  
-// Layouts
-// "user-shell" scopes the USER-SIDE theme (see theme/userThemes.css). This is
-// completely separate from the admin theme system (theme/adminThemes.css),
-// which is scoped to .admin-shell / .admin-content and uses its own
-// localStorage key + data-admin-theme attribute. Changing one never touches
-// the other.
+
 const MainLayout = ({ children }) => (
   <div className="user-shell min-h-screen flex flex-col bg-gray-50">
     <Navbar />
@@ -66,11 +61,7 @@ const MainLayout = ({ children }) => (
   </div>
 );
  
-// ✅ FIX: this layout is the ONLY place that should render <Sidebar> for the
-// account pages. Profile.jsx / Settings.jsx used to render their own Sidebar
-// too, which is why the profile page showed two sidebars. Sidebar now lives
-// here exclusively, and the highlighted tab is derived from the current
-// route instead of being hardcoded to "personal".
+
 const PROFILE_TAB_BY_PATH = {
   '/profile': 'personal',
   '/settings': 'settings',
@@ -191,9 +182,7 @@ const AppContent = () => {
     return cleanup;
   }, [dispatch]);
  
-  // Apply the saved USER-SIDE theme once when the app boots, independent of
-  // whatever theme is stored for the admin side (different localStorage key,
-  // different data-attribute on <html>).
+
   useEffect(() => {
     applyUserTheme(getStoredUserTheme());
   }, []);
