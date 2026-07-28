@@ -118,34 +118,6 @@ html[data-admin-theme='lavender'] {
   --admin-content-subtle: #9683c2;
 }
  
-html[data-admin-theme='rose-gold'] {
-  --admin-page-bg: #fdf5f1;
-  --admin-sidebar-bg: #2c1c1b;
-  --admin-sidebar-text: #e2bcae;
-  --admin-sidebar-text-muted: #bd8f7f;
-  --admin-sidebar-heading: #fdf3ee;
-  --admin-sidebar-hover-bg: rgba(255, 255, 255, 0.07);
-  --admin-sidebar-divider: rgba(255, 255, 255, 0.09);
-  --admin-sidebar-active-bg: #dba590;
-  --admin-sidebar-active-text: #2c1c1b;
-  --admin-header-bg: #ffffff;
-  --admin-header-border: #f3e0d5;
-  --admin-header-title: #2c1c1b;
-  --admin-header-subtitle: #a67c68;
-  --admin-header-icon: #7a5645;
-  --admin-search-bg: #fdf3ee;
-  --admin-accent: #dba590;
-  --admin-accent-text: #2c1c1b;
-  --admin-avatar-bg: #dba590;
- 
-  --admin-content-card-bg: #ffffff;
-  --admin-content-alt-bg: #fdf3ee;
-  --admin-content-border: #f3e0d5;
-  --admin-content-heading: #2c1c1b;
-  --admin-content-text: #5c443d;
-  --admin-content-muted: #a67c68;
-  --admin-content-subtle: #c9a08d;
-}
  
 /* Smooth transition whenever the theme variables change */
 .admin-shell,

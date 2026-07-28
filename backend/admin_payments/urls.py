@@ -1,10 +1,11 @@
 # admin_payments/urls.py
 from django.urls import path
+
 from .views import (
     AdminPaymentMethodsView,
     AdminPaymentMethodToggleView,
+    AdminRefundsView,
     AdminTransactionsView,
-    AdminRefundsView
 )
 
 urlpatterns = [

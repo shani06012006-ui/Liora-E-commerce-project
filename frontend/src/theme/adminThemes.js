@@ -30,13 +30,7 @@ export const ADMIN_THEMES = [
     iconKey: 'droplet',
     colors: ['#1a1228', '#f3effc', '#8b5cf6', '#ffffff'],
   },
-  {
-    id: 'rose-gold',
-    name: 'Rose Gold',
-    description: 'Warm metallic blush, luxe and premium',
-    iconKey: 'award',
-    colors: ['#2c1c1b', '#fdf3ee', '#dba590', '#f6d9c4'],
-  },
+
 ];
  
 export const DEFAULT_ADMIN_THEME = 'elegant-light';

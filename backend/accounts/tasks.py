@@ -1,9 +1,10 @@
 # backend/accounts/tasks.py
-from celery import shared_task
-from django.core.mail import send_mail
-from django.conf import settings
 import logging
- 
+
+from celery import shared_task
+from django.conf import settings
+from django.core.mail import send_mail
+
 logger = logging.getLogger(__name__)
  
  
@@ -35,5 +36,5 @@ Liora Team"""
         return {"success": True, "email": email}
  
     except Exception as e:
-        logger.error(f"❌ Failed to send OTP to {email}: {str(e)}")
+        logger.error(f"❌ Failed to send OTP to {email}: {e!s}")
         raise self.retry(exc=e, countdown=60)

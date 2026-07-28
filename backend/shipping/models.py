@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class ShippingCharge(models.Model):
     min_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     max_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)

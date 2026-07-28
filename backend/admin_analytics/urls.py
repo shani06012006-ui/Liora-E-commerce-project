@@ -1,11 +1,12 @@
 # backend/admin_analytics/urls.py
 from django.urls import path
+
 from .views import (
-    AdminAnalyticsSalesView,
-    AdminAnalyticsRevenueView,
     AdminAnalyticsCustomersView,
-    AdminAnalyticsProductsView ,
-    AdminAnalyticsTestView
+    AdminAnalyticsProductsView,
+    AdminAnalyticsRevenueView,
+    AdminAnalyticsSalesView,
+    AdminAnalyticsTestView,
 )
 
 urlpatterns = [

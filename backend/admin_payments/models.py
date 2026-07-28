@@ -1,6 +1,7 @@
 # models.py for admin_payments
 from django.db import models
 
+
 class PaymentMethod(models.Model):
     METHOD_TYPES = (
         ('credit_card', 'Credit Card'),

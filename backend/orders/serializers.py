@@ -1,7 +1,9 @@
-from rest_framework import serializers
-from .models import Cart, Order, OrderItem
 from products.serializers import ProductSerializer
- 
+from rest_framework import serializers
+
+from .models import Cart, Order, OrderItem
+
+
 class CartSerializer(serializers.ModelSerializer):
     product_details = ProductSerializer(source='product', read_only=True)
     product_image = serializers.SerializerMethodField()

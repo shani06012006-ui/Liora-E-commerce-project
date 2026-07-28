@@ -1,10 +1,12 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from wishlist.models import Wishlist
 from products.models import Product
+from rest_framework import status, viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from wishlist.models import Wishlist
+
 from .serializers import WishlistSerializer
+
 
 class WishlistViewSet(viewsets.ModelViewSet):
     serializer_class = WishlistSerializer

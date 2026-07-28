@@ -1,6 +1,11 @@
 from django.urls import path
-from .views import AdminSettingsView, AdminSettingsSectionView, AdminSettingsArrayItemView
- 
+
+from .views import (
+    AdminSettingsArrayItemView,
+    AdminSettingsSectionView,
+    AdminSettingsView,
+)
+
 urlpatterns = [
     path("admin/settings/", AdminSettingsView.as_view()),
     path("admin/settings/<str:section>/", AdminSettingsSectionView.as_view()),

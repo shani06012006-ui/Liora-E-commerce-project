@@ -1,7 +1,6 @@
 import django.db.models.deletion
 from django.db import migrations, models
- 
- 
+
 LEGACY_CATEGORIES = {
     'collections': 'Collections',
     'casual': 'Casual Wear',

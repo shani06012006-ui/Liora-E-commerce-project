@@ -1,5 +1,6 @@
 # backend/gurl_backend/celery.py
 import os
+
 from celery import Celery
 
 # Set the default Django settings module

@@ -1,9 +1,11 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
 from .models import ShippingCharge
-from .serializers import ShippingChargeSerializer, CalculateShippingSerializer
+from .serializers import CalculateShippingSerializer, ShippingChargeSerializer
+
 
 class ShippingViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ShippingCharge.objects.filter(is_active=True)

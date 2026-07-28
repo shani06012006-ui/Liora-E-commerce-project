@@ -1,6 +1,7 @@
 from accounts.models import User
-from products.models import Product
 from orders.models import Order
+from products.models import Product
+
 
 def admin_dashboard_stats(request):
     if request.path.startswith('/admin'):

@@ -1,21 +1,26 @@
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
+from django.contrib.auth import authenticate, get_user_model
 from django.db import models
-from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer , AddressSerializer
-from .models import Address
-from .models import OTPVerification
-from .tasks import send_otp_email 
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import Address, OTPVerification
 from .permissions import IsNotBlocked
- 
+from .serializers import (
+    AddressSerializer,
+    OTPVerifySerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
+from .tasks import send_otp_email
+
 try:
-    from google.oauth2 import id_token
     from google.auth.transport import requests as google_requests
+    from google.oauth2 import id_token
     GOOGLE_AUTH_AVAILABLE = True
 except ImportError:
     GOOGLE_AUTH_AVAILABLE = False
@@ -525,7 +530,7 @@ class AdminUserDetailView(APIView):
                 Address.objects.filter(user=user).delete()
                 
                 # Delete orders and order items (cascade will handle)
-                from orders.models import Order, Cart
+                from orders.models import Cart, Order
                 Order.objects.filter(user=user).delete()
                 Cart.objects.filter(user=user).delete()
                 

@@ -1,11 +1,12 @@
 from django.urls import path
+
 from .views import (
+    AdminOrderDetailView,
+    AdminOrderListView,
+    BuyNowView,
     CartView,
     CheckoutView,
     OrderHistoryView,
-    BuyNowView,
-    AdminOrderListView,
-    AdminOrderDetailView,
 )
 
 urlpatterns = [

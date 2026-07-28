@@ -1,11 +1,12 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .models import StoreSettings
 from .serializers import StoreSettingsSerializer
- 
- 
+
+
 def is_admin(user):
     return user.is_staff or getattr(user, 'role', '') == 'admin'
  

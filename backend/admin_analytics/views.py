@@ -1,12 +1,13 @@
 import logging
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum, Count, F
+from datetime import timedelta
+
+from django.db.models import Count, F, Sum
 from django.db.models.functions import TruncDate
 from django.utils import timezone
-from datetime import timedelta
- 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 logger = logging.getLogger(__name__)
  
  
@@ -28,8 +29,8 @@ class AdminAnalyticsTestView(APIView):
  
     def get(self, request):
         try:
-            from orders.models import Order
             from accounts.models import User
+            from orders.models import Order
             from products.models import Product
  
             return Response({
@@ -91,7 +92,7 @@ class AdminAnalyticsSalesView(APIView):
             return Response(result)
  
         except Exception as e:
-            logger.error(f"SalesView error: {str(e)}")
+            logger.error(f"SalesView error: {e!s}")
             return Response({"error": str(e)}, status=500)
  
  
@@ -161,7 +162,7 @@ class AdminAnalyticsRevenueView(APIView):
             return Response(result)
  
         except Exception as e:
-            logger.error(f"RevenueView error: {str(e)}")
+            logger.error(f"RevenueView error: {e!s}")
             return Response({"error": str(e)}, status=500)
  
  
@@ -217,7 +218,7 @@ class AdminAnalyticsCustomersView(APIView):
             return Response(result)
  
         except Exception as e:
-            logger.error(f"CustomersView error: {str(e)}")
+            logger.error(f"CustomersView error: {e!s}")
             return Response({"error": str(e)}, status=500)
  
  
@@ -237,8 +238,8 @@ class AdminAnalyticsProductsView(APIView):
             if not request.user.is_staff:
                 return Response({"error": "Admin access required"}, status=403)
  
-            from products.models import Product
             from orders.models import OrderItem
+            from products.models import Product
  
             range_param = request.query_params.get('range', 'month')
             now = timezone.now()
@@ -308,6 +309,6 @@ class AdminAnalyticsProductsView(APIView):
             return Response(result[:20])
  
         except Exception as e:
-            logger.error(f"ProductsView error: {str(e)}")
+            logger.error(f"ProductsView error: {e!s}")
             return Response({"error": str(e)}, status=500)
  
