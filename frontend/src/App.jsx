@@ -66,12 +66,13 @@ const MainLayout = ({ children }) => (
 const PROFILE_TAB_BY_PATH = {
   '/profile/edit': 'personal',
   '/settings': 'change_password',
+  '/orders': 'orders',
 };
  
-
 const PROFILE_HERO_BY_PATH = {
   '/profile/edit': { title: 'PERSONAL DETAILS', subtitle: 'Manage and update your personal information.' },
   '/settings': { title: 'SETTINGS', subtitle: 'Manage your account preferences and security.' },
+  '/orders': { title: 'MY ORDERS', subtitle: 'Track and manage your purchases.' },
 };
  
 const ProfileLayout = ({ children }) => {
@@ -235,16 +236,14 @@ const AppContent = () => {
       <Route path="/admin/payments/refunds" element={<AdminRoute><AdminPayments /></AdminRoute>} />
  
       {/* Protected Routes */}
-      {/* ✅ NEW: /profile now shows the redesigned "My Account" dashboard.
-          The previous detailed edit form (with Bio) still lives at
-          /profile/edit, linked from the dashboard's "Edit Profile" setting. */}
+
       <Route path="/profile" element={<ProtectedRoute><MainLayout><AccountDashboard /></MainLayout></ProtectedRoute>} />
       <Route path="/profile/edit" element={<ProtectedRoute><ProfileLayout><Profile /></ProfileLayout></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><ProfileLayout><Settings /></ProfileLayout></ProtectedRoute>} />
       <Route path="/address" element={<ProtectedRoute><MainLayout><Address /></MainLayout></ProtectedRoute>} />
       <Route path="/cart" element={<ProtectedRoute><MainLayout><Cart /></MainLayout></ProtectedRoute>} />
       <Route path="/checkout" element={<ProtectedRoute><MainLayout><Checkout /></MainLayout></ProtectedRoute>} />
-      <Route path="/orders" element={<ProtectedRoute><MainLayout><Orders /></MainLayout></ProtectedRoute>} />
+      <Route path="/orders" element={<ProtectedRoute><ProfileLayout><Orders /></ProfileLayout></ProtectedRoute>} />
       <Route path="/order-success" element={<ProtectedRoute><MainLayout><OrderSuccess /></MainLayout></ProtectedRoute>} />
       <Route path="/wishlist" element={<ProtectedRoute><MainLayout><Wishlist /></MainLayout></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><MainLayout><Notifications /></MainLayout></ProtectedRoute>} />
