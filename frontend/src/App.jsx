@@ -20,6 +20,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const OTPVerify = lazy(() => import('./pages/OTPVerify'));
 const Profile = lazy(() => import('./pages/Profile'));
+const AccountDashboard = lazy(() => import('./pages/AccountDashboard'));
 const Settings = lazy(() => import('./pages/Settings'));
 const Address = lazy(() => import('./pages/Address'));
 const Cart = lazy(() => import('./pages/Cart'));
@@ -48,7 +49,7 @@ const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
  
-
+ 
 const MainLayout = ({ children }) => (
   <div className="user-shell min-h-screen flex flex-col bg-gray-50">
     <Navbar />
@@ -61,9 +62,9 @@ const MainLayout = ({ children }) => (
   </div>
 );
  
-
+ 
 const PROFILE_TAB_BY_PATH = {
-  '/profile': 'personal',
+  '/profile/edit': 'personal',
   '/settings': 'settings',
 };
  
@@ -182,7 +183,7 @@ const AppContent = () => {
     return cleanup;
   }, [dispatch]);
  
-
+ 
   useEffect(() => {
     applyUserTheme(getStoredUserTheme());
   }, []);
@@ -221,7 +222,11 @@ const AppContent = () => {
       <Route path="/admin/payments/refunds" element={<AdminRoute><AdminPayments /></AdminRoute>} />
  
       {/* Protected Routes */}
-      <Route path="/profile" element={<ProtectedRoute><ProfileLayout><Profile /></ProfileLayout></ProtectedRoute>} />
+      {/* ✅ NEW: /profile now shows the redesigned "My Account" dashboard.
+          The previous detailed edit form (with Bio) still lives at
+          /profile/edit, linked from the dashboard's "Edit Profile" setting. */}
+      <Route path="/profile" element={<ProtectedRoute><MainLayout><AccountDashboard /></MainLayout></ProtectedRoute>} />
+      <Route path="/profile/edit" element={<ProtectedRoute><ProfileLayout><Profile /></ProfileLayout></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><ProfileLayout><Settings /></ProfileLayout></ProtectedRoute>} />
       <Route path="/address" element={<ProtectedRoute><MainLayout><Address /></MainLayout></ProtectedRoute>} />
       <Route path="/cart" element={<ProtectedRoute><MainLayout><Cart /></MainLayout></ProtectedRoute>} />
@@ -285,4 +290,3 @@ const AppWithErrorBoundary = () => {
 };
  
 export default App;
- 
