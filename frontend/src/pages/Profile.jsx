@@ -13,6 +13,7 @@ const Profile = () => {
   const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
  
   const currentYear = new Date().getFullYear();
@@ -46,6 +47,12 @@ const Profile = () => {
     }
   }, [user]);
  
+  useEffect(() => {
+    return () => {
+      if (previewImage) URL.revokeObjectURL(previewImage);
+    };
+  }, [previewImage]);
+ 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -63,6 +70,13 @@ const Profile = () => {
       return;
     }
  
+    // ✅ FIX: show the picked image immediately instead of waiting for the
+    // server round-trip. This local object URL is only a stand-in — once
+    // the upload succeeds we swap to the real, persisted profile_pic_url
+    // from the backend (see below) and release this temporary URL.
+    const localPreviewUrl = URL.createObjectURL(file);
+    setPreviewImage(localPreviewUrl);
+ 
     setLoading(true);
     const formDataPic = new FormData();
     formDataPic.append('profile_pic', file);
@@ -70,13 +84,28 @@ const Profile = () => {
     try {
       const res = await authAPI.updateProfilePicture(formDataPic);
       const { accessToken } = getTokens();
+ 
+      // ✅ FIX: merge into the existing user object instead of replacing it
+      // wholesale, and persist to both storages, mirroring handleSubmit.
+      // Previously the picture appeared to work right after upload but was
+      // lost on refresh — the API response's shape didn't always match what
+      // the rest of the app (Navbar, Sidebar) expected, so merging here
+      // keeps everything in sync everywhere the user object is read.
+      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+      const updatedUser = { ...currentUser, ...res.data };
+ 
       dispatch(setCredentials({
-        user: res.data,
+        user: updatedUser,
         access: accessToken,
       }));
+ 
       toast.success('Profile picture updated!');
+      setPreviewImage(null);
+      URL.revokeObjectURL(localPreviewUrl);
     } catch {
       toast.error('Failed to upload picture');
+      setPreviewImage(null);
+      URL.revokeObjectURL(localPreviewUrl);
     } finally {
       setLoading(false);
     }
@@ -118,6 +147,7 @@ const Profile = () => {
   };
  
   const getProfileImage = (userData) => {
+    if (previewImage) return previewImage;
     if (userData?.profile_pic_url) return userData.profile_pic_url;
     return null;
   };
@@ -252,7 +282,11 @@ const Profile = () => {
     </div>
   );
  
-
+  // ✅ FIX: No <Sidebar> here anymore, and no outer min-h-screen / max-w-6xl /
+  // flex wrapper either — the parent <ProfileLayout> (in App.jsx) already
+  // supplies the page shell + the single Sidebar. This component now only
+  // renders its own content card, which is why the profile page used to show
+  // two sidebars stacked next to each other.
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
  
@@ -316,4 +350,3 @@ const Profile = () => {
 };
  
 export default Profile;
- 

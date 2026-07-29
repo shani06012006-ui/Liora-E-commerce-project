@@ -1,26 +1,21 @@
 
-from django.conf import settings
-from django.contrib.auth import authenticate, get_user_model
-from django.db import models
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .models import Address, OTPVerification
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.contrib.auth import authenticate, get_user_model
+from django.conf import settings
+from django.db import models
+from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer , AddressSerializer
+from .models import Address
+from .models import OTPVerification
+from .tasks import send_otp_email 
 from .permissions import IsNotBlocked
-from .serializers import (
-    AddressSerializer,
-    OTPVerifySerializer,
-    RegisterSerializer,
-    UserSerializer,
-)
-from .tasks import send_otp_email
-
+ 
 try:
-    from google.auth.transport import requests as google_requests
     from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
     GOOGLE_AUTH_AVAILABLE = True
 except ImportError:
     GOOGLE_AUTH_AVAILABLE = False
@@ -31,7 +26,7 @@ User = get_user_model()
  
 class AddressListView(APIView):
     """Get all addresses for the current user"""
-    permission_classes = (IsAuthenticated , IsNotBlocked)
+    permission_classes = [IsAuthenticated , IsNotBlocked]
  
     def get(self, request):
         addresses = Address.objects.filter(user=request.user)
@@ -41,7 +36,7 @@ class AddressListView(APIView):
  
 class AddressDetailView(APIView):
     """Create, update, or delete a specific address"""
-    permission_classes = (IsAuthenticated , IsNotBlocked)
+    permission_classes = [IsAuthenticated , IsNotBlocked]
  
     def get_object(self, address_id, user):
         try:
@@ -93,7 +88,7 @@ class AddressDetailView(APIView):
  
 class SetDefaultAddressView(APIView):
     """Set a specific address as default"""
-    permission_classes = (IsAuthenticated , IsNotBlocked)
+    permission_classes = [IsAuthenticated , IsNotBlocked]
  
     def post(self, request, address_id):
         address = Address.objects.filter(id=address_id, user=request.user).first()
@@ -113,7 +108,7 @@ class SetDefaultAddressView(APIView):
         return Response({"message": "Default address updated."}, status=status.HTTP_200_OK)
  
 class RegisterView(APIView):
-    permission_classes = (AllowAny)  
+    permission_classes = [AllowAny]    
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -171,7 +166,7 @@ class RegisterView(APIView):
  
  
 class ResendOTPView(APIView):
-    permission_classes = (AllowAny)   
+    permission_classes = [AllowAny]    
     def post(self, request):
         email = request.data.get("email")
         try:
@@ -195,7 +190,7 @@ class ResendOTPView(APIView):
  
  
 class LoginView(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = [AllowAny]
  
     def post(self, request):
         email = request.data.get("email")
@@ -253,7 +248,7 @@ class LoginView(APIView):
             "is_blocked": getattr(user, 'is_blocked', False),
             "phone": getattr(user, 'phone', ''),
             "address": getattr(user, 'address', ''),
-            "profile_pic_url": getattr(user, 'profile_pic', None) and user.profile_pic.url or '',
+            "profile_pic_url": (request.build_absolute_uri(user.profile_pic.url) if getattr(user, 'profile_pic', None) else ''),
         }
         
         return Response({
@@ -264,7 +259,7 @@ class LoginView(APIView):
  
  
 class GoogleLoginView(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = [AllowAny] 
     
     def post(self, request):
         if not GOOGLE_AUTH_AVAILABLE:
@@ -337,21 +332,21 @@ class GoogleLoginView(APIView):
  
  
 class UserProfileView(APIView):
-    permission_classes = (IsAuthenticated , IsNotBlocked)
+    permission_classes = [IsAuthenticated , IsNotBlocked]
  
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
  
     def put(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer = UserSerializer(request.user, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
  
     def patch(self, request):
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer = UserSerializer(request.user, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -359,7 +354,7 @@ class UserProfileView(APIView):
  
  
 class VerifyOTPView(APIView):
-    permission_classes = (AllowAny)   
+    permission_classes = [AllowAny]    
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
  
@@ -415,7 +410,7 @@ class VerifyOTPView(APIView):
             "is_blocked": getattr(user, 'is_blocked', False),
             "phone": getattr(user, 'phone', ''),
             "address": getattr(user, 'address', ''),
-            "profile_pic_url": getattr(user, 'profile_pic', None) and user.profile_pic.url or '',
+            "profile_pic_url": (request.build_absolute_uri(user.profile_pic.url) if getattr(user, 'profile_pic', None) else ''),
         }
  
         return Response(
@@ -430,7 +425,7 @@ class VerifyOTPView(APIView):
  
  
 class AdminUserListView(APIView):
-    permission_classes = (IsAuthenticated , IsNotBlocked)
+    permission_classes = [IsAuthenticated , IsNotBlocked]
  
     def get(self, request):
         if not request.user.is_staff and getattr(request.user, 'role', '') != 'admin':
@@ -442,7 +437,7 @@ class AdminUserListView(APIView):
  
  
 class AdminUserDetailView(APIView):
-    permission_classes = (IsAuthenticated , IsNotBlocked)
+    permission_classes = [IsAuthenticated , IsNotBlocked]
  
     def get_object(self, user_id):
         try:
@@ -529,8 +524,7 @@ class AdminUserDetailView(APIView):
                 from accounts.models import Address
                 Address.objects.filter(user=user).delete()
                 
-                # Delete orders and order items (cascade will handle)
-                from orders.models import Cart, Order
+                from orders.models import Order, Cart
                 Order.objects.filter(user=user).delete()
                 Cart.objects.filter(user=user).delete()
                 
@@ -557,7 +551,7 @@ class AdminUserDetailView(APIView):
         
  
 class AdminUserCreateView(APIView):
-    permission_classes = (IsAuthenticated , IsNotBlocked)
+    permission_classes = [IsAuthenticated , IsNotBlocked]
  
     def post(self, request):
         try:

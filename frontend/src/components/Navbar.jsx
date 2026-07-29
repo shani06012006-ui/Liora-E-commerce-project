@@ -191,6 +191,7 @@ const Navbar = () => {
                   : <MagnifyingGlassIcon className="h-5 w-5" />}
               </button>
  
+              {/* Theme — independent from the admin dashboard's theme */}
               <UserThemeMenu />
  
               {currentUser && (
@@ -217,14 +218,24 @@ const Navbar = () => {
                 </>
               )}
  
+              {/* User / Login - ✅ Shows actual username */}
               {currentUser ? (
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => uiDispatch({ type: 'SET_DROPDOWN', payload: !isDropdownOpen })}
                     className="flex items-center space-x-1 focus:outline-none"
                   >
-                    <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-gray-700">{getUserInitial()}</span>
+                    <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                      {currentUser.profile_pic_url ? (
+                        <img
+                          src={currentUser.profile_pic_url}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      ) : (
+                        <span className="text-xs font-medium text-gray-700">{getUserInitial()}</span>
+                      )}
                     </div>
                     <span className="text-xs text-gray-600 hidden md:block max-w-[80px] truncate">
                       {getUserDisplayName()}
@@ -317,8 +328,17 @@ const Navbar = () => {
             {/* Mobile user info */}
             {currentUser && (
               <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-gray-700">{getUserInitial()}</span>
+                <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                  {currentUser.profile_pic_url ? (
+                    <img
+                      src={currentUser.profile_pic_url}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <span className="text-sm font-medium text-gray-700">{getUserInitial()}</span>
+                  )}
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">{getUserDisplayName()}</p>
