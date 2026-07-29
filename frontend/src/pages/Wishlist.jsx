@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { HeartIcon, TrashIcon, UserCircleIcon, ChevronLeftIcon, ChevronRightIcon, 
-  UserIcon, ArchiveBoxIcon, MapPinIcon, CreditCardIcon, LockClosedIcon,
+  UserIcon, ArchiveBoxIcon, MapPinIcon, LockClosedIcon,
   BellIcon, ArrowRightOnRectangleIcon, CheckIcon,
   LockClosedIcon as SecureIcon,
 } from '@heroicons/react/24/outline';
@@ -28,7 +28,7 @@ const accountNav = [
   { label: 'Orders', icon: ArchiveBoxIcon, to: '/orders' },
   { label: 'Wishlist', icon: HeartIcon, to: '/wishlist' },
   { label: 'Addresses', icon: MapPinIcon, to: '/address' },
-  { label: 'Payments', icon: CreditCardIcon, to: '/settings' },
+
 ];
  
 const settingsNav = [

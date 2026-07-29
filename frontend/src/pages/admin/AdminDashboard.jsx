@@ -161,11 +161,11 @@ const RevenueBarChart = ({ data }) => {
 };
  
 const STATUS_CONFIG = [
-  { key: 'pending', label: 'Pending', color: '#8B5CF6' },
+  { key: 'pending', label: 'Pending', color: '#E7DC58' },
   { key: 'confirmed', label: 'Confirmed', color: '#2563EB' },
-  { key: 'packed', label: 'Packed', color: '#14B8A6' },
-  { key: 'shipped', label: 'Shipped', color: '#F59E0B' },
-  { key: 'delivered', label: 'Delivered', color: '#10B981' },
+  { key: 'packed', label: 'Packed', color: '#DB7093' },
+  { key: 'shipped', label: 'Shipped', color: '#9E17D2' },
+  { key: 'delivered', label: 'Delivered', color: '#1c9924' },
   { key: 'cancelled', label: 'Cancelled', color: '#EF4444' },
 ];
  

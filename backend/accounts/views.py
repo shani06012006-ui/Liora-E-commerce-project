@@ -229,7 +229,7 @@ class ResendOTPView(APIView):
 
 
 class LoginView(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny , )
 
     def post(self, request):
         email = request.data.get("email")
@@ -291,8 +291,8 @@ class LoginView(APIView):
             "address": getattr(user, "address", ""),
             "profile_pic_url": (
                 request.build_absolute_uri(user.profile_pic.url)
-                if getattr(user, "profile_pic", None)
-                else ""
+              if getattr(user, "profile_pic", None) and user.profile_pic.name
+              else ""
             ),
         }
 
@@ -468,9 +468,9 @@ class VerifyOTPView(APIView):
             "phone": getattr(user, "phone", ""),
             "address": getattr(user, "address", ""),
             "profile_pic_url": (
-                request.build_absolute_uri(user.profile_pic.url)
-                if getattr(user, "profile_pic", None)
-                else ""
+              request.build_absolute_uri(user.profile_pic.url)
+              if getattr(user, "profile_pic", None) and user.profile_pic.name
+              else ""
             ),
         }
 
