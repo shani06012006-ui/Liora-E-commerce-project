@@ -8,7 +8,7 @@ import { handleLogout } from '../redux/authUtils';
 import { getTokens } from '../utils/storage';
 import toast from 'react-hot-toast';
 import {
-  PencilIcon, HeartIcon, ArchiveBoxIcon, MapPinIcon, CreditCardIcon,
+  PencilIcon, HeartIcon, ArchiveBoxIcon, MapPinIcon,
   UserCircleIcon, LockClosedIcon, BellIcon, ShieldCheckIcon,
   ArrowRightOnRectangleIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon,
   TruckIcon, XCircleIcon, ShoppingBagIcon,
@@ -167,8 +167,7 @@ const AccountDashboard = () => {
       value: stats.orders === null ? '—' : `${stats.orders} Orders` },
     { key: 'addresses', label: 'Addresses', icon: MapPinIcon, to: '/address',
       value: stats.addresses === null ? '—' : `${stats.addresses} Saved` },
-    { key: 'payments', label: 'Payments', icon: CreditCardIcon, to: '/settings',
-      value: 'Manage' },
+
   ];
 
   const accountSettingsLinks = [

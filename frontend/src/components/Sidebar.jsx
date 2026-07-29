@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { handleLogout } from '../redux/authUtils';
 import {
-  UserIcon, HeartIcon, ArchiveBoxIcon, MapPinIcon, CreditCardIcon,
-  UserCircleIcon, LockClosedIcon, BellIcon, ShieldCheckIcon,
+  UserIcon, HeartIcon, ArchiveBoxIcon, MapPinIcon,
+  UserCircleIcon, BellIcon, ShieldCheckIcon,
   ArrowRightOnRectangleIcon, ChevronRightIcon,
 } from '@heroicons/react/24/outline';
  
@@ -24,25 +24,17 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     return name.charAt(0).toUpperCase();
   };
  
-  // ✅ Matches the "Personal Details" mockup: a core section (Personal
-  // Detail / Orders / Wishlist / Addresses / Payments) followed by an
-  // "Account Settings" section. Note: Payments and "Privacy & Security"
-  // both currently route to /settings since there's no dedicated backend
-  // for either yet — see the note in AccountDashboard.jsx.
   const coreItems = [
     { id: 'personal',   name: 'Personal Detail', icon: UserIcon,       path: '/profile/edit' },
     { id: 'orders',     name: 'Orders',          icon: ArchiveBoxIcon, path: '/orders'        },
     { id: 'wishlist',   name: 'Wishlist',        icon: HeartIcon,      path: '/wishlist'      },
     { id: 'addresses',  name: 'Addresses',       icon: MapPinIcon,     path: '/address'       },
-    { id: 'payments',   name: 'Payments',        icon: CreditCardIcon, path: '/settings'      },
   ];
  
   const settingsItems = [
     { id: 'edit_profile',   name: 'Edit Profile',              icon: UserCircleIcon,  path: '/profile/edit' },
-    { id: 'change_password', name: 'Change Password',          icon: LockClosedIcon,  path: '/settings'     },
-    { id: 'saved_addresses', name: 'Saved Addresses',          icon: MapPinIcon,      path: '/address'      },
     { id: 'notification_prefs', name: 'Notification Preferences', icon: BellIcon,     path: '/notifications' },
-    { id: 'privacy_security', name: 'Privacy & Security',      icon: ShieldCheckIcon, path: '/settings'     },
+    { id: 'privacy_security', name: 'Privacy & Security',      icon: ShieldCheckIcon, path: '/Privacy'     },
   ];
  
   const onLogout = () => {

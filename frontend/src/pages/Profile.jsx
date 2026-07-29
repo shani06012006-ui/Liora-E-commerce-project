@@ -10,7 +10,6 @@ import {
   PencilIcon, UserCircleIcon, LockClosedIcon, CameraIcon,
 } from '@heroicons/react/24/outline';
  
-// Splits the single `full_name` field the backend stores into first/last
 const splitName = (fullName) => {
   const parts = (fullName || '').trim().split(/\s+/);
   return { first: parts[0] || '', last: parts.slice(1).join(' ') || '' };

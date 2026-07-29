@@ -3,13 +3,12 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { authAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
-import { BellIcon, MoonIcon, LockClosedIcon, TrashIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { BellIcon, LockClosedIcon, TrashIcon, UserCircleIcon, EnvelopeIcon, PhoneIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
  
 const Settings = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('theme') === 'dark');
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [orderUpdates, setOrderUpdates] = useState(true);
   const [promotions, setPromotions] = useState(false);
@@ -32,16 +31,6 @@ const Settings = () => {
     confirm_password: '',
   });
  
-  useEffect(() => {
-    // Apply dark mode
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [darkMode]);
  
   // Load user data when available
   useEffect(() => {
@@ -325,32 +314,6 @@ const Settings = () => {
                       </div>
                     </form>
                   )}
-                </div>
- 
-                {/* Appearance */}
-                <div className="pt-4 border-t border-gray-100">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <MoonIcon className="w-5 h-5" />
-                    Appearance
-                  </h3>
-                  <div className="flex justify-between items-center py-3">
-                    <div>
-                      <p className="font-medium text-gray-800">Dark Mode</p>
-                      <p className="text-sm text-gray-500">Switch between light and dark theme</p>
-                    </div>
-                    <button
-                      onClick={() => setDarkMode(!darkMode)}
-                      className={`w-12 h-6 rounded-full transition-all duration-300 ${
-                        darkMode ? 'bg-gray-800' : 'bg-gray-300'
-                      } relative`}
-                    >
-                      <span
-                        className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${
-                          darkMode ? 'right-1' : 'left-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
                 </div>
  
                 {/* Notifications */}
