@@ -14,8 +14,7 @@ import {
   TruckIcon, XCircleIcon, ShoppingBagIcon,
 } from '@heroicons/react/24/outline';
 
-// Splits the single `full_name` field the backend stores into first/last
-// for display, since the account model doesn't track them separately.
+
 const splitName = (fullName) => {
   const parts = (fullName || '').trim().split(/\s+/);
   return {

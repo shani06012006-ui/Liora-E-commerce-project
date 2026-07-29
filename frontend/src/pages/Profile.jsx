@@ -1,31 +1,43 @@
 ﻿﻿// frontend/src/pages/Profile.jsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { authAPI } from '../services/api';
+import { authAPI, orderAPI, wishlistAPI } from '../services/api';
 import { setCredentials } from '../redux/authSlice';
 import { getTokens, getCurrentUser } from '../utils/storage';
 import toast from 'react-hot-toast';
-import { PencilIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, UserCircleIcon, CheckBadgeIcon, CalendarIcon } from '@heroicons/react/24/outline';
+import {
+  PencilIcon, UserCircleIcon, LockClosedIcon, CameraIcon,
+} from '@heroicons/react/24/outline';
+ 
+// Splits the single `full_name` field the backend stores into first/last
+const splitName = (fullName) => {
+  const parts = (fullName || '').trim().split(/\s+/);
+  return { first: parts[0] || '', last: parts.slice(1).join(' ') || '' };
+};
+ 
+const formatAddress = (a) => {
+  if (!a) return '';
+  return [a.address_line1, a.address_line2, a.city, a.state].filter(Boolean).join(', ');
+};
  
 const Profile = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [photoLoading, setPhotoLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
  
-  const currentYear = new Date().getFullYear();
- 
   const [formData, setFormData] = useState({
-    full_name: '',
-    username: '',
-    email: '',
-    phone: '',
-    bio: '',
-    location: '',
+    first_name: '', last_name: '', username: '', email: '', phone: '',
+    date_of_birth: '', gender: '', location: '', bio: '',
   });
+ 
+  const [addresses, setAddresses] = useState([]);
+  const [defaultAddressId, setDefaultAddressId] = useState('');
+  const [stats, setStats] = useState({ orders: null, wishlist: null, addresses: null });
  
   // ✅ Check if user is authenticated
   const isUserAuthenticated = () => {
@@ -35,22 +47,48 @@ const Profile = () => {
   };
  
   useEffect(() => {
-    if (user) {
-      setFormData({
-        full_name: user.full_name || user.username || '',
-        username: user.username || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        bio: user.bio || '',
-        location: user.location || '',
-      });
-    }
+    if (!user) return;
+    const { first, last } = splitName(user.full_name);
+    setFormData({
+      first_name: user.first_name || first,
+      last_name: user.last_name || last,
+      username: user.username || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      date_of_birth: user.date_of_birth || '',
+      gender: user.gender || '',
+      location: user.location || '',
+      bio: user.bio || '',
+    });
   }, [user]);
  
+  const loadSidebarData = useCallback(async () => {
+    try {
+      const [addressesRes, ordersRes, wishlistRes] = await Promise.allSettled([
+        authAPI.getAddresses(),
+        orderAPI.getOrders(),
+        wishlistAPI.getWishlist(),
+      ]);
+      if (addressesRes.status === 'fulfilled') {
+        const list = addressesRes.value.data;
+        setAddresses(list);
+        const def = list.find((a) => a.is_default) || list[0];
+        if (def) setDefaultAddressId(String(def.id));
+      }
+      setStats({
+        orders: ordersRes.status === 'fulfilled' ? ordersRes.value.data.length : 0,
+        wishlist: wishlistRes.status === 'fulfilled' ? wishlistRes.value.data.length : 0,
+        addresses: addressesRes.status === 'fulfilled' ? addressesRes.value.data.length : 0,
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+ 
+  useEffect(() => { loadSidebarData(); }, [loadSidebarData]);
+ 
   useEffect(() => {
-    return () => {
-      if (previewImage) URL.revokeObjectURL(previewImage);
-    };
+    return () => { if (previewImage) URL.revokeObjectURL(previewImage); };
   }, [previewImage]);
  
   const handleChange = (e) => {
@@ -70,44 +108,40 @@ const Profile = () => {
       return;
     }
  
-    // ✅ FIX: show the picked image immediately instead of waiting for the
-    // server round-trip. This local object URL is only a stand-in — once
-    // the upload succeeds we swap to the real, persisted profile_pic_url
-    // from the backend (see below) and release this temporary URL.
+    // ✅ Show the picked image immediately instead of waiting for the
+    // server round-trip; swap to the real, persisted profile_pic_url once
+    // the upload succeeds.
     const localPreviewUrl = URL.createObjectURL(file);
     setPreviewImage(localPreviewUrl);
+    setPhotoLoading(true);
  
-    setLoading(true);
     const formDataPic = new FormData();
     formDataPic.append('profile_pic', file);
  
     try {
       const res = await authAPI.updateProfilePicture(formDataPic);
       const { accessToken } = getTokens();
- 
-      // ✅ FIX: merge into the existing user object instead of replacing it
-      // wholesale, and persist to both storages, mirroring handleSubmit.
-      // Previously the picture appeared to work right after upload but was
-      // lost on refresh — the API response's shape didn't always match what
-      // the rest of the app (Navbar, Sidebar) expected, so merging here
-      // keeps everything in sync everywhere the user object is read.
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...currentUser, ...res.data };
- 
-      dispatch(setCredentials({
-        user: updatedUser,
-        access: accessToken,
-      }));
- 
+      dispatch(setCredentials({ user: updatedUser, access: accessToken }));
       toast.success('Profile picture updated!');
-      setPreviewImage(null);
-      URL.revokeObjectURL(localPreviewUrl);
     } catch {
       toast.error('Failed to upload picture');
+    } finally {
+      setPhotoLoading(false);
       setPreviewImage(null);
       URL.revokeObjectURL(localPreviewUrl);
-    } finally {
-      setLoading(false);
+    }
+  };
+ 
+  const handleDefaultAddressChange = async (e) => {
+    const id = e.target.value;
+    setDefaultAddressId(id);
+    try {
+      await authAPI.setDefaultAddress(id);
+      toast.success('Default address updated');
+    } catch {
+      toast.error('Failed to update default address');
     }
   };
  
@@ -116,27 +150,25 @@ const Profile = () => {
     setLoading(true);
     try {
       const updateData = {
-        full_name: formData.full_name,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        full_name: `${formData.first_name} ${formData.last_name}`.trim(),
         email: formData.email,
         phone: formData.phone,
-        bio: formData.bio,
+        date_of_birth: formData.date_of_birth || null,
+        gender: formData.gender,
         location: formData.location,
+        bio: formData.bio,
       };
  
       const res = await authAPI.updateProfile(updateData);
       const { accessToken } = getTokens();
- 
-      // ✅ Update both localStorage and sessionStorage
       const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
       const updatedUser = { ...currentUser, ...res.data };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       sessionStorage.setItem('user', JSON.stringify(updatedUser));
  
-      dispatch(setCredentials({
-        user: updatedUser,
-        access: accessToken,
-      }));
- 
+      dispatch(setCredentials({ user: updatedUser, access: accessToken }));
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch {
@@ -146,12 +178,28 @@ const Profile = () => {
     }
   };
  
-  const getProfileImage = (userData) => {
-    if (previewImage) return previewImage;
-    if (userData?.profile_pic_url) return userData.profile_pic_url;
-    return null;
+  const handleCancel = () => {
+    if (!user) return;
+    const { first, last } = splitName(user.full_name);
+    setFormData({
+      first_name: user.first_name || first,
+      last_name: user.last_name || last,
+      username: user.username || '',
+      email: user.email || '',
+      phone: user.phone || '',
+      date_of_birth: user.date_of_birth || '',
+      gender: user.gender || '',
+      location: user.location || '',
+      bio: user.bio || '',
+    });
+    setIsEditing(false);
   };
  
+  const avatarSrc = previewImage || user?.profile_pic_url || null;
+ 
+  const memberSince = user?.date_joined
+    ? new Date(user.date_joined).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : '—';
  
   if (!isUserAuthenticated()) {
     return (
@@ -166,187 +214,185 @@ const Profile = () => {
     );
   }
  
+  const inputClass = "w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition disabled:bg-gray-50 disabled:text-gray-500";
  
-  // Personal Detail Tab
-  const renderPersonalDetail = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center pb-4 border-b border-gray-200">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">Personal Detail</h2>
-          <p className="text-sm text-gray-500 mt-1">Manage your personal information</p>
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+ 
+      {/* Middle: Personal Information form */}
+      <div className="xl:col-span-2 bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex justify-between items-center pb-4 mb-5 border-b border-gray-100">
+          <h2 className="text-xl font-serif text-gray-900">Personal Information</h2>
+          {!isEditing && (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition"
+            >
+              <PencilIcon className="w-4 h-4" />
+              Edit
+            </button>
+          )}
         </div>
-        {!isEditing && (
-          <button
-            onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition"
-          >
-            <PencilIcon className="w-4 h-4" />
-            Edit
-          </button>
-        )}
+ 
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">First Name</label>
+              <input type="text" name="first_name" value={formData.first_name} onChange={handleChange}
+                disabled={!isEditing} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Last Name</label>
+              <input type="text" name="last_name" value={formData.last_name} onChange={handleChange}
+                disabled={!isEditing} className={inputClass} />
+            </div>
+          </div>
+ 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Email Address</label>
+              <input type="email" name="email" value={formData.email} onChange={handleChange}
+                disabled={!isEditing} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Phone Number</label>
+              <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
+                disabled={!isEditing} className={inputClass} />
+            </div>
+          </div>
+ 
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Date of Birth</label>
+              <input type="date" name="date_of_birth" value={formData.date_of_birth || ''} onChange={handleChange}
+                disabled={!isEditing} className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Gender</label>
+              <select name="gender" value={formData.gender || ''} onChange={handleChange}
+                disabled={!isEditing} className={inputClass}>
+                <option value="">Select</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="other">Other</option>
+                <option value="prefer_not_to_say">Prefer not to say</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Country</label>
+              <input type="text" name="location" value={formData.location} onChange={handleChange}
+                disabled={!isEditing} placeholder="e.g., Sri Lanka" className={inputClass} />
+            </div>
+          </div>
+ 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Username</label>
+              {/* ✅ Read-only: changing usernames touches uniqueness/auth
+                  elsewhere in the app, so this stays display-only for now. */}
+              <input type="text" value={formData.username} disabled className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-1.5">Bio</label>
+              <input type="text" name="bio" value={formData.bio} onChange={handleChange}
+                disabled={!isEditing} placeholder="Tell us about yourself..." className={inputClass} />
+            </div>
+          </div>
+ 
+          <div>
+            <label className="block text-sm text-gray-600 mb-1.5">Default Address</label>
+            {addresses.length === 0 ? (
+              <p className="text-sm text-gray-400 italic">No saved addresses yet — add one from the Addresses page.</p>
+            ) : (
+              <select value={defaultAddressId} onChange={handleDefaultAddressChange}
+                disabled={!isEditing} className={inputClass}>
+                {addresses.map((a) => (
+                  <option key={a.id} value={a.id}>{formatAddress(a)}</option>
+                ))}
+              </select>
+            )}
+          </div>
+ 
+          {isEditing && (
+            <div className="flex gap-3 pt-2">
+              <button type="submit" disabled={loading}
+                className="px-6 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium disabled:opacity-60">
+                {loading ? 'Saving...' : 'Save Changes'}
+              </button>
+              <button type="button" onClick={handleCancel}
+                className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+                Cancel
+              </button>
+            </div>
+          )}
+        </form>
       </div>
  
-      {isEditing ? (
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input type="text" name="full_name" value={formData.full_name} onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
-          </div>
- 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <div className="flex items-center gap-2">
-              <EnvelopeIcon className="w-4 h-4 text-gray-400" />
-              <input type="email" name="email" value={formData.email} onChange={handleChange}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
-            </div>
-          </div>
- 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-            <div className="flex items-center gap-2">
-              <PhoneIcon className="w-4 h-4 text-gray-400" />
-              <input type="tel" name="phone" value={formData.phone} onChange={handleChange}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
-            </div>
-          </div>
- 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <div className="flex items-center gap-2">
-              <MapPinIcon className="w-4 h-4 text-gray-400" />
-              <input type="text" name="location" value={formData.location} onChange={handleChange}
-                placeholder="e.g., Tamil Nadu, India"
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
-            </div>
-          </div>
- 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-            <textarea name="bio" value={formData.bio} onChange={handleChange} rows="3"
-              placeholder="Tell us about yourself..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent transition" />
-          </div>
- 
-          <div className="flex gap-3 pt-4">
-            <button type="submit" disabled={loading}
-              className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition font-medium">
-              {loading ? 'Saving...' : 'Save Changes'}
-            </button>
-            <button type="button" onClick={() => setIsEditing(false)}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
-              Cancel
-            </button>
-          </div>
-        </form>
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center py-3 border-b border-gray-100">
-            <div className="w-28 text-sm text-gray-500">Full Name</div>
-            <div className="flex-1 text-gray-900 font-medium">{formData.full_name || 'Not provided'}</div>
-          </div>
-          <div className="flex items-center py-3 border-b border-gray-100">
-            <div className="w-28 text-sm text-gray-500">Username</div>
-            <div className="flex-1 text-gray-900 font-medium">@{user.username}</div>
-          </div>
-          <div className="flex items-center py-3 border-b border-gray-100">
-            <div className="w-28 text-sm text-gray-500">Email</div>
-            <div className="flex-1 text-gray-900 font-medium flex items-center gap-2">
-              <EnvelopeIcon className="w-4 h-4 text-gray-400" />
-              {user.email || 'Not provided'}
-            </div>
-          </div>
-          <div className="flex items-center py-3 border-b border-gray-100">
-            <div className="w-28 text-sm text-gray-500">Phone</div>
-            <div className="flex-1 text-gray-900 font-medium flex items-center gap-2">
-              <PhoneIcon className="w-4 h-4 text-gray-400" />
-              {user.phone || 'Not provided'}
-            </div>
-          </div>
-          <div className="flex items-center py-3 border-b border-gray-100">
-            <div className="w-28 text-sm text-gray-500">Location</div>
-            <div className="flex-1 text-gray-900 font-medium flex items-center gap-2">
-              <MapPinIcon className="w-4 h-4 text-gray-400" />
-              {formData.location || 'Not provided'}
-            </div>
-          </div>
-          <div className="flex items-start py-3">
-            <div className="w-28 text-sm text-gray-500">Bio</div>
-            <div className="flex-1 text-gray-900 font-medium whitespace-pre-line">
-              {formData.bio || 'Not provided'}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
- 
-  // ✅ FIX: No <Sidebar> here anymore, and no outer min-h-screen / max-w-6xl /
-  // flex wrapper either — the parent <ProfileLayout> (in App.jsx) already
-  // supplies the page shell + the single Sidebar. This component now only
-  // renders its own content card, which is why the profile page used to show
-  // two sidebars stacked next to each other.
-  return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden">
- 
-      {/* Profile Header */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-700 px-6 py-8">
-        <div className="flex items-center gap-6 flex-wrap">
- 
-          {/* Profile Picture */}
+      {/* Right: profile summary card */}
+      <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="flex flex-col items-center text-center">
           <div className="relative group cursor-pointer" onClick={handleImageClick}>
-            <div className="w-24 h-24 rounded-full bg-white p-0.5">
-              <div className="w-full h-full rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center overflow-hidden">
-                {getProfileImage(user) ? (
-                  <img
-                    src={getProfileImage(user)}
-                    alt="Profile"
-                    className="w-full h-full rounded-full object-cover"
-                    onError={(e) => { e.target.src = ''; }}
-                  />
-                ) : (
-                  <UserCircleIcon className="w-14 h-14 text-gray-500" />
-                )}
-              </div>
+            <div className="w-24 h-24 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+              {avatarSrc ? (
+                <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <UserCircleIcon className="w-14 h-14 text-gray-400" />
+              )}
             </div>
-            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full transition-all flex items-center justify-center">
-              <PencilIcon className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition" />
+            <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center group-hover:bg-gray-700 transition">
+              <CameraIcon className="w-4 h-4 text-white" />
             </div>
-            {loading && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+            {photoLoading && (
+              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
               </div>
             )}
-            <input type="file" ref={fileInputRef} onChange={handleImageChange}
-              accept="image/*" className="hidden" />
+            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
           </div>
+          <h3 className="text-lg font-semibold text-gray-900 mt-4">
+            {formData.first_name} {formData.last_name}
+          </h3>
+          <p className="text-sm text-gray-400 mt-0.5">Member since {memberSince}</p>
+        </div>
  
-          {/* User Info */}
-          <div>
-            <h1 className="text-2xl font-semibold text-white">{formData.full_name || user.username}</h1>
-            <p className="text-gray-300 text-sm mt-1">@{user.username}</p>
-            <div className="flex items-center gap-3 mt-2">
-              <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                <CheckBadgeIcon className="w-3 h-3" />
-                Verified Member
-              </span>
-              <span className="inline-flex items-center gap-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                <CalendarIcon className="w-3 h-3" />
-                Joined {user.date_joined ? new Date(user.date_joined).getFullYear() : currentYear}
-              </span>
-            </div>
+        <div className="mt-6 pt-5 border-t border-gray-100 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Account Status</span>
+            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+              user?.is_blocked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+            }`}>
+              {user?.is_blocked ? 'Blocked' : 'Active'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Total Orders</span>
+            <span className="text-sm font-medium text-gray-900">
+              {stats.orders === null ? '—' : `${stats.orders} Orders`}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Wishlist Items</span>
+            <span className="text-sm font-medium text-gray-900">
+              {stats.wishlist === null ? '—' : `${stats.wishlist} Items`}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">Saved Addresses</span>
+            <span className="text-sm font-medium text-gray-900">
+              {stats.addresses === null ? '—' : `${stats.addresses} Addresses`}
+            </span>
           </div>
         </div>
-      </div>
  
-      {/* Tab Content */}
-      <div className="p-6">
-        {renderPersonalDetail()}
+        <Link to="/settings"
+          className="mt-6 w-full flex items-center justify-center gap-2 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition">
+          <LockClosedIcon className="w-4 h-4" />
+          Change Password
+        </Link>
       </div>
- 
     </div>
   );
 };
  
 export default Profile;
+ 

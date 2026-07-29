@@ -65,16 +65,29 @@ const MainLayout = ({ children }) => (
  
 const PROFILE_TAB_BY_PATH = {
   '/profile/edit': 'personal',
-  '/settings': 'settings',
+  '/settings': 'change_password',
+};
+ 
+
+const PROFILE_HERO_BY_PATH = {
+  '/profile/edit': { title: 'PERSONAL DETAILS', subtitle: 'Manage and update your personal information.' },
+  '/settings': { title: 'SETTINGS', subtitle: 'Manage your account preferences and security.' },
 };
  
 const ProfileLayout = ({ children }) => {
   const location = useLocation();
   const activeTab = PROFILE_TAB_BY_PATH[location.pathname] || 'personal';
+  const hero = PROFILE_HERO_BY_PATH[location.pathname] || PROFILE_HERO_BY_PATH['/profile/edit'];
  
   return (
     <div className="user-shell min-h-screen bg-gray-50">
       <Navbar />
+      <div className="bg-gradient-to-r from-[#f4f1ee] to-[#e9e4df] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+          <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-gray-900">{hero.title}</h1>
+          <p className="text-gray-500 mt-3">{hero.subtitle}</p>
+        </div>
+      </div>
       <main className="py-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex gap-6 flex-col md:flex-row">
@@ -290,3 +303,4 @@ const AppWithErrorBoundary = () => {
 };
  
 export default App;
+ 

@@ -1,26 +1,33 @@
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.contrib.auth import authenticate, get_user_model
 from django.conf import settings
+from django.contrib.auth import authenticate, get_user_model
 from django.db import models
-from .serializers import RegisterSerializer, OTPVerifySerializer, UserSerializer , AddressSerializer
-from .models import Address
-from .models import OTPVerification
-from .tasks import send_otp_email 
+
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import Address, OTPVerification
 from .permissions import IsNotBlocked
- 
+from .serializers import (
+    AddressSerializer,
+    OTPVerifySerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
+from .tasks import send_otp_email
+
 try:
-    from google.oauth2 import id_token
     from google.auth.transport import requests as google_requests
+    from google.oauth2 import id_token
+
     GOOGLE_AUTH_AVAILABLE = True
 except ImportError:
     GOOGLE_AUTH_AVAILABLE = False
-    id_token = None
     google_requests = None
+    id_token = None
+
  
 User = get_user_model()
  
@@ -108,7 +115,7 @@ class SetDefaultAddressView(APIView):
         return Response({"message": "Default address updated."}, status=status.HTTP_200_OK)
  
 class RegisterView(APIView):
-    permission_classes = [AllowAny]    
+    permission_classes = [AllowAny]  
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -166,7 +173,7 @@ class RegisterView(APIView):
  
  
 class ResendOTPView(APIView):
-    permission_classes = [AllowAny]    
+    permission_classes = [AllowAny]
     def post(self, request):
         email = request.data.get("email")
         try:
@@ -190,7 +197,7 @@ class ResendOTPView(APIView):
  
  
 class LoginView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = (AllowAny)
  
     def post(self, request):
         email = request.data.get("email")
@@ -259,7 +266,7 @@ class LoginView(APIView):
  
  
 class GoogleLoginView(APIView):
-    permission_classes = [AllowAny] 
+    permission_classes = (AllowAny)
     
     def post(self, request):
         if not GOOGLE_AUTH_AVAILABLE:
@@ -354,7 +361,7 @@ class UserProfileView(APIView):
  
  
 class VerifyOTPView(APIView):
-    permission_classes = [AllowAny]    
+    permission_classes = (AllowAny)   
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)
  
@@ -454,15 +461,16 @@ class AdminUserDetailView(APIView):
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            from orders.models import Order
-            orders = Order.objects.filter(user=user, status='delivered')
-            total_orders = orders.count()
-            total_spent = orders.aggregate(total=models.Sum('total_amount'))['total'] or 0
-            last_order = orders.order_by('-created_at').first()
-        except Exception:
-            total_orders = 0
-            total_spent = 0
-            last_order = None
+          from orders.models import Order
+
+          orders = Order.objects.filter(user=user, status="delivered")
+          total_orders = orders.count()
+          total_spent = orders.aggregate(total=models.Sum("total_amount"))["total"] or 0
+          last_order = orders.order_by("-created_at").first()
+        except ImportError:
+          total_orders = 0
+          total_spent = 0
+          last_order = None
  
         serializer = UserSerializer(user)
         data = serializer.data
@@ -534,8 +542,8 @@ class AdminUserDetailView(APIView):
                 
                 OTPVerification.objects.filter(user=user).delete()
                 
-            except Exception as e:
-                print(f"Error deleting related data: {e}")
+            except (ImportError, AttributeError) as e:
+              print(f"Error deleting related data: {e}")
             
             username = user.username
             email = user.email
