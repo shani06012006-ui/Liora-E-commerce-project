@@ -8,7 +8,7 @@ const Hero = () => (
   <div className="relative min-h-[100svh] w-full overflow-hidden bg-white">
     <div className="absolute inset-0 flex justify-center items-center">
       <img
-        src="Liora.png"
+        src="LIORA.png"
         alt="Liora Hero"
         className="h-full w-full object-contain"
       />
