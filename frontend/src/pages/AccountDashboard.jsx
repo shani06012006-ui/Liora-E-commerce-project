@@ -168,9 +168,6 @@ const AccountDashboard = () => {
       value: stats.orders === null ? '—' : `${stats.orders} Orders` },
     { key: 'addresses', label: 'Addresses', icon: MapPinIcon, to: '/address',
       value: stats.addresses === null ? '—' : `${stats.addresses} Saved` },
-    // Note: there's no user-facing payment-methods API yet (only an admin
-    // one exists in services/api.js). This tile links to Settings for now
-    // rather than showing a fabricated count.
     { key: 'payments', label: 'Payments', icon: CreditCardIcon, to: '/settings',
       value: 'Manage' },
   ];
@@ -188,18 +185,31 @@ const AccountDashboard = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-[#f4f1ee] to-[#e9e4df] overflow-hidden">
+      <div className="bg-gradient-to-r from-[#b47537] to-[#b8b3b3] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 flex items-center justify-between gap-8">
           <div>
             <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-gray-900">MY ACCOUNT</h1>
             <p className="text-lg text-gray-800 mt-4">Welcome back, {displayName}.</p>
             <p className="text-gray-500 mt-1">Manage your profile and orders.</p>
           </div>
-          <div className="hidden md:flex w-64 h-40 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-950 items-center justify-center shrink-0">
+        <div className="hidden md:flex relative group cursor-pointer w-64 h-40 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-950 items-center justify-center shrink-0 overflow-hidden"
+            onClick={handleImageClick} >
+            {avatarSrc ? (
+             <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
             <UserCircleIcon className="w-20 h-20 text-white/40" />
-          </div>
+            )}
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center pointer-events-none">
+            <PencilIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition" />
+        </div>
+            {photoLoading && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+             </div>
+     )}
         </div>
       </div>
+    </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -208,19 +218,21 @@ const AccountDashboard = () => {
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm p-6">
               <div className="flex flex-col items-center text-center pb-6 border-b border-gray-100">
-                <div className="relative group cursor-pointer" onClick={handleImageClick}>
-                  <div className="w-28 h-28 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
-                    {avatarSrc ? (
-                      <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
+                <div className="relative group cursor-pointer w-28 h-28" onClick={handleImageClick}>
+                   <div className="w-28 h-28 rounded-full bg-gray-100 overflow-hidden flex items-center justify-center">
+                     {avatarSrc ? ( <img src={avatarSrc} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
-                      <UserCircleIcon className="w-16 h-16 text-gray-400" />
+                    <UserCircleIcon className="w-16 h-16 text-gray-400" />
                     )}
-                  </div>
-                  {photoLoading && (
-                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
                     </div>
-                  )}
+                  <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center pointer-events-none">
+                    <PencilIcon className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition" />
+                </div>
+                     {photoLoading && (
+                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+                    </div>
+                    )}
                   <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mt-4">{user.full_name || user.username}</h2>
