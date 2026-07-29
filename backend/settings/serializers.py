@@ -6,4 +6,13 @@ from .models import StoreSettings
 class StoreSettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = StoreSettings
-        fields = ['general', 'store', 'shipping', 'payments', 'tax', 'notifications', 'homepage', 'updated_at']
+        fields = [
+            "general",
+            "store",
+            "shipping",
+            "payments",
+            "tax",
+            "notifications",
+            "homepage",
+            "updated_at",
+        ]

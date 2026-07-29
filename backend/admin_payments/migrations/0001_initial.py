@@ -4,23 +4,44 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='PaymentMethod',
+            name="PaymentMethod",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('type', models.CharField(choices=[('credit_card', 'Credit Card'), ('debit_card', 'Debit Card'), ('paypal', 'PayPal'), ('stripe', 'Stripe'), ('razorpay', 'Razorpay'), ('cod', 'Cash on Delivery'), ('bank_transfer', 'Bank Transfer'), ('upi', 'UPI')], max_length=50)),
-                ('is_active', models.BooleanField(default=True)),
-                ('config', models.JSONField(default=dict)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("credit_card", "Credit Card"),
+                            ("debit_card", "Debit Card"),
+                            ("paypal", "PayPal"),
+                            ("stripe", "Stripe"),
+                            ("razorpay", "Razorpay"),
+                            ("cod", "Cash on Delivery"),
+                            ("bank_transfer", "Bank Transfer"),
+                            ("upi", "UPI"),
+                        ],
+                        max_length=50,
+                    ),
+                ),
+                ("is_active", models.BooleanField(default=True)),
+                ("config", models.JSONField(default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

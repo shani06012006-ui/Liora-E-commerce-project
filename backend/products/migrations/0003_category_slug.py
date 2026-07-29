@@ -1,12 +1,11 @@
 from django.db import migrations, models
- 
- 
+
+
 class Migration(migrations.Migration):
- 
     dependencies = [
-        ('products', '0002_product_cost_price'),
+        ("products", "0002_product_cost_price"),
     ]
- 
+
     operations = [
         # The `slug` column already physically exists on products_category in
         # the database (it was added outside of Django's migration history).
@@ -17,12 +16,11 @@ class Migration(migrations.Migration):
         migrations.SeparateDatabaseAndState(
             state_operations=[
                 migrations.AddField(
-                    model_name='category',
-                    name='slug',
+                    model_name="category",
+                    name="slug",
                     field=models.SlugField(unique=True),
                 ),
             ],
             database_operations=[],
         ),
     ]
- 

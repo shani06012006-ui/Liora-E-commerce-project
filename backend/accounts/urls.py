@@ -25,15 +25,27 @@ urlpatterns = [
     path("verify-otp/", VerifyOTPView.as_view(), name="verify-otp"),
     path("resend-otp/", ResendOTPView.as_view(), name="resend-otp"),
     path("auth/google/", GoogleLoginView.as_view(), name="google-login"),
-
     # Address URLs - User-specific
     path("addresses/", AddressListView.as_view(), name="address-list"),
     path("addresses/create/", AddressDetailView.as_view(), name="address-create"),
-    path("addresses/<int:address_id>/", AddressDetailView.as_view(), name="address-detail"),
-    path("addresses/<int:address_id>/set-default/", SetDefaultAddressView.as_view(), name="address-set-default"),
-
+    path(
+        "addresses/<int:address_id>/",
+        AddressDetailView.as_view(),
+        name="address-detail",
+    ),
+    path(
+        "addresses/<int:address_id>/set-default/",
+        SetDefaultAddressView.as_view(),
+        name="address-set-default",
+    ),
     # Admin User URLs
     path("admin/users/", AdminUserListView.as_view(), name="admin-users"),
-    path("admin/users/create/", AdminUserCreateView.as_view(), name="admin-user-create"),
-    path("admin/users/<int:user_id>/", AdminUserDetailView.as_view(), name="admin-user-detail"),
+    path(
+        "admin/users/create/", AdminUserCreateView.as_view(), name="admin-user-create"
+    ),
+    path(
+        "admin/users/<int:user_id>/",
+        AdminUserDetailView.as_view(),
+        name="admin-user-detail",
+    ),
 ]

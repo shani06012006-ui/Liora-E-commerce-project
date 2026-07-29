@@ -4,44 +4,69 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Category',
+            name="Category",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
         migrations.CreateModel(
-            name='Product',
+            name="Product",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.TextField(blank=True, null=True)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('original_price', models.DecimalField(blank=True, decimal_places=2, max_digits=10, null=True)),
-                ('stock', models.IntegerField(default=0)),
-                ('category', models.CharField(blank=True, max_length=100, null=True)),
-                ('style', models.CharField(blank=True, max_length=100, null=True)),
-                ('discount', models.DecimalField(decimal_places=2, default=0, max_digits=5)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='products/')),
-                ('image_url', models.URLField(blank=True, max_length=500, null=True)),
-                ('is_active', models.BooleanField(default=True)),
-                ('is_new_arrival', models.BooleanField(default=False)),
-                ('is_best_seller', models.BooleanField(default=False)),
-                ('is_on_sale', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                (
+                    "original_price",
+                    models.DecimalField(
+                        blank=True, decimal_places=2, max_digits=10, null=True
+                    ),
+                ),
+                ("stock", models.IntegerField(default=0)),
+                ("category", models.CharField(blank=True, max_length=100, null=True)),
+                ("style", models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "discount",
+                    models.DecimalField(decimal_places=2, default=0, max_digits=5),
+                ),
+                (
+                    "image",
+                    models.ImageField(blank=True, null=True, upload_to="products/"),
+                ),
+                ("image_url", models.URLField(blank=True, max_length=500, null=True)),
+                ("is_active", models.BooleanField(default=True)),
+                ("is_new_arrival", models.BooleanField(default=False)),
+                ("is_best_seller", models.BooleanField(default=False)),
+                ("is_on_sale", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
             ],
         ),
     ]

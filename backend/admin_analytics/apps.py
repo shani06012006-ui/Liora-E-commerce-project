@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class AdminAnalyticsConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'admin_analytics'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "admin_analytics"
