@@ -14,14 +14,14 @@ export const refreshCart = async (dispatch) => {
 export const addToCartSafe = async (dispatch, productId, quantity = 1) => {
   try {
     const res = await cartAPI.addToCart({ product_id: productId, quantity });
- 
+
     if (res.data?.already_exists) {
       return { alreadyExists: true };
     }
- 
-    await refreshCart(dispatch);
+    
+    dispatch(setCart(res.data));
     return { success: true };
- 
+
   } catch (err) {
     console.error('Error adding to cart:', err);
     return { error: true };

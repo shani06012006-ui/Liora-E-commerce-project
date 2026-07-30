@@ -48,7 +48,15 @@ class CartView(APIView):
             cart_item.quantity = new_qty
             cart_item.save()
 
-        return Response({"message": "Cart updated"}, status=201)
+        # Return the full, updated cart in the same response so the
+        # frontend can update its state without making a second GET request.
+        items = Cart.objects.filter(user=request.user)
+        serializer = CartSerializer(items, many=True)
+        total = sum(item.total_price() for item in items)
+        return Response(
+            {"message": "Cart updated", "items": serializer.data, "total": total},
+            status=201,
+        )
 
     def put(self, request, item_id):
         item = get_object_or_404(Cart, id=item_id, user=request.user)
