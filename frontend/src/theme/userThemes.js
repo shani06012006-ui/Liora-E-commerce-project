@@ -16,21 +16,6 @@ export const USER_THEMES = [
   colors: ['#000000', '#121212', '#ffffff', '#ffffff'],
   },
 
-  {
-  id: 'blush-pink',
-  name: 'Blush Pink',
-  description: 'Elegant blush monochrome with soft luxury tones',
-  colors: ['#fff7f9', '#ffffff', '#d98fa8', '#2d1b22'],
-  },
-
-  {
-  id: 'lavender',
-  name: 'Lavender',
-  description: 'Soft royal lavender with elegant luxury tones',
-  colors: ['#f7f4fc', '#ffffff', '#8d74c7', '#2f2645'],
-},
-
-
 
 ];
  

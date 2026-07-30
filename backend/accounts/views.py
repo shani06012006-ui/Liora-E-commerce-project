@@ -135,7 +135,7 @@ class SetDefaultAddressView(APIView):
 
 
 class RegisterView(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny , )
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -204,7 +204,7 @@ class RegisterView(APIView):
 
 
 class ResendOTPView(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny ,)
 
     def post(self, request):
         email = request.data.get("email")
@@ -307,7 +307,7 @@ class LoginView(APIView):
 
 
 class GoogleLoginView(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny , )
 
     def post(self, request):
         if not GOOGLE_AUTH_AVAILABLE:
@@ -411,7 +411,7 @@ class UserProfileView(APIView):
 
 
 class VerifyOTPView(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny , )
 
     def post(self, request):
         serializer = OTPVerifySerializer(data=request.data)

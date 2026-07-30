@@ -3,7 +3,25 @@
 .user-theme-menu {
   position: relative;
 }
- 
+
+.user-theme-toggle {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--user-navbar-icon, #4b5563);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.user-theme-toggle:hover {
+  background: var(--user-hover-bg, #f3f4f6);
+  transform: rotate(15deg);
+}
+
 .user-theme-menu-trigger {
   border: none;
   background: transparent;
