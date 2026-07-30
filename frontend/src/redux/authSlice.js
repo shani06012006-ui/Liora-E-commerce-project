@@ -30,8 +30,8 @@ const authSlice = createSlice({
       state.user = user;
       state.token = access;
       
-      setUser(user);
-      setTokens(access, refresh);
+      setUser(user);         //localStorage
+      setTokens(access, refresh);  //sessionStorage
       
       localStorage.setItem('last_user', JSON.stringify(user));
       localStorage.setItem('last_token', access);

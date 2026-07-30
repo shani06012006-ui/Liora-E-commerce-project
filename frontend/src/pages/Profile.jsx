@@ -106,10 +106,7 @@ const Profile = () => {
       toast.error('Image size should be less than 5MB');
       return;
     }
- 
-    // ✅ Show the picked image immediately instead of waiting for the
-    // server round-trip; swap to the real, persisted profile_pic_url once
-    // the upload succeeds.
+
     const localPreviewUrl = URL.createObjectURL(file);
     setPreviewImage(localPreviewUrl);
     setPhotoLoading(true);
@@ -287,8 +284,6 @@ const Profile = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-600 mb-1.5">Username</label>
-              {/* ✅ Read-only: changing usernames touches uniqueness/auth
-                  elsewhere in the app, so this stays display-only for now. */}
               <input type="text" value={formData.username} disabled className={inputClass} />
             </div>
             <div>

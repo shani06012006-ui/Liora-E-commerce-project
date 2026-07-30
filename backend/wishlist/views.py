@@ -1,3 +1,4 @@
+#backend/wishlist/views.py
 from django.shortcuts import get_object_or_404
 from products.models import Product
 from rest_framework import status, viewsets

@@ -30,3 +30,6 @@ export default defineConfig({
     sourcemap: true,
   },
 });
+
+
+//Vite Proxy - /api/ requests ஐ backend க்கு redirect பண்ணுது 

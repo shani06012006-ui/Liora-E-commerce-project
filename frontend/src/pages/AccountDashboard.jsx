@@ -7,12 +7,7 @@ import { setCredentials } from '../redux/authSlice';
 import { handleLogout } from '../redux/authUtils';
 import { getTokens } from '../utils/storage';
 import toast from 'react-hot-toast';
-import {
-  PencilIcon, HeartIcon, ArchiveBoxIcon, MapPinIcon,
-  UserCircleIcon, LockClosedIcon, BellIcon, ShieldCheckIcon,
-  ArrowRightOnRectangleIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon,
-  TruckIcon, XCircleIcon, ShoppingBagIcon,
-} from '@heroicons/react/24/outline';
+import { PencilIcon, HeartIcon, ArchiveBoxIcon, MapPinIcon, UserCircleIcon, LockClosedIcon, BellIcon, ShieldCheckIcon, ArrowRightOnRectangleIcon, ChevronRightIcon, ClockIcon, CheckCircleIcon, TruckIcon, XCircleIcon, ShoppingBagIcon, } from '@heroicons/react/24/outline';
 
 
 const splitName = (fullName) => {
@@ -183,7 +178,7 @@ const AccountDashboard = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-[#b47537] to-[#b8b3b3] overflow-hidden">
+      <div className="bg-gradient-to-r from-[#6eb5cd] to-[#b8b3b3] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 flex items-center justify-between gap-8">
           <div>
             <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-gray-900">MY ACCOUNT</h1>

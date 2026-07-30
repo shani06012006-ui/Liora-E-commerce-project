@@ -139,7 +139,6 @@ const FontLoader = () => (
   `}</style>
 );
 
-// ✅ Fixed: Use centralized getImageUrl
 const getProductImage = (product) => getImageUrl(product);
 
 const starStr = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));

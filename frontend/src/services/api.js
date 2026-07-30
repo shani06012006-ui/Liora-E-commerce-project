@@ -17,7 +17,8 @@ export const getImageUrl = (product) => {
   }
   return 'https://placehold.co/100x100/e0e0e0/2D2D2D?text=No+Image';
 };
- 
+
+//Axios instance
 const API = axios.create({
   baseURL: BASE_URL,
   headers: {

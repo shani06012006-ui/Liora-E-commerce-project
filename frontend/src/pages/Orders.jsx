@@ -47,7 +47,7 @@ const paymentMethodLabel = (method) => {
   return map[method?.toLowerCase()] || method || 'N/A';
 };
  
-
+ 
 const TRACK_STEPS = [
   { key: 'placed',     label: 'Placed'     },
   { key: 'processing', label: 'Processing' },
@@ -156,9 +156,106 @@ const Orders = () => {
     }
   };
  
-  const handleDownloadInvoice = () => {
-    // ✅ No invoice-generation endpoint exists yet on the backend.
-    toast('Invoice download is coming soon!', { icon: '🧾' });
+  // ✅ No invoice-generation endpoint exists on the backend, so this builds
+  // a printable invoice client-side (same approach used on the admin side
+  // in AdminOrders.jsx) and opens the browser's print dialog, which lets
+  // the customer save it as a PDF.
+  const handleDownloadInvoice = (order) => {
+    if (!order) {
+      toast.error('Unable to generate invoice for this order.');
+      return;
+    }
+ 
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      toast.error('Please allow popups to download the invoice');
+      return;
+    }
+ 
+    const subtotal = order.items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+    const shipping = 0; // No shipping-fee field exists on the backend order model.
+    const tax = Math.max(0, Number(order.total_amount) - subtotal - shipping);
+ 
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Invoice - Order #${order.order_number || order.id}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Arial, Helvetica, sans-serif; padding: 40px; color: #1f2937; }
+            .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 24px; }
+            .brand { font-size: 22px; font-weight: bold; letter-spacing: 2px; }
+            .invoice-title { text-align: right; }
+            .invoice-title h2 { font-size: 18px; margin-bottom: 4px; }
+            .invoice-title p { font-size: 12px; color: #6b7280; }
+            .section { margin-bottom: 24px; }
+            .section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 6px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+            th, td { text-align: left; padding: 8px; font-size: 13px; border-bottom: 1px solid #e5e7eb; }
+            th { background: #f9fafb; text-transform: uppercase; font-size: 11px; color: #6b7280; }
+            .totals { margin-top: 16px; width: 260px; margin-left: auto; }
+            .totals div { display: flex; justify-content: space-between; padding: 4px 0; font-size: 13px; }
+            .totals .grand { font-weight: bold; font-size: 15px; border-top: 1px solid #111827; padding-top: 8px; margin-top: 4px; }
+            .footer { margin-top: 40px; text-align: center; font-size: 11px; color: #9ca3af; }
+            @media print { body { padding: 20px; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="brand">LIORA</div>
+            <div class="invoice-title">
+              <h2>INVOICE</h2>
+              <p>Order #${order.order_number || order.id}</p>
+              <p>${formatDateTime(order.created_at)}</p>
+            </div>
+          </div>
+ 
+          <div class="section">
+            <h3>Shipping Address</h3>
+            <p style="font-size:13px; white-space: pre-line;">${order.shipping_address || 'N/A'}</p>
+            <p style="font-size:13px;">${order.phone || ''}</p>
+          </div>
+ 
+          <div class="section">
+            <h3>Payment Method</h3>
+            <p style="font-size:13px;">${paymentMethodLabel(order.payment_method)}</p>
+          </div>
+ 
+          <div class="section">
+            <h3>Items</h3>
+            <table>
+              <thead>
+                <tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                ${order.items.map((it) => `
+                  <tr>
+                    <td>${it.product_name}</td>
+                    <td>${it.quantity}</td>
+                    <td>₹${it.price}</td>
+                    <td>₹${(it.price * it.quantity).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+ 
+          <div class="totals">
+            <div><span>Subtotal</span><span>₹${subtotal.toFixed(2)}</span></div>
+            <div><span>Shipping</span><span>₹${shipping.toFixed(2)}</span></div>
+            <div><span>Tax</span><span>₹${tax.toFixed(2)}</span></div>
+            <div class="grand"><span>Total</span><span>₹${order.total_amount}</span></div>
+          </div>
+ 
+          <div class="footer">Thank you for shopping with Liora — this is a system-generated invoice.</div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+    }, 250);
   };
  
   const pageNumbers = useMemo(() => {
@@ -294,7 +391,7 @@ const Orders = () => {
                   </button>
                   {order.status === 'delivered' && (
                     <button
-                      onClick={handleDownloadInvoice}
+                      onClick={() => handleDownloadInvoice(order)}
                       className="text-xs md:text-sm border border-gray-300 rounded-lg px-3 py-1.5 hover:bg-gray-50 transition"
                     >
                       Download Invoice
@@ -537,7 +634,7 @@ const OrderDetailsDrawer = ({ order, onClose, getProductImage, onDownloadInvoice
             </button>
           )}
           {order.status === 'delivered' && (
-            <button onClick={onDownloadInvoice}
+            <button onClick={() => onDownloadInvoice(order)}
               className="flex-1 min-w-[120px] flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm hover:bg-gray-50 transition">
               <ArrowDownTrayIcon className="w-4 h-4" />
               Download Invoice
@@ -557,4 +654,3 @@ const OrderDetailsDrawer = ({ order, onClose, getProductImage, onDownloadInvoice
 };
  
 export default Orders;
- 

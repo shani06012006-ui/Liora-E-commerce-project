@@ -8,24 +8,23 @@ import { clearCart } from '../redux/cartSlice';
 import { CreditCardIcon, BanknotesIcon, WalletIcon } from '@heroicons/react/24/outline';
 import { getTokens, getCurrentUser } from '../utils/storage';
 import toast from 'react-hot-toast';
-
+ 
 const Checkout = () => {
   const location = useLocation();
   const buyNowData = location.state;
   const isBuyNow = buyNowData?.buyNow === true;
-
+ 
   const { items, total: cartTotal } = useSelector((state) => state.cart);
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  //Check authentication - wrapped in useCallback
+ 
   const isUserAuthenticated = useCallback(() => {
     const { accessToken } = getTokens();
     const currentUser = getCurrentUser() || user;
     return !!(accessToken && currentUser);
   }, [user]); //Added user as dependency
-
+ 
   //Redirect if not authenticated
   useEffect(() => {
     if (!isUserAuthenticated()) {
@@ -33,22 +32,22 @@ const Checkout = () => {
       return;
     }
   }, [isUserAuthenticated, navigate]);
-
+ 
   const displayItems = isBuyNow
     ? [{ product_details: buyNowData.product, quantity: buyNowData.quantity, price: buyNowData.product?.price }]
     : items;
-
+ 
   const total = isBuyNow
     ? buyNowData.product?.price * buyNowData.quantity
     : cartTotal;
-
+ 
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('cod');
-
+ 
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
     phone: user?.phone || '',
@@ -58,55 +57,73 @@ const Checkout = () => {
     state: '',
     pincode: '',
   });
-
+ 
   const paymentMethods = [
     { id: 'cod', name: 'Cash on Delivery', icon: BanknotesIcon, description: 'Pay when you receive the order' },
     { id: 'card', name: 'Credit / Debit Card', icon: CreditCardIcon, description: 'Visa, Mastercard, RuPay' },
     { id: 'upi', name: 'UPI / Wallet', icon: WalletIcon, description: 'Google Pay, PhonePe, Paytm' },
   ];
-
+ 
   //Check if cart is empty
   useEffect(() => {
     if (!isBuyNow && items.length === 0 && !orderPlaced) {
       navigate('/cart');
     }
   }, [items, navigate, orderPlaced, isBuyNow]);
-
-  //Load addresses from API
+ 
   useEffect(() => {
     const loadAddresses = async () => {
       try {
         const res = await authAPI.getAddresses();
-        setAddresses(res.data || []);
+        const apiAddresses = res.data || [];
+ 
+        if (apiAddresses.length > 0) {
+          setAddresses(apiAddresses);
+          return;
+        }
+ 
+        if (user?.address) {
+          const parts = user.address.split(',');
+          setAddresses([
+            {
+              id: 'profile',
+              full_name: user.full_name || user.username,
+              phone: user.phone,
+              address_line1: parts[0] || '',
+              city: parts[1]?.trim() || '',
+              state: parts[2]?.split('-')[0]?.trim() || '',
+              pincode: parts[2]?.split('-')[1]?.trim() || '',
+              is_default: true,
+            },
+          ]);
+        }
       } catch (error) {
         console.error('Error loading addresses:', error);
+ 
         const savedAddresses = localStorage.getItem('user_addresses');
         if (savedAddresses) {
           setAddresses(JSON.parse(savedAddresses));
+        } else if (user?.address) {
+          const parts = user.address.split(',');
+          setAddresses([
+            {
+              id: 'profile',
+              full_name: user.full_name || user.username,
+              phone: user.phone,
+              address_line1: parts[0] || '',
+              city: parts[1]?.trim() || '',
+              state: parts[2]?.split('-')[0]?.trim() || '',
+              pincode: parts[2]?.split('-')[1]?.trim() || '',
+              is_default: true,
+            },
+          ]);
         }
       }
     };
+ 
     loadAddresses();
-  }, []);
-
-  //Update when user changes
-  useEffect(() => {
-    if (user?.address && addresses.length === 0) {
-      const parts = user.address.split(',');
-      const profileAddress = {
-        id: 'profile',
-        full_name: user.full_name || user.username,
-        phone: user.phone,
-        address_line1: parts[0] || '',
-        city: parts[1]?.trim() || '',
-        state: parts[2]?.split('-')[0]?.trim() || '',
-        pincode: parts[2]?.split('-')[1]?.trim() || '',
-        is_default: true,
-      };
-      setAddresses(prev => [profileAddress, ...prev.filter(a => a.id !== 'profile')]);
-    }
-  }, [user, addresses.length]);
-
+  }, [user]);
+ 
   //Set default address when addresses change
   useEffect(() => {
     if (addresses.length > 0 && !selectedAddress) {
@@ -123,12 +140,12 @@ const Checkout = () => {
       });
     }
   }, [addresses, user, selectedAddress]);
-
+ 
   //Handle form input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+ 
   //Handle address selection
   const handleAddrSelect = (address) => {
     setSelectedAddress(address);
@@ -143,7 +160,7 @@ const Checkout = () => {
     });
     setShowAddressForm(false);
   };
-
+ 
   const saveNewAddress = () => {
     const newAddress = { id: Date.now(), ...formData };
     const updated = [...addresses, newAddress];
@@ -153,7 +170,7 @@ const Checkout = () => {
     setShowAddressForm(false);
     toast.success('Address saved!');
   };
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.address_line1 || !formData.city || !formData.state || !formData.pincode) {
@@ -164,13 +181,13 @@ const Checkout = () => {
       toast.error('Please enter phone number');
       return;
     }
-
+ 
     setLoading(true);
     setOrderPlaced(true);
     toast.loading('Placing your order...', { id: 'order' });
-
+ 
     const fullAddress = `${formData.address_line1}, ${formData.address_line2 ? formData.address_line2 + ', ' : ''}${formData.city}, ${formData.state} - ${formData.pincode}`;
-
+ 
     try {
       let response;
       if (isBuyNow) {
@@ -197,12 +214,12 @@ const Checkout = () => {
       setOrderPlaced(false);
     }
   };
-
+ 
   const getProductImage = (product) => getImageUrl(product);
-
+ 
   const shippingCharge = total >= 999 ? 0 : 99;
   const finalTotal = total + shippingCharge;
-
+ 
   if (orderPlaced && loading) {
     return (
       <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
@@ -213,11 +230,11 @@ const Checkout = () => {
       </div>
     );
   }
-
+ 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
       <h1 className="text-2xl md:text-3xl font-serif text-gray-800 mb-6 md:mb-8">Checkout</h1>
-
+ 
       <div className="lg:hidden bg-white rounded-xl shadow-sm p-4 mb-6">
         <h2 className="text-base font-semibold text-gray-800 mb-3">Your Order ({displayItems.length} items)</h2>
         <div className="space-y-2 mb-3">
@@ -244,7 +261,7 @@ const Checkout = () => {
           </div>
         </div>
       </div>
-
+ 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         <div className="lg:col-span-2 space-y-4 md:space-y-6">
           {addresses.length > 0 && !showAddressForm && (
@@ -276,7 +293,7 @@ const Checkout = () => {
               </div>
             </div>
           )}
-
+ 
           {(showAddressForm || addresses.length === 0) && (
             <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
               <div className="flex justify-between items-center mb-4">
@@ -321,7 +338,7 @@ const Checkout = () => {
               </div>
             </div>
           )}
-
+ 
           <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
             <h2 className="text-base md:text-xl font-semibold text-gray-800 mb-4">Payment Method</h2>
             <div className="space-y-2 md:space-y-3">
@@ -347,7 +364,7 @@ const Checkout = () => {
               })}
             </div>
           </div>
-
+ 
           <div className="lg:hidden">
             <button onClick={handleSubmit} disabled={loading}
               className={`w-full py-3.5 rounded-lg transition font-medium ${
@@ -357,7 +374,7 @@ const Checkout = () => {
             </button>
           </div>
         </div>
-
+ 
         <div className="hidden lg:block lg:col-span-1">
           <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Order</h2>
@@ -401,5 +418,5 @@ const Checkout = () => {
     </div>
   );
 };
-
+ 
 export default Checkout;

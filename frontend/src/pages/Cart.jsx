@@ -33,7 +33,6 @@ const Cart = () => {
     } catch { toast.error('Failed to remove'); }
   };
 
-  //Fixed: Use centralized getImageUrl
   const getProductImage = (product) => getImageUrl(product);
 
   const isUserAuthenticated = () => {

@@ -249,7 +249,7 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        if hasattr(user_obj, "is_deleted") and user_obj.is_deleted:
+        if hasattr(user_obj, "is_deleted") and user_obj.is_deleted:  #safty attribute
             return Response(
                 {"error": "This account has been deactivated. Please register again."},
                 status=status.HTTP_403_FORBIDDEN,

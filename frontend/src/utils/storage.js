@@ -18,7 +18,6 @@ export const getTabId = () => {
 export const setTokens = (accessToken, refreshToken) => {
   if (accessToken) {
     sessionStorage.setItem(TOKEN_KEY, accessToken);
-    // Also store in localStorage for cross-tab sync
     localStorage.setItem(TOKEN_KEY, accessToken);
   }
   if (refreshToken) {
