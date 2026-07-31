@@ -61,20 +61,18 @@ html[data-user-theme='midnight-black'] {
   /* Accent */
   --user-accent: #7d0414;
   --user-accent-hover: #d9d9d9;
-  --user-accent-text: #000000;
+  --user-accent-text: #e8e8e8;
 
   /* Typography */
-  --user-content-heading: #fffefe;
+  --user-content-heading: #2f2c2c;
   --user-content-text: #fffbfb;
   --user-content-muted: #9d9d9d;
 
   /* Buttons */
   --user-btn-bg: #2d2b2b;
-  --user-btn-bg-hover: #e8e8e8;
+  --user-btn-bg-hover: #000000;
   --user-btn-text: #fff8f8;
 }
- 
-
  
 /* ============ 2. APPLICATION RULES ============ */
 

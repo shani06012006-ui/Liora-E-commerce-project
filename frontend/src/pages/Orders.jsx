@@ -115,9 +115,7 @@ const Orders = () => {
     return 'https://placehold.co/60x60/e0e0e0/2D2D2D?text=No+Image';
   };
  
-  // ✅ The user-facing /orders/ endpoint doesn't support search/filter/sort
-  // query params (only the admin endpoint does), so all of this is done
-  // client-side against the orders already fetched above.
+
   const filteredOrders = useMemo(() => {
     let result = [...orders];
  
@@ -156,10 +154,6 @@ const Orders = () => {
     }
   };
  
-  // ✅ No invoice-generation endpoint exists on the backend, so this builds
-  // a printable invoice client-side (same approach used on the admin side
-  // in AdminOrders.jsx) and opens the browser's print dialog, which lets
-  // the customer save it as a PDF.
   const handleDownloadInvoice = (order) => {
     if (!order) {
       toast.error('Unable to generate invoice for this order.');
@@ -173,7 +167,7 @@ const Orders = () => {
     }
  
     const subtotal = order.items.reduce((sum, it) => sum + it.price * it.quantity, 0);
-    const shipping = 0; // No shipping-fee field exists on the backend order model.
+    const shipping = 0;
     const tax = Math.max(0, Number(order.total_amount) - subtotal - shipping);
  
     printWindow.document.write(`
@@ -307,9 +301,7 @@ const Orders = () => {
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
           </select>
-          {/* ✅ Acts as a "clear filters" shortcut since the two selects
-              above are already live/reactive — there's nothing extra to
-              "apply". */}
+
           <button
             onClick={() => dispatch({ type: 'RESET_FILTERS' })}
             title="Clear all filters"

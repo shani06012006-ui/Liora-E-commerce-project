@@ -5,16 +5,16 @@ import { productAPI, getImageUrl } from '../services/api';
 import { TruckIcon, ArrowPathIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 const Hero = () => (
-  <div className="relative min-h-[100svh] w-full overflow-hidden bg-white">
-    <div className="absolute inset-0 flex justify-center items-center">
+  <div className="relative w-full overflow-hidden bg-white h-[60vh] sm:h-[75vh] md:h-[85vh] lg:h-[100svh]">
+    <div className="absolute inset-0 flex justify-center items-center px-4">
       <img
         src="LIORA.png"
         alt="Liora Hero"
-        className="h-full w-full object-contain"
+        className="max-h-full max-w-full w-auto h-auto object-contain"
       />
     </div>
-    <div className="absolute left-4 md:left-16 top-24 md:top-32 z-20">
-      <p className="text-[10px] md:text-xs uppercase tracking-[0.25em] md:tracking-[0.35em] text-black/70 leading-6">
+    <div className="absolute left-3 sm:left-4 md:left-16 top-16 sm:top-24 md:top-32 z-20">
+      <p className="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] md:tracking-[0.35em] text-red-900 leading-5 sm:leading-6">
         Fashion
         <br />
         That Moves
@@ -22,8 +22,8 @@ const Hero = () => (
         With You.
       </p>
     </div>
-    <div className="absolute right-4 md:right-16 bottom-16 md:bottom-24 z-20 text-right">
-      <p className="text-[10px] md:text-xs uppercase tracking-[0.25em] md:tracking-[0.35em] text-black/70 leading-6">
+    <div className="absolute right-3 sm:right-4 md:right-16 bottom-10 sm:bottom-16 md:bottom-24 z-20 text-right">
+      <p className="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-[0.2em] sm:tracking-[0.25em] md:tracking-[0.35em] text-red-900 leading-5 sm:leading-6">
         New
         <br />
         Collection
@@ -31,8 +31,8 @@ const Hero = () => (
         2026
       </p>
     </div>
-    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce">
-      <svg className="w-5 h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 animate-bounce">
+      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-black/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
       </svg>
     </div>
