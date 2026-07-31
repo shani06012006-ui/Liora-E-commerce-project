@@ -25,13 +25,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-ylqw%ixmk1!)a%2r5%@dp0i@6d74dun9(=ds=fv1%a!(dh2i#6"
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "liora-e-commerce-project-liora.up.railway.app",
+]
 
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 INSTALLED_APPS = [
     "django.contrib.auth",
@@ -55,6 +60,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # Django call panna
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",  # login sessions ellam handle panna
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",  # protects post request
@@ -63,6 +69,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "gurl_backend.middleware.KeepAdminSessionMiddleware",
     "accounts.middleware.BlockedUserMiddleware",
+    
 ]
 
 ROOT_URLCONF = "gurl_backend.urls"
@@ -93,11 +100,11 @@ WSGI_APPLICATION = "gurl_backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "liora_db",
-        "USER": "postgres",
-        "PASSWORD": "sunilraj123",
-        "HOST": "localhost",
-        "PORT": "5432",
+        "NAME": os.getenv("PGDATABASE"),
+        "USER": os.getenv("PGUSER"),
+        "PASSWORD": os.getenv("PGPASSWORD"),
+        "HOST": os.getenv("PGHOST"),
+        "PORT": os.getenv("PGPORT"),
     }
 }
 
@@ -131,8 +138,15 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
+CORS_ALLOWED_ORIGINS = [
+    "https://liora-e-commerce-project.vercel.app",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://liora-e-commerce-project.vercel.app",
+]
 
 CORS_ALLOW_METHODS = [
     "DELETE",
@@ -225,8 +239,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "shani06012006@gmail.com"
-EMAIL_HOST_PASSWORD = "khiz qewm zoyx jskq"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
