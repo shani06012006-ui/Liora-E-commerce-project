@@ -7,7 +7,7 @@ import { addToCartSafe } from '../redux/cartUtils';
 import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
-import { toggleWishlistUtil } from '../redux/wishlistutils';
+import { toggleWishlistUtil } from '../redux/wishlistUtils';
 
 const reducer = (state, action) => {
   switch (action.type) {
