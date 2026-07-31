@@ -6,7 +6,7 @@ import { FiMenu, FiSearch, FiChevronDown, FiChevronRight, FiHome, FiShoppingCart
 import ThemeMenu from './ThemeMenu';
 import { logout as logoutAction } from '../redux/authSlice';
 import { fullLogout } from '../utils/storage';
-import './AdminLayout.css';
+import './Adminlayout.css';
 import '../theme/adminThemes.css';
 import { getStoredAdminTheme, applyAdminTheme } from '../theme/adminThemes';
  

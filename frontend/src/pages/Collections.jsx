@@ -4,7 +4,7 @@ import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { productAPI, cartAPI, wishlistAPI, getImageUrl } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
-import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
+import {  addToWishlistUtil , removeFromWishlistUtil } from '../redux/wishlistutils';
 import { HeartIcon, ShoppingBagIcon, BoltIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';

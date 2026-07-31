@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { productAPI, wishlistAPI, getImageUrl } from '../services/api';
 import { useDispatch } from 'react-redux';
 import { refreshCart } from '../redux/cartUtils';
-import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistUtils';
+import { addToWishlistUtil, removeFromWishlistUtil } from '../redux/wishlistutils';
 import { HeartIcon, ShoppingBagIcon, BoltIcon, FireIcon, TruckIcon, ArrowPathIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { cartAPI } from '../services/api';
