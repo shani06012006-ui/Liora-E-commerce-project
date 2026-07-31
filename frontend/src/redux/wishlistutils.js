@@ -1,3 +1,4 @@
+//src/redux/wishlistUtils.js
 import { wishlistAPI } from "../services/api";
  
 export const addToWishlistUtil = async (productId, navigate) => {
