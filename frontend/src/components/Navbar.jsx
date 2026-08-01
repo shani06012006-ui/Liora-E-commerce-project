@@ -1,5 +1,5 @@
 // frontend/src/components/Navbar.jsx
-import { useReducer, useEffect, useRef, useCallback } from 'react';
+import { useReducer, useEffect, useRef, useCallback, useState } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCurrentUser, getTokens } from '../utils/storage';
@@ -44,6 +44,7 @@ const Navbar = () => {
  
   const [ui, uiDispatch] = useReducer(uiReducer, initialUI);
   const { wishlistCount, isDropdownOpen, isSearchOpen, searchTerm, isMobileOpen } = ui;
+  const [isSearching, setIsSearching] = useState(false);
  
   const dropdownRef  = useRef(null);
   const mobileRef    = useRef(null);
@@ -112,6 +113,7 @@ const Navbar = () => {
  
   const handleSearchChange = (value) => {
     uiDispatch({ type: 'SET_SEARCH_TERM', payload: value });
+    setIsSearching(true);
  
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -119,6 +121,7 @@ const Navbar = () => {
       if (value.trim()) params.set('search', value.trim());
       const query = params.toString();
       navigate(`/Collections${query ? `?${query}` : ''}`, { replace: true });
+      setIsSearching(false);
     }, 400);
   };
  
@@ -158,6 +161,7 @@ const Navbar = () => {
             <button
               className="md:hidden text-gray-600 hover:text-gray-900 transition"
               onClick={() => uiDispatch({ type: 'SET_MOBILE_MENU', payload: !isMobileOpen })}
+              aria-label={isMobileOpen ? 'Close menu' : 'Open menu'}
             >
               {isMobileOpen
                 ? <XMarkIcon className="h-6 w-6" />
@@ -185,6 +189,7 @@ const Navbar = () => {
               <button
                 onClick={() => uiDispatch({ type: 'SET_SEARCH_OPEN', payload: !isSearchOpen })}
                 className="user-navbar-icon text-gray-600 hover:text-gray-900 transition"
+                aria-label={isSearchOpen ? 'Close search' : 'Open search'}
               >
                 {isSearchOpen
                   ? <XMarkIcon className="h-5 w-5" />
@@ -197,7 +202,7 @@ const Navbar = () => {
               {currentUser && (
                 <>
                   {/* Wishlist */}
-                  <Link to="/wishlist" className="relative">
+                  <Link to="/wishlist" className="relative" aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} items` : ''}`}>
                     <HeartIcon className="h-5 w-5 text-gray-600 hover:text-gray-900 transition" />
                     {wishlistCount > 0 && (
                       <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
@@ -207,7 +212,7 @@ const Navbar = () => {
                   </Link>
  
                   {/* Cart */}
-                  <Link to="/cart" className="relative">
+                  <Link to="/cart" className="relative" aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ''}`}>
                     <ShoppingBagIcon className="h-5 w-5 text-gray-600 hover:text-gray-900 transition" />
                     {cartCount > 0 && (
                       <span className="absolute -top-2 -right-2 bg-gray-900 text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-medium">
@@ -224,6 +229,8 @@ const Navbar = () => {
                   <button
                     onClick={() => uiDispatch({ type: 'SET_DROPDOWN', payload: !isDropdownOpen })}
                     className="flex items-center space-x-1 focus:outline-none"
+                    aria-label="Account menu"
+                    aria-expanded={isDropdownOpen}
                   >
                     <div className="w-7 h-7 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
                       {currentUser.profile_pic_url ? (
@@ -279,9 +286,15 @@ const Navbar = () => {
                     placeholder="Search products..."
                     value={searchTerm}
                     onChange={(e) => handleSearchChange(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm"
+                    className="w-full pl-12 pr-16 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm"
                     autoFocus
+                    aria-busy={isSearching}
                   />
+                  {isSearching && (
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 uppercase tracking-wide">
+                      Searching…
+                    </span>
+                  )}
                 </div>
  
                 {searchTerm && (

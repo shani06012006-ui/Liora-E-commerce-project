@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI, getImageUrl } from '../services/api';
 import { TruckIcon, ArrowPathIcon, ShieldCheckIcon, CreditCardIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-
+import { ProductGridSkeleton } from '../components/ProductCardSkeleton';
+ 
 const Hero = () => (
   <div className="relative w-full overflow-hidden bg-white h-[60vh] sm:h-[75vh] md:h-[85vh] lg:h-[100svh]">
     <div className="absolute inset-0 flex justify-center items-center px-4">
@@ -38,7 +39,7 @@ const Hero = () => (
     </div>
   </div>
 );
-
+ 
 const CategorySection = () => {
   const categories = [
     {
@@ -63,7 +64,7 @@ const CategorySection = () => {
       link:      '/signature',
     },
   ];
-
+ 
   return (
     <div style={{ background: '#0a0a0a' }} className="w-full">
       <div className="flex flex-col md:flex-row md:divide-x divide-white/10 divide-y md:divide-y-0">
@@ -81,7 +82,7 @@ const CategorySection = () => {
                 className="w-full h-full object-cover object-top grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
               />
             </div>
-
+ 
             <div>
               <p
                 className="text-white font-semibold mb-1"
@@ -108,8 +109,8 @@ const CategorySection = () => {
     </div>
   );
 };
-
-
+ 
+ 
 const NewSeasonBanner = () => (
   <div
     className="relative w-full overflow-hidden"
@@ -135,7 +136,7 @@ const NewSeasonBanner = () => (
         }}
       />
     </div>
-
+ 
     <div
       className="relative z-10 flex flex-col justify-end md:justify-center h-full px-6 md:px-16 py-10 md:py-20"
       style={{ minHeight: '400px' }}
@@ -185,7 +186,7 @@ const NewSeasonBanner = () => (
     </div>
   </div>
 );
-
+ 
 const FeaturesSection = () => {
   const features = [
     { icon: TruckIcon,       title: 'FAST DELIVERY',   description: 'Quick & safe delivery'      },
@@ -193,7 +194,7 @@ const FeaturesSection = () => {
     { icon: ShieldCheckIcon, title: 'QUALITY ASSURED', description: 'Best fashion, best quality'  },
     { icon: CreditCardIcon,  title: 'SECURE PAYMENT',  description: '100% secure checkout'        },
   ];
-
+ 
   return (
     <div className="py-10 md:py-12 bg-white border-y border-gray-100">
       <div className="max-w-7xl mx-auto px-4">
@@ -224,11 +225,11 @@ const FeaturesSection = () => {
     </div>
   );
 };
-
-
+ 
+ 
 const ProductSection = ({ title, subtitle, link, products }) => {
   const getProductImage = (product) => getImageUrl(product);
-
+ 
   return (
     <div className="py-12 md:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4">
@@ -244,7 +245,7 @@ const ProductSection = ({ title, subtitle, link, products }) => {
             VIEW ALL <ChevronRightIcon className="w-3 h-3" />
           </Link>
         </div>
-
+ 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {products.map((product) => (
             <div key={product.id} className="group">
@@ -283,11 +284,11 @@ const ProductSection = ({ title, subtitle, link, products }) => {
     </div>
   );
 };
-
+ 
 const NewsletterSection = () => {
   const [email, setEmail]           = useState('');
   const [subscribed, setSubscribed] = useState(false);
-
+ 
   const handleSubscribe = (e) => {
     e.preventDefault();
     if (email) {
@@ -296,7 +297,7 @@ const NewsletterSection = () => {
       setEmail('');
     }
   };
-
+ 
   return (
     <div className="py-16 md:py-20 bg-black">
       <div className="max-w-2xl mx-auto px-4 text-center">
@@ -318,7 +319,7 @@ const NewsletterSection = () => {
         >
           Subscribe and get 15% off your first order
         </p>
-
+ 
         {subscribed ? (
           <div
             className="text-white/80 py-4 border border-white/20 px-6 md:px-8 inline-block"
@@ -352,13 +353,13 @@ const NewsletterSection = () => {
     </div>
   );
 };
-
-
+ 
+ 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals]           = useState([]);
   const [loading, setLoading]                   = useState(true);
-
+ 
   const fetchProducts = async () => {
     try {
       const res      = await productAPI.getAll({ limit: 8 });
@@ -370,48 +371,51 @@ const Home = () => {
     }
     setLoading(false);
   };
-
+ 
   useEffect(() => { fetchProducts(); }, []);
-
+ 
   const fallbackProducts = [
     { id: 1, name: 'Jacket',      price: 2499, original_price: 3499, discount: 28, image: 'https://i.pinimg.com/1200x/27/ea/c2/27eac2b4e982614e9dfc988f8d45cacd.jpg' },
     { id: 2, name: 'Joggers',     price: 5999, original_price: 8999, discount: 33, image: 'https://i.pinimg.com/736x/74/d2/0a/74d20ab68e3d1b9552d1d6509055e351.jpg'  },
     { id: 3, name: 'Office Wear', price: 1299, original_price: 1999, discount: 35, image: 'https://i.pinimg.com/1200x/23/74/5d/23745d46473b0a11655a093dcdc85ce5.jpg'  },
     { id: 4, name: 'Cargo Pants', price: 2999, original_price: 3999, discount: 34, image: 'https://i.pinimg.com/736x/f9/0f/81/f90f81779a5afc0780ec6287b143aff1.jpg'  },
   ];
-
+ 
   const displayProducts    = featuredProducts.length > 0 ? featuredProducts : fallbackProducts;
   const displayNewArrivals = newArrivals.length       > 0 ? newArrivals      : fallbackProducts;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-10 w-10 border-b border-gray-900 mx-auto" />
-      </div>
-    );
-  }
-
+ 
   return (
     <main>
       <Hero />
       <CategorySection />
       <NewSeasonBanner />
-      <ProductSection
-        title="Best of Liora"
-        subtitle="Editor's Picks"
-        link="/best-sellers"
-        products={displayProducts}
-      />
-      <ProductSection
-        title="New Arrivals"
-        subtitle="Just Dropped"
-        link="/new-arrivals"
-        products={displayNewArrivals}
-      />
+      {loading ? (
+        <div className="py-12 md:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="h-8 bg-gray-200 rounded w-48 mb-8 animate-pulse" />
+            <ProductGridSkeleton count={4} />
+          </div>
+        </div>
+      ) : (
+        <>
+          <ProductSection
+            title="Best of Liora"
+            subtitle="Editor's Picks"
+            link="/best-sellers"
+            products={displayProducts}
+          />
+          <ProductSection
+            title="New Arrivals"
+            subtitle="Just Dropped"
+            link="/new-arrivals"
+            products={displayNewArrivals}
+          />
+        </>
+      )}
       <FeaturesSection />
       <NewsletterSection />
     </main>
   );
 };
-
+ 
 export default Home;

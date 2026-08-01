@@ -3,8 +3,10 @@ import axios from "axios";
 import { getTokens, clearSession, setTokens } from '../utils/storage';
 import toast from 'react-hot-toast';
  
-const BASE_URL = import.meta.env.VITE_API_URL || "/api/";
-const MEDIA_BASE_URL = import.meta.env.VITE_MEDIA_URL || "http://localhost:8000";
+// Single source of truth for the API base URL, with a safe fallback
+const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api/";
+
+const MEDIA_BASE_URL = import.meta.env.VITE_MEDIA_URL || "http://127.0.0.1:8000";
  
 export const getImageUrl = (product) => {
   if (!product) return 'https://placehold.co/100x100/e0e0e0/2D2D2D?text=No+Image';
@@ -17,10 +19,10 @@ export const getImageUrl = (product) => {
   }
   return 'https://placehold.co/100x100/e0e0e0/2D2D2D?text=No+Image';
 };
-
+ 
 //Axios instance
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -46,14 +48,14 @@ API.interceptors.response.use(
  
     if (error.response?.status === 403) {
       const data = error.response?.data;
-      
+ 
       if (data && data.blocked === true) {
         toast.error(data.error || 'Your account has been blocked by the administrator. Please contact support.');
         clearSession();
         window.location.href = '/Login?blocked=true';
         return Promise.reject(error);
       }
-      
+ 
       const detail = error.response?.data?.detail || "";
       if (detail.toLowerCase().includes("blocked")) {
         clearSession();
@@ -73,7 +75,7 @@ API.interceptors.response.use(
       }
  
       try {
-        const { data } = await axios.post(`${BASE_URL}token/refresh/`, {
+        const { data } = await axios.post(`${BASE_URL}login/refresh/`, {
           refresh: refreshToken,
         });
  
@@ -197,3 +199,4 @@ export const adminAPI = {
 };
  
 export default API;
+ 

@@ -8,7 +8,7 @@ import { HeartIcon, StarIcon, TruckIcon, ShieldCheckIcon, ArrowPathIcon, BoltIco
 import { HeartIcon as HeartSolidIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
 import { toggleWishlistUtil } from '../redux/wishlistUtils';
-
+ 
 const reducer = (state, action) => {
   switch (action.type) {
     case 'SET_PRODUCT':          return { ...state, product:        action.payload };
@@ -26,7 +26,7 @@ const reducer = (state, action) => {
     default:                     return state;
   }
 };
-
+ 
 const initialState = {
   product: null, loading: true, quantity: 1,
   selectedSize: '', selectedColor: '',
@@ -36,23 +36,23 @@ const initialState = {
   reviewData: { rating: 5, title: '', comment: '' },
   addingToCart: false, submitting: false,
 };
-
+ 
 const sizes  = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const colors = ['Black', 'White', 'Navy', 'Burgundy', 'Beige'];
-
+ 
 const ProductDetail = () => {
   const { id }        = useParams();
   const navigate      = useNavigate();
   const reduxDispatch = useDispatch();
   const { user }      = useSelector((state) => state.auth);
   const [state, dispatch] = useReducer(reducer, initialState);
-
+ 
   const {
     product, loading, quantity, selectedSize, selectedColor,
     isInWishlist, wishlistId, reviews, averageRating,
     showReviewForm, reviewData, addingToCart, submitting,
   } = state;
-
+ 
   const fetchProduct = useCallback(async () => {
     try {
       const res = await productAPI.getById(id);
@@ -60,14 +60,14 @@ const ProductDetail = () => {
     } catch { toast.error('Failed to load product'); }
     finally { dispatch({ type: 'SET_LOADING', payload: false }); }
   }, [id]);
-
+ 
   const fetchReviews = useCallback(async () => {
     try {
       const res = await reviewAPI.getReviews(id);
       dispatch({ type: 'SET_REVIEWS', payload: { reviews: res.data.reviews || [], averageRating: res.data.average_rating || 0 } });
     } catch (err) { console.error(err); }
   }, [id]);
-
+ 
   const checkWishlistStatus = useCallback(async () => {
     if (!localStorage.getItem('access_token')) return;
     try {
@@ -76,13 +76,14 @@ const ProductDetail = () => {
       dispatch({ type: 'SET_WISHLIST', payload: { status: !!item, id: item?.id || null } });
     } catch (err) { console.error(err); }
   }, [id]);
-
+ 
   useEffect(() => {
     fetchProduct(); fetchReviews(); checkWishlistStatus();
   }, [fetchProduct, fetchReviews, checkWishlistStatus]);
-
+ 
   const addToCart = async () => {
     if (!localStorage.getItem('access_token')) { toast.error('Please login'); navigate('/Login'); return; }
+    if (!selectedSize) { toast.error('Please select a size'); return; }
     dispatch({ type: 'SET_ADDING_TO_CART', payload: true });
     try {
       const result = await addToCartSafe(reduxDispatch, product.id, quantity);
@@ -91,12 +92,13 @@ const ProductDetail = () => {
       else                      toast.error('Failed to add to cart');
     } finally { dispatch({ type: 'SET_ADDING_TO_CART', payload: false }); }
   };
-
+ 
   const buyNow = () => {
     if (!localStorage.getItem('access_token')) { toast.error('Please login to buy'); navigate('/Login'); return; }
-    navigate('/checkout', { state: { buyNow: true, product, quantity } });
+    if (!selectedSize) { toast.error('Please select a size'); return; }
+    navigate('/checkout', { state: { buyNow: true, product, quantity, selectedSize, selectedColor } });
   };
-
+ 
   const toggleWishlist = async () => {
     const result = await toggleWishlistUtil({ productId: product.id, isInWishlist, wishlistId, navigate });
     if (result.success) {
@@ -104,7 +106,7 @@ const ProductDetail = () => {
       else if (result.added) { dispatch({ type: 'SET_WISHLIST', payload: { status: true, id: result.wishlistId } }); toast.success('Added to wishlist'); }
     } else { toast.error(result.message || 'Failed to update wishlist'); }
   };
-
+ 
   const submitReview = async (e) => {
     e.preventDefault();
     if (!user) { toast.error('Please login to submit a review'); navigate('/Login'); return; }
@@ -118,27 +120,34 @@ const ProductDetail = () => {
       toast.error(error.response?.data?.error || 'Failed to submit review');
     } finally { dispatch({ type: 'SET_SUBMITTING', payload: false }); }
   };
-
+ 
   const getProductImage = (product) => {
     return getImageUrl(product);
   };
-
+ 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto" />
-        <p className="text-gray-500 mt-4 text-sm">Loading...</p>
+    <div className="max-w-7xl mx-auto px-4 py-6 md:py-12 animate-pulse">
+      <div className="h-4 bg-gray-200 rounded w-40 mb-6" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
+        <div className="bg-gray-200 rounded-xl md:rounded-2xl aspect-[3/4] w-full" />
+        <div className="space-y-4">
+          <div className="h-7 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 rounded w-1/4" />
+          <div className="h-8 bg-gray-200 rounded w-1/3 mt-4" />
+          <div className="h-16 bg-gray-200 rounded w-full mt-4" />
+          <div className="h-10 bg-gray-200 rounded w-full mt-6" />
+        </div>
       </div>
     </div>
   );
-
+ 
   if (!product) return (
     <div className="max-w-7xl mx-auto px-4 py-20 text-center">
       <p className="text-gray-500">Product not found.</p>
       <Link to="/Collections" className="inline-block mt-4 text-gray-900 hover:text-gray-600">Back to Shop</Link>
     </div>
   );
-
+ 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 md:py-12">
       {/* Breadcrumb */}
@@ -149,9 +158,9 @@ const ProductDetail = () => {
         <span>/</span>
         <span className="text-gray-900 truncate max-w-[150px]">{product.name}</span>
       </div>
-
+ 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-12">
-
+ 
         {/* Product Image */}
         <div className="bg-gray-100 rounded-xl md:rounded-2xl overflow-hidden">
           <img 
@@ -161,7 +170,7 @@ const ProductDetail = () => {
             onError={(e) => { e.target.src = 'https://placehold.co/600x800/e0e0e0/2D2D2D?text=No+Image'; }}
           />
         </div>
-
+ 
         {/* Product Info */}
         <div className="px-0">
           <div className="flex justify-between items-start">
@@ -176,7 +185,7 @@ const ProductDetail = () => {
                 : <HeartIcon className="w-5 h-5 text-gray-400" />}
             </button>
           </div>
-
+ 
           {/* Rating */}
           <div className="flex items-center gap-2 mt-3">
             <div className="flex">
@@ -186,7 +195,7 @@ const ProductDetail = () => {
             </div>
             <span className="text-xs text-gray-500">({reviews.length} reviews)</span>
           </div>
-
+ 
           {/* Price */}
           <div className="mt-4">
             <p className="text-2xl md:text-3xl font-bold text-gray-900">₹{product.price}</p>
@@ -194,16 +203,18 @@ const ProductDetail = () => {
               <p className="text-sm text-gray-400 line-through">₹{product.original_price}</p>
             )}
           </div>
-
+ 
           {/* Description */}
           <div className="mt-4 md:mt-6">
             <h3 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Description</h3>
             <p className="text-gray-600 leading-relaxed text-sm">{product.description}</p>
           </div>
-
+ 
           {/* Size */}
           <div className="mt-5 md:mt-6">
-            <h3 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Select Size</h3>
+            <h3 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">
+              Select Size <span className="text-red-500">*</span>
+            </h3>
             <div className="flex flex-wrap gap-2">
               {sizes.map(size => (
                 <button key={size}
@@ -216,7 +227,7 @@ const ProductDetail = () => {
               ))}
             </div>
           </div>
-
+ 
           {/* Color */}
           <div className="mt-5 md:mt-6">
             <h3 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Select Color</h3>
@@ -232,7 +243,7 @@ const ProductDetail = () => {
               ))}
             </div>
           </div>
-
+ 
           {/* Quantity */}
           <div className="mt-5 md:mt-6">
             <h3 className="font-semibold text-gray-900 mb-2 text-sm md:text-base">Quantity</h3>
@@ -240,18 +251,24 @@ const ProductDetail = () => {
               <button onClick={() => dispatch({ type: 'SET_QUANTITY', payload: Math.max(1, quantity - 1) })}
                 className="w-9 h-9 md:w-10 md:h-10 border rounded-lg hover:bg-gray-100 text-lg md:text-xl">-</button>
               <span className="text-lg md:text-xl font-semibold w-10 text-center">{quantity}</span>
-              <button onClick={() => dispatch({ type: 'SET_QUANTITY', payload: quantity + 1 })}
-                className="w-9 h-9 md:w-10 md:h-10 border rounded-lg hover:bg-gray-100 text-lg md:text-xl">+</button>
+              <button
+                onClick={() => {
+                  if (quantity >= product.stock) { toast.error(`Only ${product.stock} in stock`); return; }
+                  dispatch({ type: 'SET_QUANTITY', payload: quantity + 1 });
+                }}
+                disabled={quantity >= product.stock}
+                className="w-9 h-9 md:w-10 md:h-10 border rounded-lg hover:bg-gray-100 text-lg md:text-xl disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+              >+</button>
               <span className="text-xs text-gray-500">Stock: {product.stock}</span>
             </div>
           </div>
-
+ 
           {product.stock === 0 && (
             <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-xs md:text-sm">
               Out of Stock
             </div>
           )}
-
+ 
           {/* Cart + Buy Now */}
           <div className="flex gap-3 mt-6 md:mt-8">
             <button onClick={addToCart} disabled={product.stock === 0 || addingToCart}
@@ -264,7 +281,7 @@ const ProductDetail = () => {
               </svg>
               {addingToCart ? 'ADDING...' : 'ADD TO CART'}
             </button>
-
+ 
             <button onClick={buyNow} disabled={product.stock === 0}
               className={`flex-1 border border-gray-900 text-gray-900 py-2.5 md:py-3 rounded-lg transition flex items-center justify-center gap-2 text-sm ${
                 product.stock === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-900 hover:text-white'
@@ -273,7 +290,7 @@ const ProductDetail = () => {
               BUY NOW
             </button>
           </div>
-
+ 
           {/* Shipping Info */}
           <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t space-y-2.5">
             {[
@@ -289,7 +306,7 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
-
+ 
       {/* Reviews Section */}
       <div className="mt-12 md:mt-16 pt-6 md:pt-8 border-t">
         <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
@@ -309,7 +326,7 @@ const ProductDetail = () => {
             Write a Review
           </button>
         </div>
-
+ 
         {showReviewForm && (
           <form onSubmit={submitReview} className="bg-gray-50 p-4 md:p-6 rounded-xl mb-8">
             <h4 className="font-semibold text-gray-900 mb-4 text-sm md:text-base">Write Your Review</h4>
@@ -346,7 +363,7 @@ const ProductDetail = () => {
             </div>
           </form>
         )}
-
+ 
         <div className="space-y-4">
           {reviews.length === 0 ? (
             <p className="text-gray-500 text-center py-8 text-sm">No reviews yet. Be the first to review!</p>
@@ -378,5 +395,5 @@ const ProductDetail = () => {
     </div>
   );
 };
-
+ 
 export default ProductDetail;

@@ -11,10 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
-
 from datetime import timedelta
 from pathlib import Path
-
 
 from dotenv import load_dotenv
 
@@ -39,7 +37,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = "django-insecure-ylqw%ixmk1!)a%2r5%@dp0i@6d74dun9(=ds-fv1%a!(dh2i#6"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False") == "True"
@@ -114,11 +112,11 @@ WSGI_APPLICATION = "gurl_backend.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("PGDATABASE"),
-        "USER": os.getenv("PGUSER"),
-        "PASSWORD": os.getenv("PGPASSWORD"),
-        "HOST": os.getenv("PGHOST"),
-        "PORT": os.getenv("PGPORT"),
+        "NAME": "liora_db",
+        "USER": "postgres",
+        "PASSWORD": "sunilraj123",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
@@ -157,6 +155,8 @@ CORS_ALLOW_ALL_ORIGINS = False
 
 CORS_ALLOWED_ORIGINS = [
     "https://liora-e-commerce-project.vercel.app",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -190,11 +190,11 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
-        "rest_framework.permissions.IsAuthenticated",
-        "accounts.permissions.IsNotBlocked",
     ],
+
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",

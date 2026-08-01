@@ -84,8 +84,8 @@ class AdminDashboardStatsView(APIView):
             popular_products_data = []
             try:
                 popular_products = Product.objects.annotate(
-                    total_sold=Sum("orderitem__quantity")
-                ).order_by("-total_sold")[:5]
+                    total_sold=Sum("orderitem_set__quantity")
+                 ).order_by("-total_sold")[:5]
                 popular_products_data = ProductSerializer(
                     popular_products, many=True
                 ).data

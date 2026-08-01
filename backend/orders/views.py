@@ -5,7 +5,9 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from products.models import Product
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated 
+from accounts.permissions import IsNotBlocked
+
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -16,7 +18,7 @@ User = get_user_model()
 
 
 class CartView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [ IsAuthenticated, IsNotBlocked,]
 
     def get(self, request):
         items = Cart.objects.filter(user=request.user)

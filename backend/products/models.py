@@ -4,7 +4,7 @@ from django.db import models
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, default="")
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -23,7 +23,7 @@ class Product(models.Model):
     ]
 
     name = models.CharField(max_length=200)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, default="")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     cost_price = models.DecimalField(
         max_digits=10,
