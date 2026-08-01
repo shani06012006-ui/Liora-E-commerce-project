@@ -28,7 +28,7 @@ const accountNav = [
   { label: 'Orders', icon: ArchiveBoxIcon, to: '/orders' },
   { label: 'Wishlist', icon: HeartIcon, to: '/wishlist' },
   { label: 'Addresses', icon: MapPinIcon, to: '/address' },
-
+ 
 ];
  
 const settingsNav = [
@@ -198,7 +198,7 @@ const Wishlist = () => {
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero */}
-      <div className="bg-gradient-to-r from-[#f4f1ee] to-[#e7e3e0] overflow-hidden">
+      <div className="user-hero-banner bg-gradient-to-r from-[#f4f1ee] to-[#e7e3e0] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 flex items-center justify-between gap-8">
           <div>
             <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-gray-900">MY WISHLIST</h1>

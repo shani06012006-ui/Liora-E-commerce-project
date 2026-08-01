@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>frontend</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem('liora_user_theme');
+          var theme = saved === 'midnight-black' ? 'midnight-black' : 'elegant-light';
+          document.documentElement.setAttribute('data-user-theme', theme);
+        } catch (e) {
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

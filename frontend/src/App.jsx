@@ -83,7 +83,7 @@ const ProfileLayout = ({ children }) => {
   return (
     <div className="user-shell min-h-screen bg-gray-50">
       <Navbar />
-      <div className="bg-gradient-to-r from-[#f4f1ee] to-[#e9e4df] overflow-hidden">
+      <div className="user-hero-banner bg-gradient-to-r from-[#f4f1ee] to-[#e9e4df] overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
           <h1 className="text-4xl md:text-5xl font-serif tracking-wide text-gray-900">{hero.title}</h1>
           <p className="text-gray-500 mt-3">{hero.subtitle}</p>
@@ -236,7 +236,7 @@ const AppContent = () => {
       <Route path="/admin/payments/refunds" element={<AdminRoute><AdminPayments /></AdminRoute>} />
  
       {/* Protected Routes */}
-
+ 
       <Route path="/profile" element={<ProtectedRoute><MainLayout><AccountDashboard /></MainLayout></ProtectedRoute>} />
       <Route path="/profile/edit" element={<ProtectedRoute><ProfileLayout><Profile /></ProfileLayout></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><ProfileLayout><Settings /></ProfileLayout></ProtectedRoute>} />

@@ -4,81 +4,102 @@
  
 :root,
 html[data-user-theme='elegant-light'] {
-
+  color-scheme: light;
+ 
   /* Backgrounds */
   --user-page-bg: #ffffff;
   --user-navbar-bg: #ffffff;
   --user-card-bg: #ffffff;
   --user-hover-bg: #f5f5f5;
-
+ 
   /* Borders */
   --user-navbar-border: #000000;
-
+ 
   /* Navbar */
   --user-navbar-icon: #000000;
   --user-navbar-text: #000000;
-
+ 
   /* Accent */
   --user-accent: #000000;
   --user-accent-hover: #222222;
   --user-accent-text: #ffffff;
-
+ 
   /* Typography */
   --user-content-heading: #000000;
   --user-content-text: #000000;
   --user-content-muted: #666666;
-
+ 
   /* Buttons */
   --user-btn-bg: #000000;
   --user-btn-bg-hover: #222222;
   --user-btn-text: #ffffff;
-
+ 
   --user-newsletter-button-bg: #ede6e6;
   --user-newsletter-button-text: #010101;
+ 
+  /* Hero / banner gradients (profile page, wishlist page) */
+  --user-hero-gradient-from: #f4f1ee;
+  --user-hero-gradient-to: #e9e4df;
 }
  
 html[data-user-theme='midnight-black'] {
-
+  color-scheme: dark;
+ 
   /* Main background */
   --user-page-bg: #0a0a0a;
-
+ 
   /* Navbar */
   --user-navbar-bg: #000000;
-
+ 
   /* Cards */
   --user-card-bg: #151515;
-
+ 
   /* Hover */
   --user-hover-bg: #202020;
-
+ 
   /* Borders */
   --user-navbar-border: #2d2d2d;
-
+ 
   /* Navbar text */
   --user-navbar-icon: #ffffff;
   --user-navbar-text: #fffafa;
-
-  /* Accent */
-  --user-accent: #7d0414;
+ 
+  /* Accent — was #7d0414, which is only ~1.8:1 contrast against this
+     background (fails WCAG's 4.5:1 minimum for text). This red-400 keeps
+     the same red identity but is actually readable at ~7:1. */
+  --user-accent: #f87171;
   --user-accent-hover: #d9d9d9;
   --user-accent-text: #e8e8e8;
-
-  /* Typography */
-  --user-content-heading: #2f2c2c;
+ 
+  /* Typography — heading color was #2f2c2c, effectively the same
+     darkness as the #0a0a0a page background (~1.4:1 contrast), which made
+     every h1/h2/h3 on the site nearly invisible in dark mode. */
+  --user-content-heading: #f5f5f5;
   --user-content-text: #fffbfb;
   --user-content-muted: #9d9d9d;
-
+ 
   /* Buttons */
   --user-btn-bg: #2d2b2b;
   --user-btn-bg-hover: #000000;
   --user-btn-text: #fff8f8;
+ 
+  /* Hero / banner gradients — was hardcoded cream (#f4f1ee/#e9e4df) on the
+     Profile and Wishlist hero banners regardless of theme, so it stayed a
+     bright cream band in the middle of an otherwise dark page. */
+  --user-hero-gradient-from: #151515;
+  --user-hero-gradient-to: #0a0a0a;
+}
+ 
+/* ---- Hero / banner gradient (Profile + Wishlist headers) ---- */
+.user-hero-banner {
+  background-image: linear-gradient(to right, var(--user-hero-gradient-from), var(--user-hero-gradient-to)) !important;
 }
  
 /* ============ 2. APPLICATION RULES ============ */
-
+ 
  
 .user-shell {
-  background-color: var(--user-page-bg);
+  background-color: var(--user-page-bg) !important;
   transition: background-color 0.25s ease, color 0.25s ease;
 }
  
@@ -151,7 +172,7 @@ html[data-user-theme='midnight-black'] {
   --tw-ring-color: var(--user-accent) !important;
 }
  
-
+ 
 .user-shell .bg-gray-900,
 .user-shell .bg-black {
   background-color: var(--user-btn-bg) !important;
