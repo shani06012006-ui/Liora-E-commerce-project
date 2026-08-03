@@ -109,16 +109,35 @@ WSGI_APPLICATION = "gurl_backend.wsgi.application"
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "liora_db",
-        "USER": "postgres",
-        "PASSWORD": "sunilraj123",
-        "HOST": "localhost",
-        "PORT": "5432",
+import os
+from urllib.parse import urlparse
+
+database_url = os.getenv("DATABASE_URL")
+
+if database_url:
+    url = urlparse(database_url)
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": url.path[1:],  # removes the leading "/"
+            "USER": url.username,
+            "PASSWORD": url.password,
+            "HOST": url.hostname,
+            "PORT": url.port,
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "liora_db",
+            "USER": "postgres",
+            "PASSWORD": "sunilraj123",
+            "HOST": "localhost",
+            "PORT": "5432",
+        }
+    }
 
 
 # Password validation
