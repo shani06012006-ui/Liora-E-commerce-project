@@ -1,6 +1,6 @@
 import django.db.models.deletion
 from django.db import migrations, models
-
+from datetime import datetime, UTC
 LEGACY_CATEGORIES = {
     "collections": "Collections",
     "casual": "Casual Wear",
@@ -14,25 +14,33 @@ def populate_category_fk(apps, schema_editor):
     Product = apps.get_model("products", "Product")
     Category = apps.get_model("products", "Category")
 
-    # Make sure a real Category row exists for every legacy value products
-    # were using, so no product loses its category during the conversion.
+
     for slug, name in LEGACY_CATEGORIES.items():
         Category.objects.get_or_create(
-            slug=slug, defaults={"name": name, "is_active": True, "description": ""}
-        )
+    slug=slug,
+    defaults={
+        "name": name,
+        "is_active": True,
+        "description": "",
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
+    },
+)
 
     for product in Product.objects.all():
         old_value = product.category
         if not old_value:
             continue
         category, _ = Category.objects.get_or_create(
-            slug=old_value,
-            defaults={
-                "name": old_value.replace("-", " ").title(),
-                "is_active": True,
-                "description": "",
-            },
-        )
+          slug=old_value,
+          defaults={
+        "name": old_value.replace("-", " ").title(),
+        "is_active": True,
+        "description": "",
+        "created_at": datetime.now(UTC),
+        "updated_at": datetime.now(UTC),
+    },
+)
         product.category_new = category
         product.save(update_fields=["category_new"])
 
@@ -51,17 +59,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # Migration history says Category has a `created_at` column, but the
-        # real database table never had one (same kind of drift as `slug`,
-        # just in reverse). Fix the STATE only so the RunPython step below
-        # doesn't try to SELECT a column that doesn't exist.
-        migrations.SeparateDatabaseAndState(
-            state_operations=[
-                migrations.RemoveField(model_name="category", name="created_at"),
-            ],
-            database_operations=[],
-        ),
-        # Step 1: add the new FK alongside the old CharField.
+
         migrations.AddField(
             model_name="product",
             name="category_new",

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from datetime import timedelta
+
 from pathlib import Path
 import dj_database_url
 
@@ -50,6 +51,8 @@ ALLOWED_HOSTS = [
 ]
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 INSTALLED_APPS = [
     "django.contrib.auth",
