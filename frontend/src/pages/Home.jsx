@@ -359,8 +359,11 @@ const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals]           = useState([]);
   const [loading, setLoading]                   = useState(true);
+  const [slowServer, setSlowServer]             = useState(false);
  
   const fetchProducts = async () => {
+    const slowTimer = setTimeout(() => setSlowServer(true), 4000);
+ 
     try {
       const res      = await productAPI.getAll({ limit: 8 });
       const products = res.data;
@@ -369,6 +372,8 @@ const Home = () => {
     } catch (error) {
       console.error('Error fetching products:', error);
     }
+    clearTimeout(slowTimer);
+    setSlowServer(false);
     setLoading(false);
   };
  
@@ -392,6 +397,11 @@ const Home = () => {
       {loading ? (
         <div className="py-12 md:py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4">
+            {slowServer && (
+              <p className="text-center text-xs text-gray-400 mb-6 tracking-wide">
+                Waking up the server — this can take up to a minute on first load.
+              </p>
+            )}
             <div className="h-8 bg-gray-200 rounded w-48 mb-8 animate-pulse" />
             <ProductGridSkeleton count={4} />
           </div>
