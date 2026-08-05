@@ -8,7 +8,6 @@ import {
   FiDownload, FiCheckSquare, FiSquare, FiPlus
 } from 'react-icons/fi';
  
-// Must match backend Product.STYLE_CHOICES exactly (products/models.py)
 const STYLE_OPTIONS = [
   { value: 'casual', label: 'Casual' },
   { value: 'party', label: 'Party' },
@@ -20,6 +19,7 @@ const EMPTY_FORM = {
   name: '', description: '', price: '', original_price: '', cost_price: '',
   stock: '', category: '', style: '', discount: '',
   is_new_arrival: false, is_best_seller: false, is_on_sale: false, image_url: '',
+  is_active: true,
 };
  
 const AdminProducts = () => {
@@ -109,11 +109,16 @@ const AdminProducts = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      let payload = form;
+
+      const cleanedForm = {
+        ...form,
+        category: form.category === '' ? null : form.category,
+      };
+      let payload = cleanedForm;
  
       if (imageFile) {
         const fd = new FormData();
-        Object.entries(form).forEach(([key, value]) => {
+        Object.entries(cleanedForm).forEach(([key, value]) => {
           if (value === null || value === undefined) return;
           fd.append(key, value);
         });
