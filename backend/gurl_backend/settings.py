@@ -150,7 +150,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "https://liora-ecommerce-project-sha.vercel.app",
     "http://localhost:5173",
-    "http://127.0.0.1:5173",
+  
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -241,8 +241,16 @@ CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 
 # Celery Configuration
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_BROKER_URL = os.environ.get(
+    "REDIS_URL",
+    "redis://localhost:6379/0"
+)
+
+CELERY_RESULT_BACKEND = os.environ.get(
+    "REDIS_URL",
+    "redis://localhost:6379/0"
+)
+
 CELERY_ACCEPT_CONTENT = ["application/json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"

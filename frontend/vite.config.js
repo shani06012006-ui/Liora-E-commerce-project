@@ -15,12 +15,12 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://liora-e-commerce-project.onrender.com',
         changeOrigin: true,
         secure: false,
       },
       '/media': {
-        target: 'http://localhost:8000',
+        target: 'https://liora-e-commerce-project.onrender.com',
         changeOrigin: true,
       },
     },
