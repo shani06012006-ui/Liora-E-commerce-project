@@ -156,7 +156,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://liora-ecommerce-project-sha.vercel.app",
+    "https://liora-ecommerce-project-sha.vercel.app/",
 ]
 
 CORS_ALLOW_METHODS = [

@@ -111,7 +111,6 @@ const Collections = () => {
     navigate('/checkout', { state: { buyNow: true, product: products.find(p => p.id === productId), quantity: 1 } });
   };
  
-  // ✅ Fixed: Use imported getImageUrl
   const getProductImage = (product) => getImageUrl(product);
  
   const styleTabs = [
