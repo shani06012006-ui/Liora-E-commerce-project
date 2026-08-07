@@ -37,13 +37,12 @@ export const DEFAULT_ADMIN_THEME = 'elegant-light';
  
 const STORAGE_KEY = 'liora_admin_theme';
  
-/** Read the saved theme id from localStorage, falling back to the default. */
 export const getStoredAdminTheme = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved && ADMIN_THEMES.some((t) => t.id === saved)) return saved;
   } catch {
-    // localStorage may be unavailable (private browsing, etc.) - fall back silently
+    // localStorage may be unavailable - fall back silently
   }
   return DEFAULT_ADMIN_THEME;
 };
